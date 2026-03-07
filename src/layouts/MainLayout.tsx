@@ -79,6 +79,7 @@ const MainLayout: React.FC = () => {
           <button
             onClick={() => setMobileOpen(false)}
             className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 lg:hidden"
+            title='icon'
           >
             <X size={18} />
           </button>
@@ -154,6 +155,7 @@ const MainLayout: React.FC = () => {
             <button
               onClick={() => setMobileOpen(true)}
               className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors lg:hidden"
+              title='PodoSistema'
             >
               <Menu size={22} />
             </button>
@@ -167,7 +169,7 @@ const MainLayout: React.FC = () => {
 
           {/* Right: notification bell + avatar */}
           <div className="flex items-center gap-3">
-            <button className="relative p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+            <button className="relative p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors" title='notification'>
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger-500 rounded-full" />
             </button>

@@ -24,7 +24,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Simulação de login para desenvolvimento
     const fakeUser: User = {
       id: '1',
-      name: 'Dra. Maria Silva',
+      name: 'Dra. Ana Paula',
       email,
       role: 'podologa',
     };

@@ -27,7 +27,7 @@ const PatientFlowChart: React.FC<PatientFlowChartProps> = ({ data }) => {
           <h2 className="text-base font-semibold text-gray-800">Fluxo de Pacientes</h2>
           <p className="text-xs text-gray-400 mt-0.5">Últimos 7 dias</p>
         </div>
-        <button className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+        <button className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors" title='icon-more'>
           <MoreVertical size={16} />
         </button>
       </div>
