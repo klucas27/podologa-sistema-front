@@ -4,7 +4,8 @@ import {
   LayoutDashboard,
   Users,
   CalendarDays,
-  ClipboardList,
+  Stethoscope,
+  Bug,
   Settings,
   LogOut,
   ChevronLeft,
@@ -19,8 +20,9 @@ import { useAuth } from '@/hooks/useAuth';
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/pacientes', label: 'Pacientes', icon: Users },
+  { to: '/consultas', label: 'Consultas', icon: Stethoscope },
   { to: '/agendamentos', label: 'Agendamentos', icon: CalendarDays },
-  { to: '/prontuarios', label: 'Prontuários', icon: ClipboardList },
+  { to: '/patologias', label: 'Patologias', icon: Bug },
   { to: '/configuracoes', label: 'Configurações', icon: Settings },
 ];
 
