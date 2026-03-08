@@ -80,9 +80,10 @@ const MainLayout: React.FC = () => {
           </div>
           {/* Close button — mobile only */}
           <button
+            type="button"
             onClick={() => setMobileOpen(false)}
             className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 lg:hidden"
-            title='icon'
+            aria-label="Fechar menu"
           >
             <X size={18} />
           </button>
@@ -128,6 +129,7 @@ const MainLayout: React.FC = () => {
         {/* Footer */}
         <div className="border-t border-gray-100 p-3 space-y-1">
           <button
+            type="button"
             onClick={handleSignOut}
             className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-gray-500 hover:bg-danger-50 hover:text-danger-700 transition-colors duration-150 ${collapsed ? 'justify-center' : ''}`}
             title="Sair"
@@ -138,6 +140,7 @@ const MainLayout: React.FC = () => {
 
           {/* Collapse toggle — desktop only */}
           <button
+            type="button"
             onClick={() => setCollapsed((prev) => !prev)}
             className="hidden lg:flex items-center justify-center w-full px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors duration-150"
             title={collapsed ? 'Expandir menu' : 'Recolher menu'}
@@ -154,9 +157,10 @@ const MainLayout: React.FC = () => {
           {/* Left: hamburger (mobile) + breadcrumb area */}
           <div className="flex items-center gap-3">
             <button
+              type="button"
               onClick={() => setMobileOpen(true)}
               className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors lg:hidden"
-              title='PodoSistema'
+              aria-label="Abrir menu"
             >
               <Menu size={22} />
             </button>
@@ -170,7 +174,7 @@ const MainLayout: React.FC = () => {
 
           {/* Right: notification bell + avatar */}
           <div className="flex items-center gap-3">
-            <button className="relative p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors" title='notification'>
+            <button type="button" className="relative p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors" aria-label="Notificações">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger-500 rounded-full" />
             </button>

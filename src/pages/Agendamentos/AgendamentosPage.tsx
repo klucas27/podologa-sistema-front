@@ -189,6 +189,12 @@ const AgendamentosPage: React.FC = () => {
     const endHour = hour + Math.floor(DEFAULT_DURATION_MIN / 60);
     const endMin = DEFAULT_DURATION_MIN % 60;
     const endTime = `${pad2(endHour)}:${pad2(endMin)}`;
+    // Prevent creating appointments in the past
+    const candidate = new Date(`${dateStr}T${startTime}:00`);
+    if (candidate < new Date()) {
+      window.alert('Cannot create appointments in the past.');
+      return;
+    }
     navigate(
       `/consultas/nova?date=${dateStr}&startTime=${startTime}&endTime=${endTime}`,
     );
@@ -299,6 +305,7 @@ const AgendamentosPage: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={prevWeek}
             className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition"
             title="Semana anterior"
@@ -306,12 +313,14 @@ const AgendamentosPage: React.FC = () => {
             <ChevronLeft size={18} />
           </button>
           <button
+            type="button"
             onClick={goToday}
             className="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition"
           >
             Hoje
           </button>
           <button
+            type="button"
             onClick={nextWeek}
             className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition"
             title="Próxima semana"
@@ -372,13 +381,13 @@ const AgendamentosPage: React.FC = () => {
             >
               {/* Time labels */}
               <div className="border-r border-gray-100">
-                {hours.map((h) => (
+                {hours.map((h, idx) => (
                   <div
                     key={h}
                     className="relative border-b border-gray-100"
                     style={{ height: `${SLOT_HEIGHT}px` }}
                   >
-                    <span className="absolute -top-2.5 right-2 text-xs text-gray-400 bg-white px-1">
+                    <span className={`absolute right-2 text-xs text-gray-400 bg-white px-1 ${idx === 0 ? 'top-1' : '-top-2.5'}`}>
                       {pad2(h)}:00
                     </span>
                   </div>

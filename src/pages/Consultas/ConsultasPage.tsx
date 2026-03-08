@@ -123,6 +123,7 @@ const ConsultasPage: React.FC = () => {
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
           {appt.patient && (
             <button
+              type="button"
               onClick={() => navigate(`/pacientes/${appt.patientId}`)}
               className="p-2 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-600 transition"
               title="Ver prontuário"
@@ -211,6 +212,7 @@ const ConsultasPage: React.FC = () => {
           {/* Completed section — toggle */}
           <div className="space-y-2">
             <button
+              type="button"
               onClick={() => setShowCompleted((v) => !v)}
               className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition"
             >

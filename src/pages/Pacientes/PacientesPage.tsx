@@ -64,7 +64,10 @@ const PacientesPage: React.FC = () => {
   const formatCpf = (cpf: string) => {
     const digits = cpf.replace(/\D/g, '');
     if (digits.length !== 11) return cpf;
-    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+    // Mask middle digits for privacy: 123.***.***-45
+    const first = digits.slice(0, 3);
+    const last = digits.slice(9);
+    return `${first}.***.***-${last}`;
   };
 
   const formatPhone = (phone: string | null) => {
@@ -160,6 +163,7 @@ const PacientesPage: React.FC = () => {
                       e.stopPropagation();
                       navigate(`/pacientes/${patient.id}/editar`);
                     }}
+                    type="button"
                     className="p-2 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-600 transition"
                     title="Editar paciente"
                   >
@@ -171,6 +175,7 @@ const PacientesPage: React.FC = () => {
                       handleDelete(patient.id, patient.fullName);
                     }}
                     disabled={deletingId === patient.id}
+                    type="button"
                     className="p-2 rounded-lg text-gray-400 hover:bg-danger-50 hover:text-danger-600 transition disabled:opacity-50"
                     title="Excluir paciente"
                   >

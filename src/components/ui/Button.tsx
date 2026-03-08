@@ -39,6 +39,7 @@ const Button: React.FC<ButtonProps> = ({
   ...rest
 }) => (
   <button
+    type={(rest.type as any) ?? 'button'}
     disabled={disabled || isLoading}
     className={`inline-flex items-center justify-center font-medium rounded-lg transition focus:ring-2 outline-none disabled:opacity-60 disabled:cursor-not-allowed ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
     {...rest}

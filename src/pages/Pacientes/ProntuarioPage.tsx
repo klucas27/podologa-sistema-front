@@ -73,7 +73,7 @@ const STATUS_LABELS: Record<string, { label: string; className: string }> = {
 const formatCpf = (cpf: string) => {
   const d = cpf.replace(/\D/g, '');
   if (d.length !== 11) return cpf;
-  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+  return `${d.slice(0, 3)}.***.***-${d.slice(9)}`;
 };
 
 const formatPhone = (phone: string | null) => {
@@ -265,6 +265,7 @@ const ProntuarioPage: React.FC = () => {
       {/* Anamnesis Section */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <button
+          type="button"
           onClick={() => setAnamnesisOpen((prev) => !prev)}
           className="flex items-center justify-between w-full px-6 py-4 text-left hover:bg-gray-50 transition"
         >
@@ -397,6 +398,7 @@ const ProntuarioPage: React.FC = () => {
               return (
                 <div key={appt.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                   <button
+                    type="button"
                     onClick={() => setExpandedAppointment(isOpen ? null : appt.id)}
                     className="flex items-center justify-between w-full px-6 py-4 text-left hover:bg-gray-50 transition"
                   >
@@ -411,7 +413,7 @@ const ProntuarioPage: React.FC = () => {
                             {status.label}
                           </span>
                           {appt.user?.professionalName && (
-                            <span className="text-xs text-gray-400">Prof. {appt.user.professionalName}</span>
+                            <span className="text-xs text-gray-400">{appt.user.professionalName}</span>
                           )}
                         </div>
                       </div>
