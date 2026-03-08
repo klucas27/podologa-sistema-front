@@ -16,7 +16,12 @@ export interface Appointment {
   patientId: string;
   date: string;
   time: string;
-  status: 'agendado' | 'confirmado' | 'em_atendimento' | 'concluido' | 'cancelado';
+  status:
+    | "agendado"
+    | "confirmado"
+    | "em_atendimento"
+    | "concluido"
+    | "cancelado";
   procedure: string;
   notes?: string;
   createdAt: string;

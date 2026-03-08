@@ -35,9 +35,10 @@ const MainLayout: React.FC = () => {
     navigate('/login');
   };
 
+  const displayName = user?.professionalName || user?.username || '';
   const initials =
-    user?.name
-      ?.split(' ')
+    displayName
+      .split(' ')
       .map((n) => n[0])
       .join('')
       .slice(0, 2)
@@ -92,10 +93,8 @@ const MainLayout: React.FC = () => {
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
-              <p className="text-sm font-semibold text-gray-800 truncate">{user?.name}</p>
-              <p className="text-xs text-gray-400 truncate capitalize">
-                {user?.role === 'podologa' ? 'Podóloga' : user?.role}
-              </p>
+              <p className="text-sm font-semibold text-gray-800 truncate">{displayName}</p>
+              <p className="text-xs text-gray-400 truncate">Podóloga</p>
             </div>
           )}
         </div>

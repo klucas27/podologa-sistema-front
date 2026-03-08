@@ -1,9 +1,7 @@
 export interface User {
   id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'podologa' | 'recepcionista';
-  avatar?: string;
+  username: string;
+  professionalName: string | null;
 }
 
 export interface AuthState {

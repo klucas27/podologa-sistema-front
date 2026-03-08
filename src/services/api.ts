@@ -1,33 +1,72 @@
-// Configuração base para chamadas HTTP.
-// Substitua a baseURL pela URL real do seu backend.
+/**
+ * HTTP client configurado para autenticação via cookie HTTP-only.
+ *
+ * - Todas as requisições enviam `credentials: "include"` para
+ *   que o browser anexe os cookies automaticamente.
+ * - Requisições de mutação (POST/PUT/PATCH/DELETE) enviam o
+ *   header X-CSRF-Token quando disponível.
+ * - Nenhum token é armazenado em localStorage/sessionStorage.
+ */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3333';
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3333";
 
-interface RequestOptions extends RequestInit {
+let csrfToken: string | null = null;
+
+/** Atualiza o CSRF token retornado pelo backend no login. */
+export const setCsrfToken = (token: string | null): void => {
+  csrfToken = token;
+};
+
+export const getCsrfToken = (): string | null => csrfToken;
+
+interface RequestOptions extends Omit<RequestInit, "body"> {
   params?: Record<string, string>;
 }
 
-async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+class ApiError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+async function request<T>(
+  endpoint: string,
+  options: RequestOptions & { body?: string } = {},
+): Promise<T> {
   const { params, headers, ...rest } = options;
 
   const url = new URL(`${API_BASE_URL}${endpoint}`);
+
   if (params) {
-    Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
+    Object.entries(params).forEach(([key, value]) =>
+      url.searchParams.set(key, value),
+    );
   }
 
-  const token = localStorage.getItem('@PodoSistema:token');
+  const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(
+    rest.method ?? "GET",
+  );
 
   const response = await fetch(url.toString(), {
     ...rest,
+    credentials: "include",
     headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      "Content-Type": "application/json",
+      ...(isMutation && csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
       ...headers,
     },
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    const body = await response.json().catch(() => ({}));
+    const message =
+      (body as { message?: string }).message ||
+      `HTTP ${response.status}: ${response.statusText}`;
+    throw new ApiError(response.status, message);
   }
 
   return response.json();
@@ -35,17 +74,31 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
 
 export const api = {
   get: <T>(endpoint: string, options?: RequestOptions) =>
-    request<T>(endpoint, { ...options, method: 'GET' }),
+    request<T>(endpoint, { ...options, method: "GET" }),
 
-  post: <T>(endpoint: string, body: unknown, options?: RequestOptions) =>
-    request<T>(endpoint, { ...options, method: 'POST', body: JSON.stringify(body) }),
+  post: <T>(endpoint: string, body?: unknown, options?: RequestOptions) =>
+    request<T>(endpoint, {
+      ...options,
+      method: "POST",
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    }),
 
   put: <T>(endpoint: string, body: unknown, options?: RequestOptions) =>
-    request<T>(endpoint, { ...options, method: 'PUT', body: JSON.stringify(body) }),
+    request<T>(endpoint, {
+      ...options,
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
 
   patch: <T>(endpoint: string, body: unknown, options?: RequestOptions) =>
-    request<T>(endpoint, { ...options, method: 'PATCH', body: JSON.stringify(body) }),
+    request<T>(endpoint, {
+      ...options,
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
 
   delete: <T>(endpoint: string, options?: RequestOptions) =>
-    request<T>(endpoint, { ...options, method: 'DELETE' }),
+    request<T>(endpoint, { ...options, method: "DELETE" }),
 };
+
+export { ApiError };

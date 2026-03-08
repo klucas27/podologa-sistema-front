@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Footprints, User, Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { api } from '@/services/api';
 
-const LoginPage: React.FC = () => {
+const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
+  const [professionalName, setProfessionalName] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError]   = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const { signIn, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -14,13 +19,33 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     setError('');
 
+    if (password !== confirmPassword) {
+      setError('As senhas não coincidem');
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
+      await api.post('/api/auth/register', {
+        username,
+        password,
+        professionalName: professionalName || undefined,
+      });
+
+      // Após registro, reusar fluxo de login para popular o contexto
       await signIn(username, password);
+
       navigate('/dashboard');
-    } catch {
-      setError('Credenciais inválidas. Tente novamente.');
+    } catch (err) {
+      const message = (err as any)?.message || 'Erro ao registrar. Tente novamente.';
+      setError(message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  const submitting = isSubmitting || isLoading;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-100">
@@ -31,7 +56,7 @@ const LoginPage: React.FC = () => {
             <Footprints size={28} />
           </div>
           <h1 className="text-2xl font-bold text-gray-800">PodoSistema</h1>
-          <p className="text-sm text-gray-400 mt-1">Acesse sua conta para continuar</p>
+          <p className="text-sm text-gray-400 mt-1">Crie sua conta</p>
         </div>
 
         {error && (
@@ -61,6 +86,24 @@ const LoginPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Nome profissional (opcional) */}
+          <div>
+            <label htmlFor="professionalName" className="block text-sm font-medium text-gray-700 mb-1">
+              Nome profissional (opcional)
+            </label>
+            <div className="relative">
+              <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                id="professionalName"
+                type="text"
+                value={professionalName}
+                onChange={(e) => setProfessionalName(e.target.value)}
+                placeholder="Dra. Ana Paula"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition"
+              />
+            </div>
+          </div>
+
           {/* Senha */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
@@ -75,7 +118,27 @@ const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                autoComplete="current-password"
+                autoComplete="new-password"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition"
+              />
+            </div>
+          </div>
+
+          {/* Confirmar senha */}
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+              Confirmar senha
+            </label>
+            <div className="relative">
+              <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                id="confirmPassword"
+                type="password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                autoComplete="new-password"
                 className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition"
               />
             </div>
@@ -83,25 +146,16 @@ const LoginPage: React.FC = () => {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={submitting}
             className="w-full py-2.5 rounded-lg bg-primary-500 text-white font-medium text-sm hover:bg-primary-600 focus:ring-2 focus:ring-primary-300 transition disabled:opacity-60 flex items-center justify-center gap-2"
           >
-            {isLoading && <Loader2 size={16} className="animate-spin" />}
-            {isLoading ? 'Entrando...' : 'Entrar'}
+            {submitting && <Loader2 size={16} className="animate-spin" />}
+            {submitting ? 'Criando...' : 'Criar conta'}
           </button>
         </form>
-        <div className="mt-4 text-center">
-          <button
-            type="button"
-            onClick={() => navigate('/register')}
-            className="text-sm text-primary-600 hover:underline"
-          >
-            Não tem conta? Criar conta
-          </button>
-        </div>
       </div>
     </div>
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

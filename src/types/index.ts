@@ -1,2 +1,2 @@
-export type { User, AuthState } from './auth';
-export type { Patient, Appointment } from './models';
+export type { User, AuthState } from "./auth";
+export type { Patient, Appointment } from "./models";
