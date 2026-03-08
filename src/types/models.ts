@@ -58,6 +58,8 @@ export interface Appointment {
   scheduledStart: string;
   scheduledEnd: string;
   scheduledDate: string;
+  actualStartTime: string | null;
+  actualEndTime: string | null;
   status: AppointmentStatus;
   notes: string | null;
   createdAt: string;

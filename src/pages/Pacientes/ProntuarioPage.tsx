@@ -14,7 +14,6 @@ import {
   ChevronUp,
   Loader2,
   Stethoscope,
-  Plus,
   Clock,
   FileText,
   Pill,
@@ -202,13 +201,6 @@ const ProntuarioPage: React.FC = () => {
           >
             {anamnesis ? 'Editar Anamnese' : 'Nova Anamnese'}
           </Button>
-          <Button
-            size="sm"
-            icon={<Plus size={14} />}
-            onClick={() => navigate(`/consultas/nova?patientId=${id}`)}
-          >
-            Nova Consulta
-          </Button>
         </div>
       </div>
 
@@ -393,10 +385,7 @@ const ProntuarioPage: React.FC = () => {
 
         {appointments.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-            <p className="text-gray-400 text-sm mb-3">Nenhuma consulta registrada.</p>
-            <Button size="sm" icon={<Plus size={14} />} onClick={() => navigate(`/consultas/nova?patientId=${id}`)}>
-              Nova Consulta
-            </Button>
+            <p className="text-gray-400 text-sm">Nenhuma consulta registrada.</p>
           </div>
         ) : (
           <div className="space-y-3">

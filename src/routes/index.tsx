@@ -16,6 +16,7 @@ import AgendamentosPage from "@/pages/Agendamentos/AgendamentosPage";
 import PatologiasPage from "@/pages/Patologias/PatologiasPage";
 import ConsultasPage from "@/pages/Consultas/ConsultasPage";
 import NovaConsultaPage from "@/pages/Consultas/NovaConsultaPage";
+import ConsultationExecutionPage from "@/pages/Consultas/ConsultationExecutionPage";
 import ConfiguracoesPage from "@/pages/Configuracoes/ConfiguracoesPage";
 
 export const router = createBrowserRouter([
@@ -44,6 +45,7 @@ export const router = createBrowserRouter([
           { path: "/patologias", element: <PatologiasPage /> },
           { path: "/consultas", element: <ConsultasPage /> },
           { path: "/consultas/nova", element: <NovaConsultaPage /> },
+          { path: "/consultas/:appointmentId/execucao", element: <ConsultationExecutionPage /> },
           { path: "/configuracoes", element: <ConfiguracoesPage /> },
         ],
       },

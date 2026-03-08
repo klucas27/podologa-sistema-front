@@ -25,8 +25,8 @@ const STATUS_LABELS: Record<AppointmentStatus, { label: string; className: strin
 };
 
 const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  return d.toLocaleDateString('pt-BR');
+  const parts = iso.slice(0, 10).split('-');
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
 };
 
 const formatTime = (iso: string) => {
@@ -90,7 +90,8 @@ const ConsultasPage: React.FC = () => {
     return (
       <li
         key={appt.id}
-        className="group flex items-center gap-4 px-4 py-3 sm:px-6 sm:py-4 hover:bg-gray-50 transition"
+        onClick={() => navigate(`/consultas/${appt.id}/execucao`)}
+        className="group flex items-center gap-4 px-4 py-3 sm:px-6 sm:py-4 hover:bg-gray-50 transition cursor-pointer"
       >
         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-100 text-primary-700 font-semibold text-sm flex-shrink-0">
           {appt.patient?.fullName

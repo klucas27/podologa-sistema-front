@@ -8,9 +8,15 @@ import React, {
 import type { User, AuthState } from "@/types";
 import { api, setCsrfToken } from "@/services/api";
 
-interface LoginResponse {
-  user: User;
-  csrfToken: string;
+interface LoginApiResponse {
+  data: {
+    user: User;
+    csrfToken: string;
+  };
+}
+
+interface MeApiResponse {
+  data: User;
 }
 
 interface AuthContextData extends AuthState {
@@ -37,11 +43,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     let cancelled = false;
 
     api
-      .get<{ user: User }>("/api/auth/me")
-      .then((data) => {
+      .get<MeApiResponse>("/api/auth/me")
+      .then((res) => {
         if (!cancelled) {
           setState({
-            user: data.user,
+            user: res.data,
             isAuthenticated: true,
             isLoading: false,
           });
@@ -62,13 +68,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setState((prev) => ({ ...prev, isLoading: true }));
 
     try {
-      const data = await api.post<LoginResponse>("/api/auth/login", {
+      const res = await api.post<LoginApiResponse>("/api/auth/login", {
         username,
         password,
       });
 
-      setCsrfToken(data.csrfToken);
-      setState({ user: data.user, isAuthenticated: true, isLoading: false });
+      setCsrfToken(res.data.csrfToken);
+      setState({ user: res.data.user, isAuthenticated: true, isLoading: false });
     } catch (error) {
       setState({ user: null, isAuthenticated: false, isLoading: false });
       throw error;
