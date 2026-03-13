@@ -6,6 +6,8 @@ import {
   CalendarDays,
   Stethoscope,
   Bug,
+  UserCog,
+  DollarSign,
   Settings,
   LogOut,
   ChevronLeft,
@@ -22,6 +24,8 @@ const navItems = [
   { to: '/pacientes', label: 'Pacientes', icon: Users },
   { to: '/consultas', label: 'Consultas', icon: Stethoscope },
   { to: '/agendamentos', label: 'Agendamentos', icon: CalendarDays },
+  { to: '/profissionais', label: 'Profissionais', icon: UserCog },
+  { to: '/transacoes', label: 'Transações', icon: DollarSign },
   { to: '/patologias', label: 'Patologias', icon: Bug },
   { to: '/configuracoes', label: 'Configurações', icon: Settings },
 ];

@@ -4,7 +4,7 @@ import { ArrowLeft, Loader2, Search, X } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { api } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
-import type { Patient } from '@/types';
+import type { Patient, Professional } from '@/types';
 
 /* ─── Helpers ─── */
 const toDisplayDate = (iso: string): string => {
@@ -49,6 +49,11 @@ const NovaConsultaPage: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isLoadingPatients, setIsLoadingPatients] = useState(true);
 
+  // Professionals
+  const [professionals, setProfessionals] = useState<Professional[]>([]);
+  const [isLoadingProfessionals, setIsLoadingProfessionals] = useState(true);
+  const [professionalId, setProfessionalId] = useState('');
+
   // Selected patient
   const [patientId, setPatientId] = useState(preselectedPatientId);
   const [selectedPatientName, setSelectedPatientName] = useState('');
@@ -84,6 +89,22 @@ const NovaConsultaPage: React.FC = () => {
   useEffect(() => {
     fetchPatients();
   }, [fetchPatients]);
+
+  // Load active professionals
+  useEffect(() => {
+    const fetchProfessionals = async () => {
+      setIsLoadingProfessionals(true);
+      try {
+        const res = await api.get<{ data: Professional[] }>('/api/professionals/active');
+        setProfessionals(res.data);
+      } catch {
+        // silent
+      } finally {
+        setIsLoadingProfessionals(false);
+      }
+    };
+    fetchProfessionals();
+  }, []);
 
   // Resolve preselected patient name once patients load
   useEffect(() => {
@@ -143,6 +164,10 @@ const NovaConsultaPage: React.FC = () => {
       setError('Selecione um paciente.');
       return;
     }
+    if (!professionalId) {
+      setError('Selecione um profissional responsável.');
+      return;
+    }
     if (!scheduledDate || !scheduledStart || !scheduledEnd) {
       setError('Preencha a data, horário de início e término.');
       return;
@@ -177,6 +202,7 @@ const NovaConsultaPage: React.FC = () => {
       await api.post('/api/appointments', {
         patientId,
         userId: user.id,
+        professionalId,
         scheduledDate: new Date(`${isoDate}T00:00:00`).toISOString(),
         scheduledStart: start,
         scheduledEnd: end,
@@ -302,15 +328,31 @@ const NovaConsultaPage: React.FC = () => {
             )}
           </div>
 
-          {/* Professional (read-only) */}
+          {/* Professional select */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Profissional</label>
-            <input
-              type="text"
-              readOnly
-              value={user?.professionalName || user?.username || ''}
-              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600 outline-none cursor-not-allowed"
-            />
+            <label htmlFor="professional-select" className="block text-sm font-medium text-gray-700 mb-1">
+              Profissional Responsável <span className="text-danger-500">*</span>
+            </label>
+            {isLoadingProfessionals ? (
+              <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-500">
+                <Loader2 size={16} className="animate-spin" />
+                Carregando profissionais...
+              </div>
+            ) : (
+              <select
+                id="professional-select"
+                value={professionalId}
+                onChange={(e) => setProfessionalId(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition bg-white"
+              >
+                <option value="">Selecione um profissional...</option>
+                {professionals.map((prof) => (
+                  <option key={prof.id} value={prof.id}>
+                    {prof.fullName}{prof.specialty ? ` — ${prof.specialty}` : ''}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           {/* Date & Time */}

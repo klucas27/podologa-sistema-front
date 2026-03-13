@@ -13,6 +13,7 @@ import {
   Home,
   RotateCcw,
   Bug,
+  DollarSign,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { api } from "@/services/api";
@@ -23,6 +24,8 @@ import type {
   BodyPart,
   ClinicalEvolution,
   EvolutionPathology,
+  Billing,
+  PaymentMethod,
 } from "@/types";
 
 const BODY_PART_OPTIONS: { value: BodyPart; label: string }[] = [
@@ -69,6 +72,15 @@ interface PathologyRow {
   notes: string;
 }
 
+const PAYMENT_METHOD_OPTIONS: { value: PaymentMethod; label: string }[] = [
+  { value: "pix", label: "PIX" },
+  { value: "credit_card", label: "Cartão de Crédito" },
+  { value: "debit_card", label: "Cartão de Débito" },
+  { value: "cash", label: "Dinheiro" },
+  { value: "transfer", label: "Transferência" },
+  { value: "other", label: "Outro" },
+];
+
 const ConsultationExecutionPage: React.FC = () => {
   const { appointmentId } = useParams<{ appointmentId: string }>();
   const navigate = useNavigate();
@@ -89,6 +101,12 @@ const ConsultationExecutionPage: React.FC = () => {
 
   // Pathology rows
   const [pathologyRows, setPathologyRows] = useState<PathologyRow[]>([]);
+
+  // Billing
+  const [existingBilling, setExistingBilling] = useState<Billing | null>(null);
+  const [billingAmount, setBillingAmount] = useState("");
+  const [billingPaymentMethod, setBillingPaymentMethod] = useState<PaymentMethod>("pix");
+  const [isSavingBilling, setIsSavingBilling] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -128,6 +146,17 @@ const ConsultationExecutionPage: React.FC = () => {
             })),
           );
         }
+      }
+
+      // Load existing billing
+      const billRes = await api.get<{ data: Billing[] }>(
+        `/api/billings/appointment/${appointmentId}`,
+      );
+      if (billRes.data.length > 0) {
+        const bill = billRes.data[0]!;
+        setExistingBilling(bill);
+        setBillingAmount(bill.amount?.toString() ?? "");
+        setBillingPaymentMethod(bill.paymentMethod);
       }
     } catch {
       navigate("/consultas");
@@ -248,6 +277,39 @@ const ConsultationExecutionPage: React.FC = () => {
     }
   };
 
+  const handleSaveBilling = async () => {
+    if (!appointmentId) return;
+    if (!billingAmount || Number(billingAmount) <= 0) {
+      setError("Informe um valor válido para a cobrança.");
+      return;
+    }
+    setError("");
+    setIsSavingBilling(true);
+    try {
+      if (existingBilling) {
+        await api.patch(`/api/billings/${existingBilling.id}`, {
+          amount: Number(billingAmount),
+          paymentMethod: billingPaymentMethod,
+        });
+      } else {
+        await api.post("/api/billings", {
+          appointmentId,
+          amount: Number(billingAmount),
+          paymentMethod: billingPaymentMethod,
+        });
+      }
+      setSuccessMessage("Cobrança salva com sucesso.");
+      setTimeout(() => setSuccessMessage(""), 3000);
+      await fetchData();
+    } catch (err: unknown) {
+      const message =
+        (err as { message?: string })?.message || "Erro ao salvar cobrança.";
+      setError(message);
+    } finally {
+      setIsSavingBilling(false);
+    }
+  };
+
   const addPathologyRow = () => {
     setPathologyRows((prev) => [
       ...prev,
@@ -352,6 +414,7 @@ const ConsultationExecutionPage: React.FC = () => {
     STATUS_LABELS[appointment.status] ?? STATUS_LABELS["scheduled"];
   const isEditable =
     appointment.status !== "completed" && appointment.status !== "cancelled";
+  const isClinicalEditable = appointment.status === "in_progress";
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -486,9 +549,9 @@ const ConsultationExecutionPage: React.FC = () => {
               >
                 {status.label}
               </span>
-              {appointment.user?.professionalName && (
+              {(appointment.professional?.fullName || appointment.user?.professionalName) && (
                 <div className="text-sm text-gray-500">
-                  {appointment.user.professionalName}
+                  {appointment.professional?.fullName || appointment.user?.professionalName}
                 </div>
               )}
             </div>
@@ -654,7 +717,7 @@ const ConsultationExecutionPage: React.FC = () => {
               value={clinicalNotes}
               onChange={(e) => setClinicalNotes(e.target.value)}
               rows={4}
-              disabled={!isEditable}
+              disabled={!isClinicalEditable}
               className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition resize-none disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="Descreva os achados clínicos..."
             />
@@ -670,7 +733,7 @@ const ConsultationExecutionPage: React.FC = () => {
               value={prescribedMedications}
               onChange={(e) => setPrescribedMedications(e.target.value)}
               rows={2}
-              disabled={!isEditable}
+              disabled={!isClinicalEditable}
               className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition resize-none disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="Medicamentos receitados..."
             />
@@ -686,7 +749,7 @@ const ConsultationExecutionPage: React.FC = () => {
               value={homeCareRecommendations}
               onChange={(e) => setHomeCareRecommendations(e.target.value)}
               rows={2}
-              disabled={!isEditable}
+              disabled={!isClinicalEditable}
               className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition resize-none disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="Orientações e cuidados em casa..."
             />
@@ -703,7 +766,7 @@ const ConsultationExecutionPage: React.FC = () => {
               min={0}
               value={recommendedReturnDays}
               onChange={(e) => setRecommendedReturnDays(e.target.value)}
-              disabled={!isEditable}
+              disabled={!isClinicalEditable}
               className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="Ex.: 30"
             />
@@ -719,7 +782,7 @@ const ConsultationExecutionPage: React.FC = () => {
                 Patologias Identificadas
               </h2>
             </div>
-            {isEditable && (
+            {isClinicalEditable && (
               <Button
                 type="button"
                 variant="secondary"
@@ -747,7 +810,7 @@ const ConsultationExecutionPage: React.FC = () => {
                     <label className="block text-xs text-gray-500 mb-1">
                       Patologia
                     </label>
-                    {isEditable ? (
+                    {isClinicalEditable ? (
                       <select
                         aria-label="Selecionar patologia"
                         value={row.pathologyId}
@@ -776,7 +839,7 @@ const ConsultationExecutionPage: React.FC = () => {
                     <label className="block text-xs text-gray-500 mb-1">
                       Local
                     </label>
-                    {isEditable ? (
+                    {isClinicalEditable ? (
                       <select
                         aria-label="Selecionar local do corpo"
                         value={row.bodyPart}
@@ -803,7 +866,7 @@ const ConsultationExecutionPage: React.FC = () => {
                     <label className="block text-xs text-gray-500 mb-1">
                       Observação
                     </label>
-                    {isEditable ? (
+                    {isClinicalEditable ? (
                       <input
                         type="text"
                         value={row.notes}
@@ -819,7 +882,7 @@ const ConsultationExecutionPage: React.FC = () => {
                       </p>
                     )}
                   </div>
-                  {isEditable && (
+                  {isClinicalEditable && (
                     <div className="flex items-end">
                       <button
                         type="button"
@@ -837,19 +900,85 @@ const ConsultationExecutionPage: React.FC = () => {
           )}
         </div>
 
-        {/* Actions */}
-        {isEditable && (
-          <div className="flex flex-col sm:flex-row justify-end gap-3">
-            <div className="w-full sm:w-auto">
-              <Button
-                variant="secondary"
-                type="button"
-                onClick={() => navigate("/consultas")}
-                className="w-full sm:w-auto"
+        {/* Billing / Cobrança */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <DollarSign size={18} className="text-green-500" />
+            <h2 className="text-base font-semibold text-gray-700">
+              Cobrança {existingBilling ? "(Editando)" : ""}
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Valor (R$)
+              </label>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                value={billingAmount}
+                onChange={(e) => setBillingAmount(e.target.value)}
+                disabled={!isClinicalEditable}
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition disabled:bg-gray-50 disabled:text-gray-500"
+                placeholder="Ex.: 150.00"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Método de pagamento
+              </label>
+              <select
+                aria-label="Método de pagamento"
+                value={billingPaymentMethod}
+                onChange={(e) => setBillingPaymentMethod(e.target.value as PaymentMethod)}
+                disabled={!isClinicalEditable}
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition bg-white disabled:bg-gray-50 disabled:text-gray-500"
               >
-                Voltar
+                {PAYMENT_METHOD_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {isClinicalEditable && (
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleSaveBilling}
+                isLoading={isSavingBilling}
+              >
+                {existingBilling ? "Atualizar Cobrança" : "Salvar Cobrança"}
               </Button>
             </div>
+          )}
+
+          {existingBilling && (
+            <p className="text-xs text-gray-400">
+              Status: {existingBilling.status === "pending" ? "Pendente" : existingBilling.status === "paid" ? "Pago" : existingBilling.status === "cancelled" ? "Cancelado" : "Reembolsado"}
+            </p>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row justify-end gap-3">
+          <div className="w-full sm:w-auto">
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => navigate("/consultas")}
+              className="w-full sm:w-auto"
+            >
+              Voltar
+            </Button>
+          </div>
+          {isClinicalEditable && (
             <div className="w-full sm:w-auto">
               <Button
                 type="submit"
@@ -859,23 +988,8 @@ const ConsultationExecutionPage: React.FC = () => {
                 {existingEvolution ? "Atualizar Evolução" : "Salvar Evolução"}
               </Button>
             </div>
-          </div>
-        )}
-
-        {!isEditable && (
-          <div className="flex flex-col sm:flex-row justify-end">
-            <div className="w-full sm:w-auto">
-              <Button
-                variant="secondary"
-                type="button"
-                onClick={() => navigate("/consultas")}
-                className="w-full sm:w-auto"
-              >
-                Voltar
-              </Button>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </form>
     </div>
   );

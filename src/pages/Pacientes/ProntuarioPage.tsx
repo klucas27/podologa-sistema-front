@@ -412,8 +412,8 @@ const ProntuarioPage: React.FC = () => {
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${status.className}`}>
                             {status.label}
                           </span>
-                          {appt.user?.professionalName && (
-                            <span className="text-xs text-gray-400">{appt.user.professionalName}</span>
+                          {(appt.professional?.fullName || appt.user?.professionalName) && (
+                            <span className="text-xs text-gray-400">{appt.professional?.fullName || appt.user?.professionalName}</span>
                           )}
                         </div>
                       </div>

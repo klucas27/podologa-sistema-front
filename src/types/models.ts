@@ -17,6 +17,7 @@ export interface Patient {
   state: string | null;
   createdAt: string;
   updatedAt: string;
+  _count?: { anamneses: number };
 }
 
 export type Perfusion = 'normal' | 'pale' | 'cyanotic' | 'edematous';
@@ -51,10 +52,22 @@ export interface Anamnesis {
 
 export type AppointmentStatus = 'scheduled' | 'confirmed' | 'in_progress' | 'cancelled' | 'completed';
 
+export interface Professional {
+  id: string;
+  fullName: string;
+  specialty: string | null;
+  phoneNumber: string | null;
+  email: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Appointment {
   id: string;
   patientId: string;
   userId: string;
+  professionalId: string | null;
   scheduledStart: string;
   scheduledEnd: string;
   scheduledDate: string;
@@ -66,6 +79,7 @@ export interface Appointment {
   updatedAt: string;
   patient?: Patient;
   user?: { id: string; username: string; professionalName: string | null };
+  professional?: Professional;
   clinicalEvolutions?: ClinicalEvolution[];
 }
 
@@ -99,4 +113,19 @@ export interface ClinicalEvolution {
   createdAt: string;
   updatedAt: string;
   evolutionPathologies?: EvolutionPathology[];
+}
+
+export type PaymentMethod = 'pix' | 'credit_card' | 'debit_card' | 'cash' | 'transfer' | 'other';
+export type BillingStatus = 'pending' | 'paid' | 'cancelled' | 'refunded';
+
+export interface Billing {
+  id: string;
+  appointmentId: string;
+  amount: string;
+  paymentMethod: PaymentMethod;
+  status: BillingStatus;
+  paidAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  appointment?: Appointment;
 }

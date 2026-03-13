@@ -17,6 +17,8 @@ import PatologiasPage from "@/pages/Patologias/PatologiasPage";
 import ConsultasPage from "@/pages/Consultas/ConsultasPage";
 import NovaConsultaPage from "@/pages/Consultas/NovaConsultaPage";
 import ConsultationExecutionPage from "@/pages/Consultas/ConsultationExecutionPage";
+import ProfissionaisPage from "@/pages/Profissionais/ProfissionaisPage";
+import TransacoesPage from "@/pages/Transacoes/TransacoesPage";
 import ConfiguracoesPage from "@/pages/Configuracoes/ConfiguracoesPage";
 
 export const router = createBrowserRouter([
@@ -46,6 +48,8 @@ export const router = createBrowserRouter([
           { path: "/consultas", element: <ConsultasPage /> },
           { path: "/consultas/nova", element: <NovaConsultaPage /> },
           { path: "/consultas/:appointmentId/execucao", element: <ConsultationExecutionPage /> },
+          { path: "/profissionais", element: <ProfissionaisPage /> },
+          { path: "/transacoes", element: <TransacoesPage /> },
           { path: "/configuracoes", element: <ConfiguracoesPage /> },
         ],
       },

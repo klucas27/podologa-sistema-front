@@ -2,6 +2,7 @@ export type { User, AuthState } from "./auth";
 export type {
   Patient,
   MaritalStatus,
+  Professional,
   Appointment,
   AppointmentStatus,
   Anamnesis,
@@ -11,4 +12,7 @@ export type {
   ClinicalEvolution,
   EvolutionPathology,
   BodyPart,
+  Billing,
+  BillingStatus,
+  PaymentMethod,
 } from "./models";

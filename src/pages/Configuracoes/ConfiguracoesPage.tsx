@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Lock, Clock, CheckCircle, AlertCircle } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import { api, ApiError } from '@/services/api';
-import { useAuth } from '@/hooks/useAuth';
+import React, { useState } from "react";
+import { Lock, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import Button from "@/components/ui/Button";
+import { api, ApiError } from "@/services/api";
+import { useAuth } from "@/hooks/useAuth";
 
-type TabKey = 'security' | 'workingHours';
+type TabKey = "security" | "workingHours";
 
 interface TabDef {
   key: TabKey;
@@ -13,48 +13,53 @@ interface TabDef {
 }
 
 const TABS: TabDef[] = [
-  { key: 'security', label: 'Segurança', icon: <Lock size={16} /> },
-  { key: 'workingHours', label: 'Horário de Trabalho', icon: <Clock size={16} /> },
+  { key: "security", label: "Segurança", icon: <Lock size={16} /> },
+  {
+    key: "workingHours",
+    label: "Horário de Trabalho",
+    icon: <Clock size={16} />,
+  },
 ];
 
 /* ─── Security Tab ─── */
 const SecurityTab: React.FC = () => {
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setError('Preencha todos os campos.');
+      setError("Preencha todos os campos.");
       return;
     }
 
     if (newPassword.length < 6) {
-      setError('A nova senha deve ter pelo menos 6 caracteres.');
+      setError("A nova senha deve ter pelo menos 6 caracteres.");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError('A nova senha e a confirmação não coincidem.');
+      setError("A nova senha e a confirmação não coincidem.");
       return;
     }
 
     setIsLoading(true);
     try {
-      await api.patch('/api/auth/password', { currentPassword, newPassword });
-      setSuccess('Senha alterada com sucesso.');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
+      await api.patch("/api/auth/password", { currentPassword, newPassword });
+      setSuccess("Senha alterada com sucesso.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (err: unknown) {
-      const message = err instanceof ApiError ? err.message : 'Erro ao alterar senha.';
+      const message =
+        err instanceof ApiError ? err.message : "Erro ao alterar senha.";
       setError(message);
     } finally {
       setIsLoading(false);
@@ -125,33 +130,38 @@ const SecurityTab: React.FC = () => {
 /* ─── Working Hours Tab ─── */
 const WorkingHoursTab: React.FC = () => {
   const { user } = useAuth();
-  const [workdayStart, setWorkdayStart] = useState(user?.workdayStart ?? '08:00');
-  const [workdayEnd, setWorkdayEnd] = useState(user?.workdayEnd ?? '18:00');
+  const [workdayStart, setWorkdayStart] = useState(
+    user?.workdayStart ?? "08:00",
+  );
+  const [workdayEnd, setWorkdayEnd] = useState(user?.workdayEnd ?? "18:00");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     if (!workdayStart || !workdayEnd) {
-      setError('Preencha os horários de início e fim.');
+      setError("Preencha os horários de início e fim.");
       return;
     }
 
     if (workdayStart >= workdayEnd) {
-      setError('O horário de início deve ser anterior ao de término.');
+      setError("O horário de início deve ser anterior ao de término.");
       return;
     }
 
     setIsLoading(true);
     try {
-      await api.patch('/api/auth/working-hours', { workdayStart, workdayEnd });
-      setSuccess('Horário de trabalho atualizado. Recarregue a página para aplicar no calendário.');
+      await api.patch("/api/auth/working-hours", { workdayStart, workdayEnd });
+      setSuccess(
+        "Horário de trabalho atualizado. Recarregue a página para aplicar no calendário.",
+      );
     } catch (err: unknown) {
-      const message = err instanceof ApiError ? err.message : 'Erro ao atualizar horários.';
+      const message =
+        err instanceof ApiError ? err.message : "Erro ao atualizar horários.";
       setError(message);
     } finally {
       setIsLoading(false);
@@ -174,7 +184,8 @@ const WorkingHoursTab: React.FC = () => {
       )}
 
       <p className="text-sm text-gray-500">
-        Defina o horário de expediente. O calendário de agendamentos exibirá apenas os horários dentro deste intervalo.
+        Defina o horário de expediente. O calendário de agendamentos exibirá
+        apenas os horários dentro deste intervalo.
       </p>
 
       <div className="grid grid-cols-2 gap-4">
@@ -211,7 +222,7 @@ const WorkingHoursTab: React.FC = () => {
 
 /* ─── Main Page ─── */
 const ConfiguracoesPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabKey>('security');
+  const [activeTab, setActiveTab] = useState<TabKey>("security");
 
   return (
     <div className="space-y-6">
@@ -228,8 +239,8 @@ const ConfiguracoesPage: React.FC = () => {
             onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab.key
-                ? 'border-primary-500 text-primary-700'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? "border-primary-500 text-primary-700"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
           >
             {tab.icon}
@@ -240,8 +251,8 @@ const ConfiguracoesPage: React.FC = () => {
 
       {/* Tab content */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
-        {activeTab === 'security' && <SecurityTab />}
-        {activeTab === 'workingHours' && <WorkingHoursTab />}
+        {activeTab === "security" && <SecurityTab />}
+        {activeTab === "workingHours" && <WorkingHoursTab />}
       </div>
     </div>
   );

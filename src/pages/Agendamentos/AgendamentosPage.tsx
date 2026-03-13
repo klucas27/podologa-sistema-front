@@ -432,11 +432,19 @@ const AgendamentosPage: React.FC = () => {
                           style={style}
                           onClick={(e) => handleAppointmentClick(appt, e)}
                           onMouseDown={(e) => handleDragStart(appt, dayIdx, e)}
-                          title={`${appt.patient?.fullName ?? "Paciente"} · ${STATUS_LABELS[appt.status]}`}
+                          title={`${appt.patient?.fullName ?? "Paciente"} · ${STATUS_LABELS[appt.status]}${(appt.patient?._count?.anamneses ?? 0) > 0 ? " · Anamnese preenchida" : ""}`}
                         >
                           <p className="text-xs font-semibold truncate leading-tight">
                             {appt.patient?.fullName ?? "Paciente"}
+                            {(appt.patient?._count?.anamneses ?? 0) > 0 && (
+                              <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 ml-1 align-middle" title="Anamnese preenchida" />
+                            )}
                           </p>
+                          {appt.professional?.fullName && (
+                            <p className="text-[10px] opacity-75 truncate leading-tight">
+                              {appt.professional.fullName}
+                            </p>
+                          )}
                           <p className="text-[10px] opacity-75 leading-tight">
                             {pad2(startTime.getHours())}:
                             {pad2(startTime.getMinutes())} –{" "}

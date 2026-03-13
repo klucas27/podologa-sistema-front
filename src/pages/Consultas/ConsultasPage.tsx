@@ -11,6 +11,8 @@ import {
   Loader2,
   Stethoscope,
   Eye,
+  UserCog,
+  ClipboardCheck,
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { api } from '@/services/api';
@@ -114,6 +116,18 @@ const ConsultasPage: React.FC = () => {
             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${status.className}`}>
               {status.label}
             </span>
+            {appt.professional?.fullName && (
+              <span className="flex items-center gap-1 text-xs text-gray-400">
+                <UserCog size={12} />
+                {appt.professional.fullName}
+              </span>
+            )}
+            {(appt.patient?._count?.anamneses ?? 0) > 0 && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                <ClipboardCheck size={10} />
+                Anamnese
+              </span>
+            )}
           </div>
           {appt.notes && (
             <p className="text-xs text-gray-400 truncate mt-0.5">{appt.notes}</p>
