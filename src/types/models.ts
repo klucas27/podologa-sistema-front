@@ -18,6 +18,7 @@ export interface Patient {
   createdAt: string;
   updatedAt: string;
   _count?: { anamneses: number };
+  anamneses?: Anamnesis[];
 }
 
 export type Perfusion = 'normal' | 'pale' | 'cyanotic' | 'edematous';

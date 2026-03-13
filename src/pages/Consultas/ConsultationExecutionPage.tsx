@@ -106,6 +106,7 @@ const ConsultationExecutionPage: React.FC = () => {
   const [existingBilling, setExistingBilling] = useState<Billing | null>(null);
   const [billingAmount, setBillingAmount] = useState("");
   const [billingPaymentMethod, setBillingPaymentMethod] = useState<PaymentMethod>("pix");
+  const [billingPaidNow, setBillingPaidNow] = useState(true);
   const [isSavingBilling, setIsSavingBilling] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -157,6 +158,7 @@ const ConsultationExecutionPage: React.FC = () => {
         setExistingBilling(bill);
         setBillingAmount(bill.amount?.toString() ?? "");
         setBillingPaymentMethod(bill.paymentMethod);
+        setBillingPaidNow(bill.status === "paid");
       }
     } catch {
       navigate("/consultas");
@@ -290,12 +292,16 @@ const ConsultationExecutionPage: React.FC = () => {
         await api.patch(`/api/billings/${existingBilling.id}`, {
           amount: Number(billingAmount),
           paymentMethod: billingPaymentMethod,
+          status: billingPaidNow ? "paid" : "pending",
+          paidAt: billingPaidNow ? new Date().toISOString() : null,
         });
       } else {
         await api.post("/api/billings", {
           appointmentId,
           amount: Number(billingAmount),
           paymentMethod: billingPaymentMethod,
+          status: billingPaidNow ? "paid" : "pending",
+          paidAt: billingPaidNow ? new Date().toISOString() : null,
         });
       }
       setSuccessMessage("Cobrança salva com sucesso.");
@@ -945,6 +951,19 @@ const ConsultationExecutionPage: React.FC = () => {
               </select>
             </div>
           </div>
+
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={billingPaidNow}
+              onChange={(e) => setBillingPaidNow(e.target.checked)}
+              disabled={!isClinicalEditable}
+              className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-400 disabled:opacity-50"
+            />
+            <span className="text-sm font-medium text-gray-700">
+              Pago no momento da consulta
+            </span>
+          </label>
 
           {isClinicalEditable && (
             <div className="flex justify-end">

@@ -9,10 +9,29 @@ import {
   Phone,
   Loader2,
   ClipboardCheck,
+  AlertTriangle,
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { api } from '@/services/api';
-import type { Patient } from '@/types';
+import type { Patient, Anamnesis } from '@/types';
+
+const MEDICAL_HISTORY_LABELS: { key: keyof Anamnesis; label: string }[] = [
+  { key: 'hasHypertension', label: 'Hipertensão' },
+  { key: 'hasDiabetes', label: 'Diabetes' },
+  { key: 'hasCirculatoryProblems', label: 'Prob. Circulatórios' },
+  { key: 'hasHealingProblems', label: 'Prob. Cicatrização' },
+  { key: 'hasCancerHistory', label: 'Câncer' },
+  { key: 'hasSeizures', label: 'Convulsões' },
+  { key: 'hasPacemakerOrPins', label: 'Marca-passo/Pinos' },
+  { key: 'isPregnant', label: 'Gestante' },
+  { key: 'hasLowerLimbSurgery', label: 'Cirurgia MI' },
+];
+
+const getActiveConditions = (anamnesis: Anamnesis): string[] => {
+  return MEDICAL_HISTORY_LABELS
+    .filter(({ key }) => anamnesis[key] === true)
+    .map(({ label }) => label);
+};
 
 const PacientesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -57,6 +76,23 @@ const PacientesPage: React.FC = () => {
       setPatients((prev) => prev.filter((p) => p.id !== id));
     } catch {
       alert('Erro ao excluir paciente. Verifique se não há registros vinculados.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleForceDelete = async (id: string, name: string) => {
+    const confirmed = window.confirm(
+      `ATENÇÃO: Excluir definitivamente o paciente "${name}" e TODOS os registros vinculados (consultas, anamneses, cobranças, evoluções)?\n\nEsta ação é IRREVERSÍVEL.`,
+    );
+    if (!confirmed) return;
+
+    setDeletingId(id);
+    try {
+      await api.delete(`/api/patients/${id}/force`);
+      setPatients((prev) => prev.filter((p) => p.id !== id));
+    } catch {
+      alert('Erro ao excluir paciente definitivamente.');
     } finally {
       setDeletingId(null);
     }
@@ -165,6 +201,22 @@ const PacientesPage: React.FC = () => {
                       </span>
                     )}
                   </div>
+                  {/* Medical history conditions */}
+                  {patient.anamneses && patient.anamneses.length > 0 && (() => {
+                    const conditions = getActiveConditions(patient.anamneses[0]!);
+                    return conditions.length > 0 ? (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {conditions.map((cond) => (
+                          <span
+                            key={cond}
+                            className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200"
+                          >
+                            {cond}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
 
                 {/* Actions */}
@@ -195,6 +247,18 @@ const PacientesPage: React.FC = () => {
                     ) : (
                       <Trash2 size={16} />
                     )}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleForceDelete(patient.id, patient.fullName);
+                    }}
+                    disabled={deletingId === patient.id}
+                    type="button"
+                    className="p-2 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition disabled:opacity-50"
+                    title="Exclusão definitiva (remove tudo)"
+                  >
+                    <AlertTriangle size={16} />
                   </button>
                 </div>
 

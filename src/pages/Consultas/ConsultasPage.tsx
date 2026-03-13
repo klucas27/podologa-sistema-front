@@ -16,7 +16,25 @@ import {
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { api } from '@/services/api';
-import type { Appointment, AppointmentStatus } from '@/types';
+import type { Appointment, AppointmentStatus, Anamnesis } from '@/types';
+
+const MEDICAL_HISTORY_LABELS: { key: keyof Anamnesis; label: string }[] = [
+  { key: 'hasHypertension', label: 'Hipertensão' },
+  { key: 'hasDiabetes', label: 'Diabetes' },
+  { key: 'hasCirculatoryProblems', label: 'Prob. Circulatórios' },
+  { key: 'hasHealingProblems', label: 'Prob. Cicatrização' },
+  { key: 'hasCancerHistory', label: 'Câncer' },
+  { key: 'hasSeizures', label: 'Convulsões' },
+  { key: 'hasPacemakerOrPins', label: 'Marca-passo/Pinos' },
+  { key: 'isPregnant', label: 'Gestante' },
+  { key: 'hasLowerLimbSurgery', label: 'Cirurgia MI' },
+];
+
+const getActiveConditions = (anamnesis: Anamnesis): string[] => {
+  return MEDICAL_HISTORY_LABELS
+    .filter(({ key }) => anamnesis[key] === true)
+    .map(({ label }) => label);
+};
 
 const STATUS_LABELS: Record<AppointmentStatus, { label: string; className: string }> = {
   scheduled: { label: 'Agendada', className: 'bg-blue-50 text-blue-700' },
@@ -129,6 +147,22 @@ const ConsultasPage: React.FC = () => {
               </span>
             )}
           </div>
+          {/* Medical history conditions */}
+          {appt.patient?.anamneses && appt.patient.anamneses.length > 0 && (() => {
+            const conditions = getActiveConditions(appt.patient.anamneses[0]!);
+            return conditions.length > 0 ? (
+              <div className="flex flex-wrap gap-1 mt-0.5">
+                {conditions.map((cond) => (
+                  <span
+                    key={cond}
+                    className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200"
+                  >
+                    {cond}
+                  </span>
+                ))}
+              </div>
+            ) : null;
+          })()}
           {appt.notes && (
             <p className="text-xs text-gray-400 truncate mt-0.5">{appt.notes}</p>
           )}

@@ -6,6 +6,9 @@ import {
   Loader2,
   Clock,
   Eye,
+  CheckCircle,
+  XCircle,
+  RotateCcw,
 } from 'lucide-react';
 import { api } from '@/services/api';
 import type { Billing, BillingStatus, PaymentMethod } from '@/types';
@@ -42,6 +45,7 @@ const TransacoesPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<BillingStatus | ''>('');
   const [isLoading, setIsLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const fetchBillings = useCallback(async () => {
     setIsLoading(true);
@@ -58,6 +62,21 @@ const TransacoesPage: React.FC = () => {
   useEffect(() => {
     fetchBillings();
   }, [fetchBillings]);
+
+  const updateBillingStatus = async (id: string, newStatus: BillingStatus) => {
+    setUpdatingId(id);
+    try {
+      await api.patch(`/api/billings/${id}`, {
+        status: newStatus,
+        paidAt: newStatus === 'paid' ? new Date().toISOString() : null,
+      });
+      await fetchBillings();
+    } catch {
+      alert('Erro ao atualizar status da transação.');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   const filtered = billings.filter((b) => {
     if (statusFilter && b.status !== statusFilter) return false;
@@ -201,16 +220,51 @@ const TransacoesPage: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        {billing.appointmentId && (
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/consultas/${billing.appointmentId}/execucao`)}
-                            className="p-2 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-600 transition"
-                            title="Ver consulta"
-                          >
-                            <Eye size={16} />
-                          </button>
-                        )}
+                        <div className="flex items-center justify-center gap-1">
+                          {billing.appointmentId && (
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/consultas/${billing.appointmentId}/execucao`)}
+                              className="p-1.5 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-600 transition"
+                              title="Ver consulta"
+                            >
+                              <Eye size={15} />
+                            </button>
+                          )}
+                          {billing.status === 'pending' && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => updateBillingStatus(billing.id, 'paid')}
+                                disabled={updatingId === billing.id}
+                                className="p-1.5 rounded-lg text-gray-400 hover:bg-green-50 hover:text-green-600 transition disabled:opacity-50"
+                                title="Marcar como Pago"
+                              >
+                                {updatingId === billing.id ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle size={15} />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => updateBillingStatus(billing.id, 'cancelled')}
+                                disabled={updatingId === billing.id}
+                                className="p-1.5 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition disabled:opacity-50"
+                                title="Cancelar"
+                              >
+                                <XCircle size={15} />
+                              </button>
+                            </>
+                          )}
+                          {billing.status === 'paid' && (
+                            <button
+                              type="button"
+                              onClick={() => updateBillingStatus(billing.id, 'refunded')}
+                              disabled={updatingId === billing.id}
+                              className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition disabled:opacity-50"
+                              title="Reembolsar"
+                            >
+                              {updatingId === billing.id ? <Loader2 size={15} className="animate-spin" /> : <RotateCcw size={15} />}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
