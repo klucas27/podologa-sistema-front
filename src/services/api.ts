@@ -8,7 +8,7 @@
  * - Nenhum token é armazenado em localStorage/sessionStorage.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://podologa-sistema-back.vercel.app"; 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3333"; 
 
 let csrfToken: string | null = null;
 
