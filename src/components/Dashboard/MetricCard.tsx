@@ -7,6 +7,8 @@ interface MetricCardProps {
   icon: LucideIcon;
   trend?: { value: string; positive: boolean };
   colorClass: string;
+  active?: boolean;
+  onClick?: () => void;
 }
 
 const MetricCard: React.FC<MetricCardProps> = ({
@@ -15,9 +17,19 @@ const MetricCard: React.FC<MetricCardProps> = ({
   icon: Icon,
   trend,
   colorClass,
+  active = false,
+  onClick,
 }) => {
   return (
-    <div className="card card-body flex items-center gap-4 hover:shadow-md transition-shadow duration-200">
+    <button
+      type="button"
+      onClick={onClick}
+      className={`card card-body flex items-center gap-4 transition-all duration-200 text-left w-full ${
+        active
+          ? 'ring-2 ring-primary-400 shadow-md'
+          : 'hover:shadow-md'
+      } ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
+    >
       <div
         className={`flex items-center justify-center w-12 h-12 rounded-xl flex-shrink-0 ${colorClass}`}
       >
@@ -36,7 +48,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
           </p>
         )}
       </div>
-    </div>
+    </button>
   );
 };
 
