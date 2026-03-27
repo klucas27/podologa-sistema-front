@@ -8,7 +8,10 @@
  * - Nenhum token é armazenado em localStorage/sessionStorage.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3333"; 
+// const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3333"; 
+
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "";
+
 
 let csrfToken: string | null = null;
 
