@@ -1,7 +1,12 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-  VITE_API_URL: z.string().url("VITE_API_URL deve ser uma URL válida"),
+  VITE_API_URL: z
+    .string()
+    .default("")
+    .refine((val) => val === "" || z.string().url().safeParse(val).success, {
+      message: "VITE_API_URL deve ser uma URL válida ou vazio (para usar proxy)",
+    }),
   VITE_ENV: z.enum(["development", "staging", "production"], {
     message: "VITE_ENV deve ser: development | staging | production",
   }),
