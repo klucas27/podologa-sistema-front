@@ -10,8 +10,6 @@
  *   access token via /api/auth/refresh antes de falhar.
  */
 
-// const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3333"; 
-
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "";
 
 // ── CSRF token (armazenado APENAS em memória JS) ────────────
