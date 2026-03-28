@@ -51,6 +51,22 @@ export const setOnAuthFailure = (callback: (() => void) | null): void => {
   onAuthFailure = callback;
 };
 
+/** Callback para redirecionar quando 403 (acesso negado). */
+let onForbidden: (() => void) | null = null;
+
+export const setOnForbidden = (callback: (() => void) | null): void => {
+  onForbidden = callback;
+};
+
+/** Callback para feedback visual de rate limit (429). */
+let onRateLimited: ((retryAfter: number | null) => void) | null = null;
+
+export const setOnRateLimited = (
+  callback: ((retryAfter: number | null) => void) | null,
+): void => {
+  onRateLimited = callback;
+};
+
 // ── Request internals ───────────────────────────────────────
 
 interface RequestOptions extends Omit<RequestInit, "body"> {
@@ -168,6 +184,19 @@ async function request<T>(
       onAuthFailure?.();
       throw new ApiError(401, "Sessão expirada. Faça login novamente.");
     }
+  }
+
+  // ── 403 Forbidden → redirecionar para página de acesso negado ──
+  if (response.status === 403) {
+    onForbidden?.();
+    throw new ApiError(403, "Acesso negado.");
+  }
+
+  // ── 429 Rate Limited → feedback visual ao usuário ──
+  if (response.status === 429) {
+    const retryAfter = response.headers.get("Retry-After");
+    onRateLimited?.(retryAfter ? parseInt(retryAfter, 10) : null);
+    throw new ApiError(429, "Muitas requisições. Aguarde um momento e tente novamente.");
   }
 
   if (!response.ok) {

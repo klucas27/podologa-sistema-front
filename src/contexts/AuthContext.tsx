@@ -5,8 +5,14 @@ import React, {
   useMemo,
   useEffect,
 } from "react";
-import type { User, AuthState } from "@/types";
-import { api, setCsrfToken, setOnAuthFailure } from "@/services/api";
+import type { User, UserRole, AuthState } from "@/types";
+import {
+  api,
+  setCsrfToken,
+  setOnAuthFailure,
+  setOnForbidden,
+  setOnRateLimited,
+} from "@/services/api";
 
 interface LoginApiResponse {
   data: {
@@ -25,37 +31,74 @@ interface MeApiResponse {
 interface AuthContextData extends AuthState {
   signIn: (username: string, password: string) => Promise<void>;
   signOut: () => void;
+  rateLimitMessage: string | null;
+  clearRateLimitMessage: () => void;
 }
 
 export const AuthContext = createContext<AuthContextData>(
   {} as AuthContextData,
 );
 
+/**
+ * Normaliza o valor de role que vem do backend.
+ *
+ * O model User no Prisma AINDA NÃO possui coluna `role`.
+ * Quando o backend adicionar, esse campo chegará preenchido.
+ * Enquanto isso o padrão é "user".
+ */
+function extractRole(user: Partial<User>): UserRole {
+  const raw = (user as Record<string, unknown>).role;
+  if (raw === "admin" || raw === "manager" || raw === "user") return raw;
+  return "user";
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [state, setState] = useState<AuthState>({
     user: null,
+    role: null,
     isAuthenticated: false,
     isLoading: true,
   });
 
-  const clearSession = useCallback(() => {
-    setCsrfToken(null);
-    setState({ user: null, isAuthenticated: false, isLoading: false });
+  const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null);
+
+  const clearRateLimitMessage = useCallback(() => {
+    setRateLimitMessage(null);
   }, []);
 
-  // Registra callback para o interceptor de refresh chamar
-  // quando NEM o refresh token é mais válido → force logout.
+  const clearSession = useCallback(() => {
+    setCsrfToken(null);
+    setState({ user: null, role: null, isAuthenticated: false, isLoading: false });
+  }, []);
+
+  // Registra callbacks para os interceptors do api.ts
   useEffect(() => {
     setOnAuthFailure(clearSession);
-    return () => setOnAuthFailure(null);
+
+    setOnForbidden(() => {
+      // O ProtectedRoute já trata o redirect via role.
+      // Aqui limpamos apenas se necessário (ex: token revogado com role alterada).
+    });
+
+    setOnRateLimited((retryAfter) => {
+      const seconds = retryAfter ?? 30;
+      setRateLimitMessage(
+        `Muitas requisições. Aguarde ${seconds}s antes de tentar novamente.`,
+      );
+      window.setTimeout(() => setRateLimitMessage(null), seconds * 1000);
+    });
+
+    return () => {
+      setOnAuthFailure(null);
+      setOnForbidden(null);
+      setOnRateLimited(null);
+    };
   }, [clearSession]);
 
   // Restaura sessão ao montar — se o cookie access_token ainda for válido,
   // o backend retorna os dados do usuário + novo csrfToken.
-  // Se o access_token expirou mas o refresh_token existe, o interceptor
-  // em api.ts faz refresh automático antes de retry.
   useEffect(() => {
     let cancelled = false;
 
@@ -63,9 +106,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       .get<MeApiResponse>("/api/auth/me")
       .then((res) => {
         if (!cancelled) {
+          const user = res.data.user;
+          const role = extractRole(user);
           setCsrfToken(res.data.csrfToken);
           setState({
-            user: res.data.user,
+            user: { ...user, role },
+            role,
             isAuthenticated: true,
             isLoading: false,
           });
@@ -73,7 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       })
       .catch(() => {
         if (!cancelled) {
-          setState({ user: null, isAuthenticated: false, isLoading: false });
+          setState({ user: null, role: null, isAuthenticated: false, isLoading: false });
         }
       });
 
@@ -91,10 +137,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         password,
       });
 
+      const user = res.data.user;
+      const role = extractRole(user);
       setCsrfToken(res.data.csrfToken);
-      setState({ user: res.data.user, isAuthenticated: true, isLoading: false });
+      setState({
+        user: { ...user, role },
+        role,
+        isAuthenticated: true,
+        isLoading: false,
+      });
     } catch (error) {
-      setState({ user: null, isAuthenticated: false, isLoading: false });
+      setState({ user: null, role: null, isAuthenticated: false, isLoading: false });
       throw error;
     }
   }, []);
@@ -108,8 +161,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [clearSession]);
 
   const value = useMemo(
-    () => ({ ...state, signIn, signOut }),
-    [state, signIn, signOut],
+    () => ({ ...state, signIn, signOut, rateLimitMessage, clearRateLimitMessage }),
+    [state, signIn, signOut, rateLimitMessage, clearRateLimitMessage],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

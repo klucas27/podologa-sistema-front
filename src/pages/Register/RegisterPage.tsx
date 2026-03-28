@@ -1,45 +1,53 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Footprints, User, Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { api, ApiError } from '@/services/api';
+import { registerSchema, type RegisterFormData } from '@/schemas/auth.schema';
 
 const RegisterPage: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [professionalName, setProfessionalName] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [serverError, setServerError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { signIn, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      username: '',
+      professionalName: '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
 
-    if (password !== confirmPassword) {
-      setError('As senhas não coincidem');
-      return;
-    }
-
+  const onSubmit = async (data: RegisterFormData): Promise<void> => {
+    setServerError('');
     setIsSubmitting(true);
 
     try {
       await api.post('/api/auth/register', {
-        username,
-        password,
-        professionalName: professionalName || undefined,
+        username: data.username,
+        password: data.password,
+        professionalName: data.professionalName || undefined,
       });
 
       // Após registro, reusar fluxo de login para popular o contexto
-      await signIn(username, password);
-
+      await signIn(data.username, data.password);
       navigate('/dashboard');
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : 'Erro ao registrar. Tente novamente.';
-      setError(message);
+      if (err instanceof ApiError) {
+        setServerError(err.message);
+      } else {
+        setServerError('Erro ao registrar. Tente novamente.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -59,13 +67,13 @@ const RegisterPage: React.FC = () => {
           <p className="text-sm text-gray-400 mt-1">Crie sua conta</p>
         </div>
 
-        {error && (
+        {serverError && (
           <div className="mb-4 p-3 rounded-lg bg-danger-50 text-danger-700 text-sm">
-            {error}
+            {serverError}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Usuário */}
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
@@ -76,14 +84,15 @@ const RegisterPage: React.FC = () => {
               <input
                 id="username"
                 type="text"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="seu.usuario"
                 autoComplete="username"
+                placeholder="seu.usuario"
+                {...register('username')}
                 className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition"
               />
             </div>
+            {errors.username && (
+              <p className="mt-1 text-xs text-danger-600">{errors.username.message}</p>
+            )}
           </div>
 
           {/* Nome profissional (opcional) */}
@@ -96,9 +105,8 @@ const RegisterPage: React.FC = () => {
               <input
                 id="professionalName"
                 type="text"
-                value={professionalName}
-                onChange={(e) => setProfessionalName(e.target.value)}
                 placeholder="Dra. Ana Paula"
+                {...register('professionalName')}
                 className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition"
               />
             </div>
@@ -114,14 +122,15 @@ const RegisterPage: React.FC = () => {
               <input
                 id="password"
                 type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
                 autoComplete="new-password"
+                placeholder="••••••••"
+                {...register('password')}
                 className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition"
               />
             </div>
+            {errors.password && (
+              <p className="mt-1 text-xs text-danger-600">{errors.password.message}</p>
+            )}
           </div>
 
           {/* Confirmar senha */}
@@ -134,14 +143,15 @@ const RegisterPage: React.FC = () => {
               <input
                 id="confirmPassword"
                 type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
                 autoComplete="new-password"
+                placeholder="••••••••"
+                {...register('confirmPassword')}
                 className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition"
               />
             </div>
+            {errors.confirmPassword && (
+              <p className="mt-1 text-xs text-danger-600">{errors.confirmPassword.message}</p>
+            )}
           </div>
 
           <button

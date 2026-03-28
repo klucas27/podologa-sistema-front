@@ -1,4 +1,4 @@
-export type { User, AuthState } from "./auth";
+export type { User, UserRole, AuthState } from "./auth";
 export type {
   DashboardMetrics,
   DashboardAppointment,

@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 
 import LoginPage from "@/pages/Login/LoginPage";
 import RegisterPage from "@/pages/Register/RegisterPage";
+import AcessoNegadoPage from "@/pages/AcessoNegado/AcessoNegadoPage";
 import DashboardPage from "@/pages/Dashboard/DashboardPage";
 import PacientesPage from "@/pages/Pacientes/PacientesPage";
 import CadastroPacientePage from "@/pages/Pacientes/CadastroPacientePage";
@@ -29,6 +30,10 @@ export const router = createBrowserRouter([
   {
     path: "/register",
     element: <RegisterPage />,
+  },
+  {
+    path: "/acesso-negado",
+    element: <AcessoNegadoPage />,
   },
   {
     element: <ProtectedRoute />,
