@@ -12,7 +12,7 @@ import {
   setOnAuthFailure,
   setOnForbidden,
   setOnRateLimited,
-} from "@/services/api";
+} from "@/lib/api";
 
 interface LoginApiResponse {
   data: {
