@@ -6,7 +6,7 @@ import React, {
   useEffect,
 } from "react";
 import type { User, AuthState } from "@/types";
-import { api, setCsrfToken } from "@/services/api";
+import { api, setCsrfToken, setOnAuthFailure } from "@/services/api";
 
 interface LoginApiResponse {
   data: {
@@ -16,7 +16,10 @@ interface LoginApiResponse {
 }
 
 interface MeApiResponse {
-  data: User;
+  data: {
+    user: User;
+    csrfToken: string;
+  };
 }
 
 interface AuthContextData extends AuthState {
@@ -37,8 +40,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     isLoading: true,
   });
 
-  // Restaura sessão ao montar — se o cookie HTTP-only ainda for válido,
-  // o backend retorna os dados do usuário autenticado.
+  const clearSession = useCallback(() => {
+    setCsrfToken(null);
+    setState({ user: null, isAuthenticated: false, isLoading: false });
+  }, []);
+
+  // Registra callback para o interceptor de refresh chamar
+  // quando NEM o refresh token é mais válido → force logout.
+  useEffect(() => {
+    setOnAuthFailure(clearSession);
+    return () => setOnAuthFailure(null);
+  }, [clearSession]);
+
+  // Restaura sessão ao montar — se o cookie access_token ainda for válido,
+  // o backend retorna os dados do usuário + novo csrfToken.
+  // Se o access_token expirou mas o refresh_token existe, o interceptor
+  // em api.ts faz refresh automático antes de retry.
   useEffect(() => {
     let cancelled = false;
 
@@ -46,8 +63,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       .get<MeApiResponse>("/api/auth/me")
       .then((res) => {
         if (!cancelled) {
+          setCsrfToken(res.data.csrfToken);
           setState({
-            user: res.data,
+            user: res.data.user,
             isAuthenticated: true,
             isLoading: false,
           });
@@ -85,10 +103,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       await api.post("/api/auth/logout");
     } finally {
-      setCsrfToken(null);
-      setState({ user: null, isAuthenticated: false, isLoading: false });
+      clearSession();
     }
-  }, []);
+  }, [clearSession]);
 
   const value = useMemo(
     () => ({ ...state, signIn, signOut }),

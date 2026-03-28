@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Footprints, User, Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { api } from '@/services/api';
+import { api, ApiError } from '@/services/api';
 
 const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -38,7 +38,7 @@ const RegisterPage: React.FC = () => {
 
       navigate('/dashboard');
     } catch (err) {
-      const message = (err as any)?.message || 'Erro ao registrar. Tente novamente.';
+      const message = err instanceof ApiError ? err.message : 'Erro ao registrar. Tente novamente.';
       setError(message);
     } finally {
       setIsSubmitting(false);
