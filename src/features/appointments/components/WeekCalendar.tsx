@@ -1,5 +1,6 @@
 import React from "react";
 import type { Appointment } from "@/types";
+import { formatTime } from "@/lib/dateUtils";
 import {
   SLOT_HEIGHT,
   WEEK_DAYS,
@@ -140,15 +141,8 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
                       </p>
                     )}
                     <p className="text-[10px] opacity-60">
-                      {new Date(appt.scheduledStart).toLocaleTimeString(
-                        "pt-BR",
-                        { hour: "2-digit", minute: "2-digit" },
-                      )}{" "}
-                      –{" "}
-                      {new Date(appt.scheduledEnd).toLocaleTimeString("pt-BR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatTime(appt.scheduledStart)} –{" "}
+                      {formatTime(appt.scheduledEnd)}
                     </p>
                   </div>
                 );

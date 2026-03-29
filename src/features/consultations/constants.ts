@@ -37,13 +37,4 @@ export const PAYMENT_METHOD_OPTIONS: { value: PaymentMethod; label: string }[] =
   { value: "other", label: "Outro" },
 ];
 
-export const formatDate = (iso: string) => {
-  const parts = iso.slice(0, 10).split("-");
-  return `${parts[2]}/${parts[1]}/${parts[0]}`;
-};
-
-export const formatTime = (iso: string) =>
-  new Date(iso).toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+export { formatDate, formatTime } from "@/lib/dateUtils";

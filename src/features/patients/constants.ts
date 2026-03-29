@@ -62,17 +62,7 @@ export const formatPhone = (phone: string | null) => {
   return phone;
 };
 
-export const formatDate = (date: string | null) => {
-  if (!date) return null;
-  return new Date(date).toLocaleDateString("pt-BR");
-};
-
-export const formatTime = (datetime: string) => {
-  return new Date(datetime).toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+export { formatDate, formatTime } from "@/lib/dateUtils";
 
 /* ─── Patient form types & constants (shared by Cadastro/Editar) ─── */
 

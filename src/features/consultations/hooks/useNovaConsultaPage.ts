@@ -176,7 +176,7 @@ export function useNovaConsultaPage() {
       await appointmentService.create({
         patientId,
         professionalId,
-        scheduledDate: new Date(`${isoDate}T00:00:00`).toISOString(),
+        scheduledDate: isoDate,
         scheduledStart: start,
         scheduledEnd: end,
         notes: notes.trim() || undefined,

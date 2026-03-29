@@ -80,6 +80,7 @@ const DashboardPage: React.FC = () => {
             <p className="text-sm text-gray-500 mt-1">
               Visão geral do seu consultório —{" "}
               {new Date().toLocaleDateString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
                 weekday: "long",
                 day: "numeric",
                 month: "long",

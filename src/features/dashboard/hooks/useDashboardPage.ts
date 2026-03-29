@@ -8,6 +8,7 @@ import {
 import { useDashboard } from "./useDashboard";
 import type { KpiType, PeriodType, DashboardData } from "@/types";
 import type { AppointmentItem } from "../components/UpcomingAppointments";
+import { formatCurrency } from "@/lib/dateUtils";
 
 const STATUS_MAP: Record<string, AppointmentItem["status"]> = {
   scheduled: "agendado",
@@ -16,9 +17,6 @@ const STATUS_MAP: Record<string, AppointmentItem["status"]> = {
   completed: "concluido",
   cancelled: "cancelado",
 };
-
-const formatCurrency = (value: number): string =>
-  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const PERIOD_LABELS: Record<
   PeriodType,

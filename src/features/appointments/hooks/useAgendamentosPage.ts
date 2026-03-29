@@ -9,11 +9,10 @@ import {
   getMonday,
   addDays,
   formatDateISO,
-  isSameDay,
-  parseLocalDate,
   parseTimeHour,
   pad2,
 } from "../constants";
+import { getHoursInTz, toISODate, toDateInTz } from "@/lib/dateUtils";
 
 export function useAgendamentosPage() {
   const navigate = useNavigate();
@@ -88,10 +87,19 @@ export function useAgendamentosPage() {
   const appointmentsByDay = useMemo(() => {
     const map: Record<number, Appointment[]> = {};
     for (let i = 0; i < 7; i++) map[i] = [];
+
+    // Pré-computa as datas da semana como "YYYY-MM-DD" (local timezone)
+    const weekDayStrs = weekDays.map((d) => toISODate(d));
+
     appointments.forEach((appt) => {
-      const apptDate = parseLocalDate(appt.scheduledDate);
+      // scheduledDate vem como "YYYY-MM-DD" do backend (normalizado)
+      // Para datetimes, extrai a data no fuso de São Paulo
+      const apptDateStr = appt.scheduledDate.length === 10
+        ? appt.scheduledDate
+        : toDateInTz(appt.scheduledDate);
+
       for (let i = 0; i < 7; i++) {
-        if (isSameDay(apptDate, weekDays[i]!)) {
+        if (apptDateStr === weekDayStrs[i]) {
           map[i]!.push(appt);
           break;
         }
@@ -102,11 +110,10 @@ export function useAgendamentosPage() {
 
   const getApptStyle = useCallback(
     (appt: Appointment): React.CSSProperties => {
-      const start = new Date(appt.scheduledStart);
-      const end = new Date(appt.scheduledEnd);
-      const startMin =
-        (start.getHours() - hourStart) * 60 + start.getMinutes();
-      const endMin = (end.getHours() - hourStart) * 60 + end.getMinutes();
+      const s = getHoursInTz(appt.scheduledStart);
+      const e = getHoursInTz(appt.scheduledEnd);
+      const startMin = (s.hours - hourStart) * 60 + s.minutes;
+      const endMin = (e.hours - hourStart) * 60 + e.minutes;
       const top = (startMin / 60) * SLOT_HEIGHT;
       const height = Math.max(((endMin - startMin) / 60) * SLOT_HEIGHT, 20);
       return { top: `${top}px`, height: `${height}px` };

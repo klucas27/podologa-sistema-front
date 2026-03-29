@@ -12,15 +12,7 @@ const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   other: 'Outro',
 };
 
-export const formatDate = (iso: string) => {
-  const parts = iso.slice(0, 10).split('-');
-  return `${parts[2]}/${parts[1]}/${parts[0]}`;
-};
-
-export const formatCurrency = (value: string | number) => {
-  const num = typeof value === 'string' ? parseFloat(value) : value;
-  return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-};
+export { formatDate, formatCurrency } from "@/lib/dateUtils";
 
 export const STATUS_LABELS: Record<BillingStatus, { label: string; className: string }> = {
   pending: { label: 'Pendente', className: 'bg-yellow-50 text-yellow-700' },

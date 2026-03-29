@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import type { ChartDataPoint, KpiType } from '@/types';
+import { formatCurrency } from '@/lib/dateUtils';
 
 const KPI_CONFIG: Record<KpiType, { title: string; color: string; dataKey: string }> = {
   appointments: { title: 'Atendimentos', color: '#0ABAB5', dataKey: 'value' },
@@ -27,8 +28,7 @@ const DashboardChart: React.FC<DashboardChartProps> = ({ data, kpi }) => {
 
   const formatValue = useMemo(() => {
     if (kpi === 'revenue') {
-      return (val: number) =>
-        val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      return (val: number) => formatCurrency(val);
     }
     return (val: number) => String(val);
   }, [kpi]);

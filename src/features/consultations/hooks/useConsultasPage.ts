@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { appointmentService } from '@/features/appointments/services/appointment.service';
+import { toDateInTz } from '@/lib/dateUtils';
 import type { Appointment, Anamnesis } from '@/types';
 
 const MEDICAL_HISTORY_LABELS: { key: keyof Anamnesis; label: string }[] = [
@@ -21,17 +22,7 @@ export const getActiveConditions = (anamnesis: Anamnesis): string[] => {
     .map(({ label }) => label);
 };
 
-export const formatDate = (iso: string) => {
-  const parts = iso.slice(0, 10).split('-');
-  return `${parts[2]}/${parts[1]}/${parts[0]}`;
-};
-
-export const formatTime = (iso: string) => {
-  const d = new Date(iso);
-  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-};
-
-const toDateStr = (iso: string) => iso.slice(0, 10);
+export { formatDate, formatTime } from "@/lib/dateUtils";
 
 export function useConsultasPage() {
   const navigate = useNavigate();
@@ -56,7 +47,10 @@ export function useConsultasPage() {
     fetchAppointments();
   }, [fetchAppointments]);
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = toDateInTz(new Date());
+
+  const getDateStr = (a: Appointment) =>
+    a.scheduledDate.length === 10 ? a.scheduledDate : toDateInTz(a.scheduledDate);
 
   const matchSearch = (a: Appointment) => {
     if (!search) return true;
@@ -68,19 +62,19 @@ export function useConsultasPage() {
   };
 
   const todayAppts = appointments
-    .filter((a) => toDateStr(a.scheduledDate) === todayStr && a.status !== 'completed' && a.status !== 'cancelled')
+    .filter((a) => getDateStr(a) === todayStr && a.status !== 'completed' && a.status !== 'cancelled')
     .filter(matchSearch)
     .sort((a, b) => new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime());
 
   const futureAppts = appointments
-    .filter((a) => toDateStr(a.scheduledDate) > todayStr && a.status !== 'completed' && a.status !== 'cancelled')
+    .filter((a) => getDateStr(a) > todayStr && a.status !== 'completed' && a.status !== 'cancelled')
     .filter(matchSearch)
-    .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime());
+    .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate));
 
   const completedAppts = appointments
     .filter((a) => a.status === 'completed' || a.status === 'cancelled')
     .filter(matchSearch)
-    .sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime());
+    .sort((a, b) => b.scheduledDate.localeCompare(a.scheduledDate));
 
   return {
     appointments, search, setSearch, isLoading,

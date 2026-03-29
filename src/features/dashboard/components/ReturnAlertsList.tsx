@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangle, Clock, User } from 'lucide-react';
 import type { ReturnAlertItem } from '@/types';
+import { formatDate } from '@/lib/dateUtils';
 
 interface ReturnAlertsListProps {
   alerts: ReturnAlertItem[];
@@ -40,7 +41,7 @@ const ReturnAlertsList: React.FC<ReturnAlertsListProps> = ({ alerts }) => {
                   {alert.patient}
                 </p>
                 <p className="text-xs text-gray-400">
-                  Retorno previsto: {new Date(alert.dueDate + 'T12:00:00').toLocaleDateString('pt-BR')}
+                  Retorno previsto: {formatDate(alert.dueDate)}
                 </p>
               </div>
 

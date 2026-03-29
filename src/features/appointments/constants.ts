@@ -35,15 +35,7 @@ export const addDays = (d: Date, n: number): Date => {
   return copy;
 };
 
-export const formatDateISO = (d: Date): string => {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
-export const formatMonthYear = (d: Date): string =>
-  d.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+export { toISODate as formatDateISO, formatMonthYear } from "@/lib/dateUtils";
 
 export const formatDayNum = (d: Date): string => String(d.getDate());
 

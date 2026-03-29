@@ -11,16 +11,13 @@ import {
   ReferenceLine,
 } from 'recharts';
 import type { WaterfallDataPoint } from '@/types';
+import { formatCurrency as _fc } from '@/lib/dateUtils';
 
 interface RevenueWaterfallChartProps {
   data: WaterfallDataPoint[];
 }
 
-const formatCurrency = (value: number): string =>
-  Math.abs(value).toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  });
+const formatCurrency = (value: number): string => _fc(Math.abs(value));
 
 const COLORS: Record<string, string> = {
   positive: '#22c55e',
