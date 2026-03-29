@@ -111,6 +111,12 @@ const DashboardPage: React.FC = () => {
           </div>
         )}
 
+        {error && data && (
+          <div className="bg-danger-50 border border-danger-200 text-danger-700 px-4 py-3 rounded-lg text-sm">
+            Erro ao atualizar dados: {error}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-5">
           <div className="lg:col-span-3">
             <DashboardChart activeKpi={activeKpi} data={data} />

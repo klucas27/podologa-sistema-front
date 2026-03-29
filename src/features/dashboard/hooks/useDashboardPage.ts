@@ -60,6 +60,10 @@ function buildMetricCards(data: DashboardData, period: PeriodType) {
   const labels = PERIOD_LABELS[period];
   const trendSuffix = PERIOD_TREND_SUFFIX[period];
 
+  const revenue = metrics.revenue ?? 0;
+  const revenuePrevious = metrics.revenuePrevious ?? 0;
+  const returnAlerts = metrics.returnAlerts ?? { total: 0, urgent: 0 };
+
   const appointmentDiff = calcDiff(
     metrics.appointments,
     metrics.appointmentsPrevious,
@@ -68,7 +72,7 @@ function buildMetricCards(data: DashboardData, period: PeriodType) {
     metrics.newPatients,
     metrics.newPatientsPrevious,
   );
-  const revenueDiff = calcDiff(metrics.revenue, metrics.revenuePrevious);
+  const revenueDiff = calcDiff(revenue, revenuePrevious);
 
   return [
     {
@@ -96,7 +100,7 @@ function buildMetricCards(data: DashboardData, period: PeriodType) {
     {
       kpi: "revenue" as KpiType,
       label: labels.revenue,
-      value: formatCurrency(metrics.revenue),
+      value: formatCurrency(revenue),
       icon: DollarSign,
       colorClass: "bg-warning-50 text-warning-700",
       trend: {
@@ -107,12 +111,12 @@ function buildMetricCards(data: DashboardData, period: PeriodType) {
     {
       kpi: "alerts" as KpiType,
       label: "Alertas de Retorno",
-      value: metrics.returnAlerts.total,
+      value: returnAlerts.total,
       icon: BellRing,
       colorClass: "bg-danger-50 text-danger-700",
       trend: {
-        value: `${metrics.returnAlerts.urgent} urgentes`,
-        positive: metrics.returnAlerts.urgent === 0,
+        value: `${returnAlerts.urgent} urgentes`,
+        positive: returnAlerts.urgent === 0,
       },
     },
   ];
