@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { appointmentService } from '@/features/appointments/services/appointment.service';
-import { toDateInTz } from '@/lib/dateUtils';
 import type { Appointment, Anamnesis } from '@/types';
 
 const MEDICAL_HISTORY_LABELS: { key: keyof Anamnesis; label: string }[] = [
@@ -26,26 +25,11 @@ export { formatDate, formatTime } from "@/lib/dateUtils";
 
 export function useConsultasPage() {
   const navigate = useNavigate();
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [search, setSearch] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
   const [showCompleted, setShowCompleted] = useState(false);
+  const debouncedSearch = useDebounce(search, 300);
 
-  const fetchAppointments = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await appointmentService.list();
-      setAppointments(data);
-    } catch {
-      setAppointments([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchAppointments();
-  }, [fetchAppointments]);
+  const { data: appointments = [], isLoading } = useAppointments();
 
   const todayStr = toDateInTz(new Date());
 
@@ -53,8 +37,8 @@ export function useConsultasPage() {
     a.scheduledDate.length === 10 ? a.scheduledDate : toDateInTz(a.scheduledDate);
 
   const matchSearch = (a: Appointment) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
+    if (!debouncedSearch) return true;
+    const q = debouncedSearch.toLowerCase();
     return (
       (a.patient?.fullName ?? '').toLowerCase().includes(q) ||
       (a.notes ?? '').toLowerCase().includes(q)
@@ -62,19 +46,20 @@ export function useConsultasPage() {
   };
 
   const todayAppts = appointments
-    .filter((a) => getDateStr(a) === todayStr && a.status !== 'completed' && a.status !== 'cancelled')
+    .filter((a) => toDateStr(a.scheduledDate) === todayStr && a.status !== 'completed' && a.status !== 'cancelled')
     .filter(matchSearch)
-    .sort((a, b) => new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime());
+    .sort((a, b) => new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime()),
+    [appointments, debouncedSearch, todayStr]);
 
   const futureAppts = appointments
-    .filter((a) => getDateStr(a) > todayStr && a.status !== 'completed' && a.status !== 'cancelled')
+    .filter((a) => toDateStr(a.scheduledDate) > todayStr && a.status !== 'completed' && a.status !== 'cancelled')
     .filter(matchSearch)
-    .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate));
+    .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime());
 
-  const completedAppts = appointments
+  const completedAppts = useMemo(() => appointments
     .filter((a) => a.status === 'completed' || a.status === 'cancelled')
     .filter(matchSearch)
-    .sort((a, b) => b.scheduledDate.localeCompare(a.scheduledDate));
+    .sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime());
 
   return {
     appointments, search, setSearch, isLoading,

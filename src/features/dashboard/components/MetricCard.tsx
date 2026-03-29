@@ -11,7 +11,7 @@ interface MetricCardProps {
   onClick?: () => void;
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({
+const MetricCard: React.FC<MetricCardProps> = React.memo(({
   label,
   value,
   icon: Icon,
@@ -50,6 +50,8 @@ const MetricCard: React.FC<MetricCardProps> = ({
       </div>
     </button>
   );
-};
+});
+
+MetricCard.displayName = 'MetricCard';
 
 export default MetricCard;

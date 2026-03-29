@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { professionalService } from "../services/professional.service";
+import { notifySuccess } from "@/lib/notifications";
 
 export const professionalKeys = {
   all: ["professionals"] as const,
   list: () => [...professionalKeys.all, "list"] as const,
+  active: () => [...professionalKeys.all, "active"] as const,
   detail: (id: string) => [...professionalKeys.all, "detail", id] as const,
 };
 
@@ -14,6 +16,13 @@ export function useProfessionals() {
   });
 }
 
+export function useActiveProfessionals() {
+  return useQuery({
+    queryKey: professionalKeys.active(),
+    queryFn: () => professionalService.listActive(),
+  });
+}
+
 export function useCreateProfessional() {
   const queryClient = useQueryClient();
 
@@ -21,6 +30,7 @@ export function useCreateProfessional() {
     mutationFn: professionalService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: professionalKeys.all });
+      notifySuccess("Profissional cadastrado com sucesso.");
     },
   });
 }
@@ -38,6 +48,7 @@ export function useUpdateProfessional() {
     }) => professionalService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: professionalKeys.all });
+      notifySuccess("Profissional atualizado.");
     },
   });
 }
@@ -49,6 +60,7 @@ export function useDeleteProfessional() {
     mutationFn: professionalService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: professionalKeys.all });
+      notifySuccess("Profissional excluído.");
     },
   });
 }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
+import { useAppointments, useUpdateAppointment } from "./useAppointments";
 import type { Appointment } from "@/types";
 import {
   SLOT_HEIGHT,
@@ -18,8 +18,6 @@ export function useAgendamentosPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const gridRef = useRef<HTMLDivElement>(null);
   const [dragState, setDragState] = useState<{
     appointmentId: string;
@@ -28,6 +26,10 @@ export function useAgendamentosPage() {
     originalEnd: Date;
     dayCol: number;
   } | null>(null);
+
+  // React Query: substitui useEffect + api.get + useState
+  const { data: appointments = [], isLoading } = useAppointments();
+  const updateAppointment = useUpdateAppointment();
 
   const hourStart = useMemo(
     () => (user?.workdayStart ? parseTimeHour(user.workdayStart) : 8),
@@ -53,22 +55,6 @@ export function useAgendamentosPage() {
     () => Array.from({ length: hourEnd - hourStart }, (_, i) => hourStart + i),
     [hourStart, hourEnd],
   );
-
-  const fetchAppointments = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const res = await api.get<{ data: Appointment[] }>("/api/appointments");
-      setAppointments(res.data);
-    } catch {
-      setAppointments([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchAppointments();
-  }, [fetchAppointments]);
 
   useEffect(() => {
     if (gridRef.current) gridRef.current.scrollTop = 0;
@@ -189,11 +175,13 @@ export function useAgendamentosPage() {
         return;
       }
       try {
-        await api.patch(`/api/appointments/${dragState.appointmentId}`, {
-          scheduledStart: newStart.toISOString(),
-          scheduledEnd: newEnd.toISOString(),
+        await updateAppointment.mutateAsync({
+          id: dragState.appointmentId,
+          data: {
+            scheduledStart: newStart.toISOString(),
+            scheduledEnd: newEnd.toISOString(),
+          },
         });
-        await fetchAppointments();
       } catch {
         // revert silently
       }
@@ -205,7 +193,7 @@ export function useAgendamentosPage() {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [dragState, fetchAppointments, hourStart, hourEnd]);
+  }, [dragState, updateAppointment, hourStart, hourEnd]);
 
   return {
     isLoading,

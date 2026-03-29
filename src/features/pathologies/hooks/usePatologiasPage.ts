@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { pathologyService } from '../services/pathology.service';
+import { useState } from 'react';
+import { usePathologies, useCreatePathology, useUpdatePathology, useDeletePathology } from './usePathologies';
 import type { Pathology } from '@/types';
 
 export interface PathologyForm {
@@ -10,32 +10,20 @@ export interface PathologyForm {
 const EMPTY_FORM: PathologyForm = { name: '', description: '' };
 
 export function usePatologiasPage() {
-  const [pathologies, setPathologies] = useState<Pathology[]>([]);
   const [search, setSearch] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<PathologyForm>(EMPTY_FORM);
-  const [isSaving, setIsSaving] = useState(false);
   const [formError, setFormError] = useState('');
 
-  const fetchPathologies = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await pathologyService.list();
-      setPathologies(data);
-    } catch {
-      setPathologies([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const { data: pathologies = [], isLoading } = usePathologies();
+  const createMutation = useCreatePathology();
+  const updateMutation = useUpdatePathology();
+  const deleteMutation = useDeletePathology();
 
-  useEffect(() => {
-    fetchPathologies();
-  }, [fetchPathologies]);
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+  const deletingId = deleteMutation.isPending ? (deleteMutation.variables as string | undefined) ?? null : null;
 
   const filtered = pathologies.filter((p) => {
     if (!search) return true;
@@ -64,7 +52,7 @@ export function usePatologiasPage() {
     setFormError('');
   };
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
 
@@ -73,44 +61,31 @@ export function usePatologiasPage() {
       return;
     }
 
-    setIsSaving(true);
-    try {
-      const body = {
-        name: form.name.trim(),
-        description: form.description.trim() || undefined,
-      };
+    const body = {
+      name: form.name.trim(),
+      description: form.description.trim() || undefined,
+    };
 
-      if (editingId) {
-        await pathologyService.update(editingId, body);
-      } else {
-        await pathologyService.create(body);
-      }
-
-      closeModal();
-      fetchPathologies();
-    } catch (err: unknown) {
+    const onSuccess = () => closeModal();
+    const onError = (err: unknown) => {
       const message = (err as { message?: string })?.message || 'Erro ao salvar patologia.';
       setFormError(message);
-    } finally {
-      setIsSaving(false);
+    };
+
+    if (editingId) {
+      updateMutation.mutate({ id: editingId, data: body }, { onSuccess, onError });
+    } else {
+      createMutation.mutate(body, { onSuccess, onError });
     }
   };
 
-  const handleDelete = async (id: string, name: string) => {
+  const handleDelete = (id: string, name: string) => {
     const confirmed = window.confirm(
       `Tem certeza que deseja excluir a patologia "${name}"? Esta ação não pode ser desfeita.`,
     );
     if (!confirmed) return;
 
-    setDeletingId(id);
-    try {
-      await pathologyService.delete(id);
-      setPathologies((prev) => prev.filter((p) => p.id !== id));
-    } catch {
-      alert('Erro ao excluir patologia. Verifique se não há registros vinculados.');
-    } finally {
-      setDeletingId(null);
-    }
+    deleteMutation.mutate(id);
   };
 
   return {

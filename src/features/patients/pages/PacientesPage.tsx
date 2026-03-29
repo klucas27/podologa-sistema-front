@@ -1,27 +1,33 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, Search, Loader2 } from 'lucide-react';
+import { UserPlus, Search } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { SkeletonTable } from '@/components/ui/Skeleton';
+import { VirtualizedList } from '@/components/ui/VirtualizedList';
 import Button from '@/components/ui/Button';
 import { usePacientesPage } from '../hooks/usePacientesPage';
 import PatientListItem from '../components/PatientListItem';
+import type { Patient } from '@/types';
+
+const PATIENT_ROW_HEIGHT = 72; // Altura estimada de cada PatientListItem
+const VIRTUALIZE_THRESHOLD = 50; // Virtualiza apenas com 50+ pacientes
 
 const PacientesPage: React.FC = () => {
   const navigate = useNavigate();
   const {
     patients, search, isLoading, deletingId,
-    handleSearchChange, handleSearchDebounced, handleDelete, handleForceDelete,
+    handleSearchChange, handleDelete, handleForceDelete,
   } = usePacientesPage();
 
-  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  useEffect(() => {
-    clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      handleSearchDebounced(search);
-    }, 400);
-    return () => clearTimeout(timerRef.current);
-  }, [search, handleSearchDebounced]);
+  const renderPatient = useCallback((patient: Patient) => (
+    <PatientListItem
+      key={patient.id}
+      patient={patient}
+      deletingId={deletingId}
+      onDelete={handleDelete}
+      onForceDelete={handleForceDelete}
+    />
+  ), [deletingId, handleDelete, handleForceDelete]);
 
   return (
     <ErrorBoundary featureName="Pacientes">
@@ -41,9 +47,16 @@ const PacientesPage: React.FC = () => {
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {isLoading ? (
-          <div className="flex items-center justify-center p-12"><Loader2 size={24} className="animate-spin text-primary-500" /></div>
+          <div className="p-4"><SkeletonTable rows={6} cols={3} /></div>
         ) : patients.length === 0 ? (
           <div className="p-8 text-center"><p className="text-gray-400 text-sm">{search ? 'Nenhum paciente encontrado para a pesquisa.' : 'Nenhum paciente cadastrado.'}</p></div>
+        ) : patients.length >= VIRTUALIZE_THRESHOLD ? (
+          <VirtualizedList
+            items={patients}
+            estimateSize={PATIENT_ROW_HEIGHT}
+            renderItem={renderPatient}
+            className="max-h-[calc(100vh-280px)]"
+          />
         ) : (
           <ul className="divide-y divide-gray-100">
             {patients.map((patient) => (

@@ -1,8 +1,9 @@
 import React from 'react';
 import {
-  Search, Loader2, Clock, Eye, CheckCircle, XCircle, RotateCcw,
+  Search, Clock, Eye, CheckCircle, XCircle, RotateCcw, Loader2,
 } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { SkeletonTable } from '@/components/ui/Skeleton';
 import { useTransacoesPage, formatDate, formatCurrency, STATUS_LABELS } from '../hooks/useTransacoesPage';
 import type { BillingStatus } from '@/types';
 
@@ -50,7 +51,7 @@ const TransacoesPage: React.FC = () => {
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {h.isLoading ? (
-          <div className="flex items-center justify-center p-12"><Loader2 size={24} className="animate-spin text-primary-500" /></div>
+          <div className="p-4"><SkeletonTable rows={6} cols={6} /></div>
         ) : h.filtered.length === 0 ? (
           <div className="p-8 text-center"><p className="text-gray-400 text-sm">{h.search || h.statusFilter ? 'Nenhuma transação encontrada para os filtros.' : 'Nenhuma transação registrada.'}</p></div>
         ) : (

@@ -1,6 +1,6 @@
 import React from "react";
-import { Loader2 } from "lucide-react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
 import MetricCard from "../components/MetricCard";
 import UpcomingAppointments from "../components/UpcomingAppointments";
 import AppointmentsAreaChart from "../components/AppointmentsAreaChart";
@@ -55,8 +55,23 @@ const DashboardPage: React.FC = () => {
 
   if (isLoading && !data) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-7 w-40" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-10 w-32 rounded-lg" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5">
+          {Array.from({ length: 4 }, (_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-5">
+          <Skeleton className="lg:col-span-3 h-64 rounded-xl" />
+          <Skeleton className="lg:col-span-2 h-64 rounded-xl" />
+        </div>
       </div>
     );
   }
@@ -107,7 +122,7 @@ const DashboardPage: React.FC = () => {
 
         {isLoading && (
           <div className="flex justify-center py-2">
-            <Loader2 className="w-5 h-5 animate-spin text-primary-400" />
+            <Skeleton className="h-5 w-5 rounded-full" />
           </div>
         )}
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -18,6 +18,7 @@ import {
   Bell,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { routeImportMap } from '@/app/router';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -35,6 +36,19 @@ const MainLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+
+  // Prefetch: carrega o chunk da rota quando o cursor passa sobre o link.
+  // Impacto: navegação parece instantânea (chunk já está em cache).
+  // O import() em hover é idempotente — múltiplos hovers não recarregam.
+  const prefetchedRoutes = React.useRef(new Set<string>());
+  const handlePrefetch = useCallback((path: string) => {
+    if (prefetchedRoutes.current.has(path)) return;
+    const loader = routeImportMap[path];
+    if (loader) {
+      prefetchedRoutes.current.add(path);
+      loader();
+    }
+  }, []);
 
   const handleSignOut = () => {
     signOut();
@@ -113,6 +127,7 @@ const MainLayout: React.FC = () => {
               key={to}
               to={to}
               onClick={() => setMobileOpen(false)}
+              onMouseEnter={() => handlePrefetch(to)}
               className={({ isActive }) =>
                 `group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                 ${

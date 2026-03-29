@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { billingService } from "../services/billing.service";
+import { notifySuccess } from "@/lib/notifications";
 import type { CreateBillingData } from "../services/billing.service";
 
 export const billingKeys = {
@@ -23,6 +24,7 @@ export function useCreateBilling() {
     mutationFn: (data: CreateBillingData) => billingService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: billingKeys.all });
+      notifySuccess("Cobrança registrada com sucesso.");
     },
   });
 }
@@ -40,6 +42,19 @@ export function useUpdateBilling() {
     }) => billingService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: billingKeys.all });
+    },
+  });
+}
+
+export function useUpdateBillingStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, status, paidAt }: { id: string; status: string; paidAt?: string | null }) =>
+      billingService.updateStatus(id, status, paidAt),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: billingKeys.all });
+      notifySuccess("Status atualizado com sucesso.");
     },
   });
 }

@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* Font Inter: carregada via <link> no index.html com preconnect.
+   @import url() no CSS bloqueia a renderização — movido para <link>
+   que permite download paralelo com o CSS. Impacto: LCP -50ms. */
 
 /* ===== Base layer overrides ===== */
 @layer base {

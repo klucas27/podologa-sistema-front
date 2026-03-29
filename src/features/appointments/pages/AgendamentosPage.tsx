@@ -3,10 +3,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
-  Loader2,
   CalendarDays,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { useAgendamentosPage } from "../hooks/useAgendamentosPage";
 import WeekCalendar from "../components/WeekCalendar";
@@ -70,8 +70,19 @@ const AgendamentosPageInner: React.FC = () => {
       </div>
 
       {state.isLoading ? (
-        <div className="flex items-center justify-center flex-1 p-12">
-          <Loader2 size={24} className="animate-spin text-primary-500" />
+        <div className="flex-1 p-6 space-y-4">
+          <div className="grid grid-cols-7 gap-2">
+            {Array.from({ length: 7 }, (_, i) => (
+              <Skeleton key={i} className="h-8 rounded" />
+            ))}
+          </div>
+          {Array.from({ length: 8 }, (_, i) => (
+            <div key={i} className="grid grid-cols-7 gap-2">
+              {Array.from({ length: 7 }, (_, j) => (
+                <Skeleton key={j} className="h-12 rounded" />
+              ))}
+            </div>
+          ))}
         </div>
       ) : (
         <WeekCalendar

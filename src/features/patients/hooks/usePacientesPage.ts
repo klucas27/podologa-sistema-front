@@ -1,27 +1,21 @@
 import { useState, useCallback } from "react";
 import { usePatients, useDeletePatient, useForceDeletePatient } from "./usePatients";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export function usePacientesPage() {
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>(
-    undefined,
-  );
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const { data: patients = [], isLoading } = usePatients(debouncedSearch);
+  // Debounce de 300ms: o input atualiza `search` imediatamente (UI responsiva),
+  // mas a query só é disparada após 300ms de inatividade (menos requests).
+  const debouncedSearch = useDebounce(search, 300);
+
+  const { data: patients = [], isLoading } = usePatients(debouncedSearch || undefined);
   const deletePatient = useDeletePatient();
   const forceDeletePatient = useForceDeletePatient();
 
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setSearch(value);
-      // Debounce inline via setTimeout — the timeout is managed by the page component
-    },
-    [],
-  );
-
-  const handleSearchDebounced = useCallback((value: string) => {
-    setDebouncedSearch(value || undefined);
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
   }, []);
 
   const handleDelete = useCallback(
@@ -70,7 +64,6 @@ export function usePacientesPage() {
     isLoading,
     deletingId,
     handleSearchChange,
-    handleSearchDebounced,
     handleDelete,
     handleForceDelete,
   };

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { anamnesisService } from '../services/anamnesis.service';
+import { useAnamnesesByPatient, useCreateAnamnesis, useUpdateAnamnesis } from './useAnamneses';
 import { INITIAL_FORM, type AnamnesisForm } from '../constants';
 
 export function useCadastroAnamnesePage() {
@@ -9,55 +9,45 @@ export function useCadastroAnamnesePage() {
 
   const [form, setForm] = useState<AnamnesisForm>(INITIAL_FORM);
   const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [existingId, setExistingId] = useState<string | null>(null);
 
   const isEditMode = existingId !== null;
 
-  const fetchExistingAnamnesis = useCallback(async () => {
-    if (!patientId) {
-      setIsLoading(false);
-      return;
-    }
-    try {
-      const list = await anamnesisService.getByPatientId(patientId);
-      if (list.length > 0) {
-        const a = list[0];
-        setExistingId(a.id);
-        setForm({
-          frequentlyUsedFootwear: a.frequentlyUsedFootwear ?? '',
-          frequentlyUsedSocks: a.frequentlyUsedSocks ?? '',
-          practicedSports: a.practicedSports ?? '',
-          hasLowerLimbSurgery: a.hasLowerLimbSurgery,
-          lowerLimbSurgeryDetails: a.lowerLimbSurgeryDetails ?? '',
-          medicationsInUse: a.medicationsInUse ?? '',
-          isPregnant: a.isPregnant,
-          hasPacemakerOrPins: a.hasPacemakerOrPins,
-          hasHypertension: a.hasHypertension,
-          hasSeizures: a.hasSeizures,
-          hasCancerHistory: a.hasCancerHistory,
-          hasDiabetes: a.hasDiabetes,
-          hasCirculatoryProblems: a.hasCirculatoryProblems,
-          hasHealingProblems: a.hasHealingProblems,
-          perfusion: a.perfusion,
-          hasMonofilamentSensitivity: a.hasMonofilamentSensitivity,
-          dermatologicalPathologies: a.dermatologicalPathologies ?? '',
-          nailPathologies: a.nailPathologies ?? '',
-          otherObservations: a.otherObservations ?? '',
-          painSensitivity: a.painSensitivity ?? 'none',
-        });
-      }
-    } catch {
-      /* patient has no anamnesis — create mode */
-    } finally {
-      setIsLoading(false);
-    }
-  }, [patientId]);
+  // React Query: fetch existing anamnesis for this patient
+  const { data: anamnesesList = [], isLoading } = useAnamnesesByPatient(patientId ?? '');
+  const createMutation = useCreateAnamnesis();
+  const updateMutation = useUpdateAnamnesis();
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
+  // Populate form from existing anamnesis — legitimate derived state effect
   useEffect(() => {
-    fetchExistingAnamnesis();
-  }, [fetchExistingAnamnesis]);
+    if (anamnesesList.length > 0 && !existingId) {
+      const a = anamnesesList[0]!;
+      setExistingId(a.id);
+      setForm({
+        frequentlyUsedFootwear: a.frequentlyUsedFootwear ?? '',
+        frequentlyUsedSocks: a.frequentlyUsedSocks ?? '',
+        practicedSports: a.practicedSports ?? '',
+        hasLowerLimbSurgery: a.hasLowerLimbSurgery,
+        lowerLimbSurgeryDetails: a.lowerLimbSurgeryDetails ?? '',
+        medicationsInUse: a.medicationsInUse ?? '',
+        isPregnant: a.isPregnant,
+        hasPacemakerOrPins: a.hasPacemakerOrPins,
+        hasHypertension: a.hasHypertension,
+        hasSeizures: a.hasSeizures,
+        hasCancerHistory: a.hasCancerHistory,
+        hasDiabetes: a.hasDiabetes,
+        hasCirculatoryProblems: a.hasCirculatoryProblems,
+        hasHealingProblems: a.hasHealingProblems,
+        perfusion: a.perfusion,
+        hasMonofilamentSensitivity: a.hasMonofilamentSensitivity,
+        dermatologicalPathologies: a.dermatologicalPathologies ?? '',
+        nailPathologies: a.nailPathologies ?? '',
+        otherObservations: a.otherObservations ?? '',
+        painSensitivity: a.painSensitivity ?? 'none',
+      });
+    }
+  }, [anamnesesList, existingId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -70,7 +60,7 @@ export function useCadastroAnamnesePage() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -78,8 +68,6 @@ export function useCadastroAnamnesePage() {
       setError('Paciente não identificado');
       return;
     }
-
-    setIsSubmitting(true);
 
     const payload = {
       patientId,
@@ -105,19 +93,17 @@ export function useCadastroAnamnesePage() {
       painSensitivity: form.painSensitivity,
     };
 
-    try {
-      if (isEditMode) {
-        await anamnesisService.update(existingId!, payload);
-      } else {
-        await anamnesisService.create(payload);
-      }
-      navigate(`/pacientes/${patientId}`);
-    } catch (err) {
+    const onSuccess = () => navigate(`/pacientes/${patientId}`);
+    const onError = (err: unknown) => {
       const message =
         (err as { message?: string })?.message || 'Erro ao salvar anamnese. Tente novamente.';
       setError(message);
-    } finally {
-      setIsSubmitting(false);
+    };
+
+    if (isEditMode) {
+      updateMutation.mutate({ id: existingId!, data: payload, patientId }, { onSuccess, onError });
+    } else {
+      createMutation.mutate(payload, { onSuccess, onError });
     }
   };
 
