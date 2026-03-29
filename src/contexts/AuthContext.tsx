@@ -41,15 +41,11 @@ export const AuthContext = createContext<AuthContextData>(
 
 /**
  * Normaliza o valor de role que vem do backend.
- *
- * O model User no Prisma AINDA NÃO possui coluna `role`.
- * Quando o backend adicionar, esse campo chegará preenchido.
- * Enquanto isso o padrão é "user".
  */
 function extractRole(user: Partial<User>): UserRole {
   const raw = (user as Record<string, unknown>).role;
-  if (raw === "admin" || raw === "manager" || raw === "user") return raw;
-  return "user";
+  if (raw === "admin" || raw === "professional") return raw;
+  return "admin";
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({

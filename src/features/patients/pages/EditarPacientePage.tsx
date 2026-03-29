@@ -6,7 +6,7 @@ import { useEditarPacientePage } from '../hooks/useEditarPacientePage';
 import { PatientFormFields } from '../components/PatientFormFields';
 
 const EditarPacientePage: React.FC = () => {
-  const { form, error, isLoading, isSubmitting, handleChange, handleSubmit, goBack } = useEditarPacientePage();
+  const { form, error, isLoading, isSubmitting, handleChange, handleProfessionalIdsChange, handleSubmit, goBack } = useEditarPacientePage();
 
   if (isLoading || !form) {
     return (
@@ -27,7 +27,7 @@ const EditarPacientePage: React.FC = () => {
       {error && <div className="p-3 rounded-lg bg-danger-50 text-danger-700 text-sm">{error}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        <PatientFormFields form={form} onChange={handleChange} />
+        <PatientFormFields form={form} onChange={handleChange} onProfessionalIdsChange={handleProfessionalIdsChange} />
 
         <div className="flex justify-end gap-3">
           <Button type="button" variant="secondary" onClick={goBack}>Cancelar</Button>

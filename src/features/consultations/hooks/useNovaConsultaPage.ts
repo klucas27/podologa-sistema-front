@@ -87,6 +87,10 @@ export function useNovaConsultaPage() {
       try {
         const data = await professionalService.listActive();
         setProfessionals(data);
+        // Auto-select professional if logged-in user is a professional
+        if (user?.professionalId) {
+          setProfessionalId(user.professionalId);
+        }
       } catch {
         // silent
       } finally {
@@ -190,9 +194,12 @@ export function useNovaConsultaPage() {
     }
   };
 
+  const isProfessionalUser = user?.role === 'professional' && !!user?.professionalId;
+
   return {
     patients, isLoadingPatients,
     professionals, isLoadingProfessionals, professionalId, setProfessionalId,
+    isProfessionalUser,
     patientId, selectedPatientName,
     scheduledDate, scheduledStart, scheduledEnd, notes,
     isSaving, error,

@@ -15,6 +15,10 @@ export function useEditarPacientePage() {
     if (!id) return;
     try {
       const p = await patientService.getById(id);
+      const raw = p as unknown as Record<string, unknown>;
+      const professionalIds = Array.isArray(raw.patientProfessionals)
+        ? (raw.patientProfessionals as { professionalId: string }[]).map((pp) => pp.professionalId)
+        : [];
       setForm({
         fullName: p.fullName,
         dateOfBirth: p.dateOfBirth ? p.dateOfBirth.split('T')[0] : '',
@@ -29,6 +33,7 @@ export function useEditarPacientePage() {
         neighborhood: p.neighborhood ?? '',
         city: p.city ?? '',
         state: p.state ?? '',
+        professionalIds,
       });
     } catch {
       navigate('/pacientes');
@@ -46,6 +51,10 @@ export function useEditarPacientePage() {
     setForm((prev) => (prev ? { ...prev, [name]: value } : prev));
   };
 
+  const handleProfessionalIdsChange = (ids: string[]) => {
+    setForm((prev) => (prev ? { ...prev, professionalIds: ids } : prev));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form || !id) return;
@@ -58,9 +67,18 @@ export function useEditarPacientePage() {
 
     setIsSubmitting(true);
     try {
+      // Convert date from YYYY-MM-DD (HTML input) to ISO 8601 UTC
+      let dateOfBirth: string | null = null;
+      if (form.dateOfBirth) {
+        const parsed = new Date(form.dateOfBirth + 'T00:00:00');
+        if (!isNaN(parsed.getTime())) {
+          dateOfBirth = parsed.toISOString();
+        }
+      }
+
       await patientService.update(id, {
         fullName: form.fullName,
-        dateOfBirth: form.dateOfBirth || null,
+        dateOfBirth,
         maritalStatus: form.maritalStatus,
         occupation: form.occupation || null,
         cpf: form.cpf.replace(/\D/g, ''),
@@ -72,6 +90,7 @@ export function useEditarPacientePage() {
         neighborhood: form.neighborhood || null,
         city: form.city || null,
         state: form.state || null,
+        professionalIds: form.professionalIds.length > 0 ? form.professionalIds : undefined,
       } as Record<string, unknown>);
       navigate(`/pacientes/${id}`);
     } catch (err) {
@@ -84,7 +103,7 @@ export function useEditarPacientePage() {
 
   return {
     id, form, error, isLoading, isSubmitting,
-    handleChange, handleSubmit,
+    handleChange, handleProfessionalIdsChange, handleSubmit,
     goBack: () => navigate(`/pacientes/${id}`),
   };
 }

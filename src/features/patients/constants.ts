@@ -80,6 +80,7 @@ export interface PatientForm {
   neighborhood: string;
   city: string;
   state: string;
+  professionalIds: string[];
 }
 
 export const INITIAL_PATIENT_FORM: PatientForm = {
@@ -96,6 +97,7 @@ export const INITIAL_PATIENT_FORM: PatientForm = {
   neighborhood: '',
   city: '',
   state: '',
+  professionalIds: [],
 };
 
 export const MARITAL_OPTIONS: { value: MaritalStatus; label: string }[] = [

@@ -7,9 +7,11 @@ interface ProfessionalForm {
   specialty: string;
   phoneNumber: string;
   email: string;
+  username: string;
+  password: string;
 }
 
-const EMPTY_FORM: ProfessionalForm = { fullName: '', specialty: '', phoneNumber: '', email: '' };
+const EMPTY_FORM: ProfessionalForm = { fullName: '', specialty: '', phoneNumber: '', email: '', username: '', password: '' };
 
 export type { ProfessionalForm };
 
@@ -65,6 +67,8 @@ export function useProfissionaisPage() {
       specialty: p.specialty ?? '',
       phoneNumber: p.phoneNumber ?? '',
       email: p.email ?? '',
+      username: '',
+      password: '',
     });
     setFormError('');
     setModalOpen(true);
@@ -86,9 +90,20 @@ export function useProfissionaisPage() {
       return;
     }
 
+    if (!editingId) {
+      if (!form.username.trim() || form.username.trim().length < 3) {
+        setFormError('Usuário deve ter pelo menos 3 caracteres.');
+        return;
+      }
+      if (!form.password || form.password.length < 6) {
+        setFormError('Senha deve ter pelo menos 6 caracteres.');
+        return;
+      }
+    }
+
     setIsSaving(true);
     try {
-      const body = {
+      const body: Record<string, unknown> = {
         fullName: form.fullName.trim(),
         specialty: form.specialty.trim() || null,
         phoneNumber: form.phoneNumber.trim() || null,
@@ -96,9 +111,11 @@ export function useProfissionaisPage() {
       };
 
       if (editingId) {
-        await professionalService.update(editingId, body as Record<string, unknown>);
+        await professionalService.update(editingId, body);
       } else {
-        await professionalService.create(body as Record<string, unknown>);
+        body.username = form.username.trim();
+        body.password = form.password;
+        await professionalService.create(body);
       }
 
       closeModal();

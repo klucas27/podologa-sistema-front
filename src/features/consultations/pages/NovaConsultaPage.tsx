@@ -52,7 +52,7 @@ const NovaConsultaPage: React.FC = () => {
                 <Loader2 size={16} className="animate-spin" /> Carregando profissionais...
               </div>
             ) : (
-              <select id="professional-select" value={h.professionalId} onChange={(e) => h.setProfessionalId(e.target.value)} className={`${INPUT_CLASS} bg-white`}>
+              <select id="professional-select" value={h.professionalId} onChange={(e) => h.setProfessionalId(e.target.value)} disabled={h.isProfessionalUser} className={`${INPUT_CLASS} bg-white ${h.isProfessionalUser ? 'opacity-60 cursor-not-allowed' : ''}`}>
                 <option value="">Selecione um profissional...</option>
                 {h.professionals.map((prof) => (
                   <option key={prof.id} value={prof.id}>{prof.fullName}{prof.specialty ? ` — ${prof.specialty}` : ''}</option>

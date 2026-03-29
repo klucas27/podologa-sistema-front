@@ -49,6 +49,23 @@ export const ProfessionalModal: React.FC<Props> = ({
           </div>
         </div>
 
+        {!editingId && (
+          <>
+            <hr className="border-gray-200" />
+            <p className="text-sm font-medium text-gray-600">Credenciais de acesso ao sistema</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="prof-username" className="block text-sm font-medium text-gray-700 mb-1">Usuário <span className="text-danger-500">*</span></label>
+                <input id="prof-username" type="text" autoComplete="off" value={form.username} onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))} className={INPUT_CLASS} placeholder="usuario.profissional" />
+              </div>
+              <div>
+                <label htmlFor="prof-password" className="block text-sm font-medium text-gray-700 mb-1">Senha <span className="text-danger-500">*</span></label>
+                <input id="prof-password" type="password" autoComplete="new-password" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} className={INPUT_CLASS} placeholder="••••••••" />
+              </div>
+            </div>
+          </>
+        )}
+
         <div className="flex justify-end gap-3 pt-2">
           <Button variant="secondary" type="button" onClick={onClose}>Cancelar</Button>
           <Button type="submit" isLoading={isSaving}>{editingId ? 'Salvar Alterações' : 'Cadastrar'}</Button>

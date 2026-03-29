@@ -1,5 +1,11 @@
 export type MaritalStatus = 'single' | 'married' | 'divorced' | 'widowed' | 'other';
 
+export interface PatientProfessionalLink {
+  patientId: string;
+  professionalId: string;
+  professional?: { id: string; fullName: string };
+}
+
 export interface Patient {
   id: string;
   fullName: string;
@@ -15,10 +21,12 @@ export interface Patient {
   neighborhood: string | null;
   city: string | null;
   state: string | null;
+  adminId: string;
   createdAt: string;
   updatedAt: string;
   _count?: { anamneses: number };
   anamneses?: Anamnesis[];
+  patientProfessionals?: PatientProfessionalLink[];
 }
 
 export type Perfusion = 'normal' | 'pale' | 'cyanotic' | 'edematous';
@@ -60,6 +68,7 @@ export interface Professional {
   phoneNumber: string | null;
   email: string | null;
   isActive: boolean;
+  adminId: string;
   createdAt: string;
   updatedAt: string;
 }
