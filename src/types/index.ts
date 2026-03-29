@@ -14,6 +14,7 @@ export type {
   Patient,
   MaritalStatus,
   Professional,
+  PatientProfessionalLink,
   Appointment,
   AppointmentStatus,
   Anamnesis,

@@ -15,6 +15,10 @@ export function useCadastroPacientePage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleProfessionalIdsChange = (ids: string[]) => {
+    setForm((prev) => ({ ...prev, professionalIds: ids }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -26,9 +30,18 @@ export function useCadastroPacientePage() {
 
     setIsSubmitting(true);
     try {
+      // Convert date from YYYY-MM-DD (HTML input) to ISO 8601 UTC
+      let dateOfBirth: string | null = null;
+      if (form.dateOfBirth) {
+        const parsed = new Date(form.dateOfBirth + 'T00:00:00');
+        if (!isNaN(parsed.getTime())) {
+          dateOfBirth = parsed.toISOString();
+        }
+      }
+
       const created = await patientService.create({
         fullName: form.fullName,
-        dateOfBirth: form.dateOfBirth || null,
+        dateOfBirth,
         maritalStatus: form.maritalStatus,
         occupation: form.occupation || null,
         cpf: form.cpf.replace(/\D/g, ''),
@@ -40,6 +53,7 @@ export function useCadastroPacientePage() {
         neighborhood: form.neighborhood || null,
         city: form.city || null,
         state: form.state || null,
+        professionalIds: form.professionalIds.length > 0 ? form.professionalIds : undefined,
       } as Record<string, unknown>);
 
       if (redirectToAnamnesis) {
@@ -57,7 +71,7 @@ export function useCadastroPacientePage() {
 
   return {
     form, error, isSubmitting, redirectToAnamnesis,
-    handleChange, handleSubmit,
+    handleChange, handleProfessionalIdsChange, handleSubmit,
     setRedirectToAnamnesis,
     goBack: () => navigate('/pacientes'),
   };

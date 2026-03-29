@@ -1,10 +1,11 @@
-export type UserRole = "admin" | "manager" | "user";
+export type UserRole = "admin" | "professional";
 
 export interface User {
   id: string;
   username: string;
   professionalName: string | null;
   role: UserRole;
+  professionalId: string | null;
   workdayStart: string;
   workdayEnd: string;
 }

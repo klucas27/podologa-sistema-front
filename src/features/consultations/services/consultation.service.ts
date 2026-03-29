@@ -74,7 +74,7 @@ export const consultationService = {
 
   updateEvolution: (id: string, data: SaveEvolutionData) =>
     api
-      .put<ApiResponse<ClinicalEvolution>>(`/api/clinical-evolutions/${id}`, data)
+      .patch<ApiResponse<ClinicalEvolution>>(`/api/clinical-evolutions/${id}`, data)
       .then((res) => res.data),
 
   getBillings: (appointmentId: string) =>
@@ -91,7 +91,7 @@ export const consultationService = {
 
   updateBilling: (id: string, data: Partial<SaveBillingData>) =>
     api
-      .put<ApiResponse<Billing>>(`/api/billings/${id}`, data)
+      .patch<ApiResponse<Billing>>(`/api/billings/${id}`, data)
       .then((res) => res.data),
 
   deleteAppointment: (id: string) => api.delete(`/api/appointments/${id}`),

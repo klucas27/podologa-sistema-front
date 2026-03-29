@@ -9,6 +9,7 @@ const CadastroPacientePage: React.FC = () => {
   const {
     form, error, isSubmitting, redirectToAnamnesis,
     handleChange, handleSubmit, setRedirectToAnamnesis, goBack,
+    handleProfessionalIdsChange,
   } = useCadastroPacientePage();
 
   return (
@@ -22,7 +23,7 @@ const CadastroPacientePage: React.FC = () => {
       {error && <div className="p-3 rounded-lg bg-danger-50 text-danger-700 text-sm">{error}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        <PatientFormFields form={form} onChange={handleChange} />
+        <PatientFormFields form={form} onChange={handleChange} onProfessionalIdsChange={handleProfessionalIdsChange} />
 
         {/* Ações */}
         <div className="flex flex-col sm:flex-row justify-end gap-3">

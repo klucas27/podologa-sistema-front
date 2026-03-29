@@ -23,7 +23,6 @@ const RegisterPage: React.FC = () => {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       username: '',
-      professionalName: '',
       password: '',
       confirmPassword: '',
     },
@@ -33,7 +32,7 @@ const RegisterPage: React.FC = () => {
     setServerError('');
     setIsSubmitting(true);
     try {
-      await authService.register({ username: data.username, password: data.password, professionalName: data.professionalName || undefined });
+      await authService.register({ username: data.username, password: data.password });
       await signIn(data.username, data.password);
       navigate('/dashboard');
     } catch (err) {
@@ -83,23 +82,6 @@ const RegisterPage: React.FC = () => {
             {errors.username && (
               <p className="mt-1 text-xs text-danger-600">{errors.username.message}</p>
             )}
-          </div>
-
-          {/* Nome profissional (opcional) */}
-          <div>
-            <label htmlFor="professionalName" className="block text-sm font-medium text-gray-700 mb-1">
-              Nome profissional (opcional)
-            </label>
-            <div className="relative">
-              <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                id="professionalName"
-                type="text"
-                placeholder="Dra. Ana Paula"
-                {...register('professionalName')}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition"
-              />
-            </div>
           </div>
 
           {/* Senha */}

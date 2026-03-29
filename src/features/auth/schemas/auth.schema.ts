@@ -21,7 +21,6 @@ export const registerSchema = z
     username: z
       .string()
       .min(3, "Usuário deve ter pelo menos 3 caracteres"),
-    professionalName: z.string().optional(),
     password: z
       .string()
       .min(6, "Senha deve ter pelo menos 6 caracteres"),
