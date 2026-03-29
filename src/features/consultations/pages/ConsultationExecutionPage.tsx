@@ -28,6 +28,7 @@ const ConsultationExecutionPageInner: React.FC = () => {
           type="button"
           onClick={() => state.navigate("/consultas")}
           className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition"
+          title="consultas"
         >
           <ArrowLeft size={20} />
         </button>
