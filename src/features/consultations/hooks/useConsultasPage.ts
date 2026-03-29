@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { appointmentService } from '@/features/appointments/services/appointment.service';
+import { useAppointments } from '@/features/appointments/hooks/useAppointments';
+import { useDebounce } from '@/hooks/useDebounce';
+import { toDateInTz } from '@/lib/dateUtils';
 import type { Appointment, Anamnesis } from '@/types';
 
 const MEDICAL_HISTORY_LABELS: { key: keyof Anamnesis; label: string }[] = [
@@ -45,21 +47,23 @@ export function useConsultasPage() {
     );
   };
 
-  const todayAppts = appointments
-    .filter((a) => toDateStr(a.scheduledDate) === todayStr && a.status !== 'completed' && a.status !== 'cancelled')
+  const todayAppts = useMemo(() => appointments
+    .filter((a) => getDateStr(a) === todayStr && a.status !== 'completed' && a.status !== 'cancelled')
     .filter(matchSearch)
     .sort((a, b) => new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime()),
     [appointments, debouncedSearch, todayStr]);
 
-  const futureAppts = appointments
-    .filter((a) => toDateStr(a.scheduledDate) > todayStr && a.status !== 'completed' && a.status !== 'cancelled')
+  const futureAppts = useMemo(() => appointments
+    .filter((a) => getDateStr(a) > todayStr && a.status !== 'completed' && a.status !== 'cancelled')
     .filter(matchSearch)
-    .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime());
+    .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime()),
+    [appointments, debouncedSearch, todayStr]);
 
   const completedAppts = useMemo(() => appointments
     .filter((a) => a.status === 'completed' || a.status === 'cancelled')
     .filter(matchSearch)
-    .sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime());
+    .sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime()),
+    [appointments, debouncedSearch]);
 
   return {
     appointments, search, setSearch, isLoading,

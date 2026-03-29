@@ -236,6 +236,7 @@ export function useConsultationExecutionPage() {
           amount: Number(billingAmount),
           paymentMethod: billingPaymentMethod,
           status: billingPaidNow ? "paid" : "pending",
+          paidAt: billingPaidNow ? new Date().toISOString() : null,
         },
       });
       showSuccess("Cobrança salva com sucesso.");

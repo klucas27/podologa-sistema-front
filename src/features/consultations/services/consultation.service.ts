@@ -30,6 +30,7 @@ export interface SaveBillingData {
   amount: number;
   paymentMethod: PaymentMethod;
   status: "pending" | "paid";
+  paidAt?: string | null;
 }
 
 export const consultationService = {
