@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { patientService } from '../services/patient.service';
+import { usePatient, useUpdatePatient } from './usePatients';
 import type { PatientForm } from '../constants';
 
 export function useEditarPacientePage() {
@@ -8,43 +8,35 @@ export function useEditarPacientePage() {
   const navigate = useNavigate();
   const [form, setForm] = useState<PatientForm | null>(null);
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchPatient = useCallback(async () => {
-    if (!id) return;
-    try {
-      const p = await patientService.getById(id);
-      const raw = p as unknown as Record<string, unknown>;
-      const professionalIds = Array.isArray(raw.patientProfessionals)
-        ? (raw.patientProfessionals as { professionalId: string }[]).map((pp) => pp.professionalId)
-        : [];
-      setForm({
-        fullName: p.fullName,
-        dateOfBirth: p.dateOfBirth ? p.dateOfBirth.split('T')[0] : '',
-        maritalStatus: p.maritalStatus,
-        occupation: p.occupation ?? '',
-        cpf: p.cpf,
-        phoneNumber: p.phoneNumber ?? '',
-        email: p.email ?? '',
-        zipCode: p.zipCode ?? '',
-        street: p.street ?? '',
-        addressNumber: p.addressNumber ?? '',
-        neighborhood: p.neighborhood ?? '',
-        city: p.city ?? '',
-        state: p.state ?? '',
-        professionalIds,
-      });
-    } catch {
-      navigate('/pacientes');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [id, navigate]);
+  const { data: patient, isLoading } = usePatient(id ?? '');
+  const updateMutation = useUpdatePatient();
+  const isSubmitting = updateMutation.isPending;
 
+  // Populate form from fetched patient data — legitimate derived state effect
   useEffect(() => {
-    fetchPatient();
-  }, [fetchPatient]);
+    if (!patient || form) return;
+    const raw = patient as unknown as Record<string, unknown>;
+    const professionalIds = Array.isArray(raw.patientProfessionals)
+      ? (raw.patientProfessionals as { professionalId: string }[]).map((pp) => pp.professionalId)
+      : [];
+    setForm({
+      fullName: patient.fullName,
+      dateOfBirth: patient.dateOfBirth ? patient.dateOfBirth.split('T')[0] : '',
+      maritalStatus: patient.maritalStatus,
+      occupation: patient.occupation ?? '',
+      cpf: patient.cpf,
+      phoneNumber: patient.phoneNumber ?? '',
+      email: patient.email ?? '',
+      zipCode: patient.zipCode ?? '',
+      street: patient.street ?? '',
+      addressNumber: patient.addressNumber ?? '',
+      neighborhood: patient.neighborhood ?? '',
+      city: patient.city ?? '',
+      state: patient.state ?? '',
+      professionalIds,
+    });
+  }, [patient, form]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -55,7 +47,7 @@ export function useEditarPacientePage() {
     setForm((prev) => (prev ? { ...prev, professionalIds: ids } : prev));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form || !id) return;
     setError('');
@@ -65,40 +57,42 @@ export function useEditarPacientePage() {
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      // Convert date from YYYY-MM-DD (HTML input) to ISO 8601 UTC
-      let dateOfBirth: string | null = null;
-      if (form.dateOfBirth) {
-        const parsed = new Date(form.dateOfBirth + 'T00:00:00');
-        if (!isNaN(parsed.getTime())) {
-          dateOfBirth = parsed.toISOString();
-        }
+    let dateOfBirth: string | null = null;
+    if (form.dateOfBirth) {
+      const parsed = new Date(form.dateOfBirth + 'T00:00:00');
+      if (!isNaN(parsed.getTime())) {
+        dateOfBirth = parsed.toISOString();
       }
-
-      await patientService.update(id, {
-        fullName: form.fullName,
-        dateOfBirth,
-        maritalStatus: form.maritalStatus,
-        occupation: form.occupation || null,
-        cpf: form.cpf.replace(/\D/g, ''),
-        phoneNumber: form.phoneNumber || null,
-        email: form.email || null,
-        zipCode: form.zipCode || null,
-        street: form.street || null,
-        addressNumber: form.addressNumber || null,
-        neighborhood: form.neighborhood || null,
-        city: form.city || null,
-        state: form.state || null,
-        professionalIds: form.professionalIds.length > 0 ? form.professionalIds : undefined,
-      } as Record<string, unknown>);
-      navigate(`/pacientes/${id}`);
-    } catch (err) {
-      const message = (err as { message?: string })?.message || 'Erro ao atualizar paciente. Tente novamente.';
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
     }
+
+    updateMutation.mutate(
+      {
+        id,
+        data: {
+          fullName: form.fullName,
+          dateOfBirth,
+          maritalStatus: form.maritalStatus,
+          occupation: form.occupation || null,
+          cpf: form.cpf.replace(/\D/g, ''),
+          phoneNumber: form.phoneNumber || null,
+          email: form.email || null,
+          zipCode: form.zipCode || null,
+          street: form.street || null,
+          addressNumber: form.addressNumber || null,
+          neighborhood: form.neighborhood || null,
+          city: form.city || null,
+          state: form.state || null,
+          ...(form.professionalIds.length > 0 ? { professionalIds: form.professionalIds } : {}),
+        } as Parameters<typeof updateMutation.mutate>[0]['data'],
+      },
+      {
+        onSuccess: () => navigate(`/pacientes/${id}`),
+        onError: (err) => {
+          const message = (err as { message?: string })?.message || 'Erro ao atualizar paciente. Tente novamente.';
+          setError(message);
+        },
+      },
+    );
   };
 
   return {

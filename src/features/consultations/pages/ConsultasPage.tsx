@@ -1,9 +1,10 @@
 import React from 'react';
 import {
   Plus, Search, Clock, CalendarCheck, CalendarClock,
-  ChevronDown, ChevronUp, Loader2, Stethoscope, Eye, UserCog, ClipboardCheck,
+  ChevronDown, ChevronUp, Stethoscope, Eye, UserCog, ClipboardCheck,
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import { SkeletonTable } from '@/components/ui/Skeleton';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useConsultasPage, getActiveConditions, formatDate, formatTime } from '../hooks/useConsultasPage';
 import type { Appointment, AppointmentStatus } from '@/types';
@@ -79,7 +80,10 @@ const ConsultasPage: React.FC = () => {
       </div>
 
       {h.isLoading ? (
-        <div className="flex items-center justify-center p-12"><Loader2 size={24} className="animate-spin text-primary-500" /></div>
+        <div className="space-y-4">
+          <SkeletonTable rows={3} cols={4} />
+          <SkeletonTable rows={3} cols={4} />
+        </div>
       ) : (
         <>
           {renderSection('Hoje', <Stethoscope size={18} className="text-primary-500" />, h.todayAppts, 'Nenhuma consulta para hoje.')}

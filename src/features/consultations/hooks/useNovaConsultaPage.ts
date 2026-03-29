@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { patientService } from '@/features/patients/services/patient.service';
-import { professionalService } from '@/features/professionals/services/professional.service';
-import { appointmentService } from '@/features/appointments/services/appointment.service';
-import type { Patient, Professional } from '@/types';
+import { usePatients } from '@/features/patients/hooks/usePatients';
+import { useActiveProfessionals } from '@/features/professionals/hooks/useProfessionals';
+import { useCreateAppointment } from '@/features/appointments/hooks/useAppointments';
+import type { Patient } from '@/types';
 
 const toDisplayDate = (iso: string): string => {
   if (!iso) return '';
@@ -43,13 +43,13 @@ export function useNovaConsultaPage() {
   const preselectedStart = searchParams.get('startTime') ?? '';
   const preselectedEnd = searchParams.get('endTime') ?? '';
 
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [isLoadingPatients, setIsLoadingPatients] = useState(true);
+  // Debounced search for patient autocomplete
+  const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [showResults, setShowResults] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
 
-  const [professionals, setProfessionals] = useState<Professional[]>([]);
-  const [isLoadingProfessionals, setIsLoadingProfessionals] = useState(true);
   const [professionalId, setProfessionalId] = useState('');
-
   const [patientId, setPatientId] = useState(preselectedPatientId);
   const [selectedPatientName, setSelectedPatientName] = useState('');
 
@@ -57,49 +57,32 @@ export function useNovaConsultaPage() {
   const [scheduledStart, setScheduledStart] = useState(preselectedStart);
   const [scheduledEnd, setScheduledEnd] = useState(preselectedEnd);
   const [notes, setNotes] = useState('');
-
-  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const [query, setQuery] = useState('');
-  const [showResults, setShowResults] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  // React Query: patients (debounced autocomplete search)
+  const { data: patients = [], isLoading: isLoadingPatients } = usePatients(debouncedQuery || undefined);
 
-  const fetchPatients = useCallback(async (q?: string) => {
-    setIsLoadingPatients(true);
-    try {
-      const data = await patientService.list(q);
-      setPatients(data);
-    } catch {
-      // silent
-    } finally {
-      setIsLoadingPatients(false);
+  // React Query: active professionals
+  const { data: professionals = [], isLoading: isLoadingProfessionals } = useActiveProfessionals();
+
+  // React Query: create mutation
+  const createMutation = useCreateAppointment();
+  const isSaving = createMutation.isPending;
+
+  // Debounce the patient query
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), 300);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  // Auto-select professional if logged-in user is a professional
+  useEffect(() => {
+    if (user?.professionalId && !professionalId) {
+      setProfessionalId(user.professionalId);
     }
-  }, []);
+  }, [user?.professionalId, professionalId]);
 
-  useEffect(() => {
-    fetchPatients();
-  }, [fetchPatients]);
-
-  useEffect(() => {
-    const load = async () => {
-      setIsLoadingProfessionals(true);
-      try {
-        const data = await professionalService.listActive();
-        setProfessionals(data);
-        // Auto-select professional if logged-in user is a professional
-        if (user?.professionalId) {
-          setProfessionalId(user.professionalId);
-        }
-      } catch {
-        // silent
-      } finally {
-        setIsLoadingProfessionals(false);
-      }
-    };
-    load();
-  }, []);
-
+  // Pre-select patient name from URL param
   useEffect(() => {
     if (preselectedPatientId && patients.length > 0 && !selectedPatientName) {
       const found = patients.find((p) => p.id === preselectedPatientId);
@@ -107,13 +90,7 @@ export function useNovaConsultaPage() {
     }
   }, [patients, preselectedPatientId, selectedPatientName]);
 
-  useEffect(() => {
-    const t = setTimeout(() => {
-      fetchPatients(query || undefined);
-    }, 300);
-    return () => clearTimeout(t);
-  }, [query, fetchPatients]);
-
+  // Click-outside to close autocomplete
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
@@ -147,7 +124,7 @@ export function useNovaConsultaPage() {
     return new Date(`${isoDate}T${time}:00`).toISOString();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -175,23 +152,23 @@ export function useNovaConsultaPage() {
       setError('Profissional não identificado. Faça login novamente.'); return;
     }
 
-    setIsSaving(true);
-    try {
-      await appointmentService.create({
+    createMutation.mutate(
+      {
         patientId,
         professionalId,
         scheduledDate: new Date(`${isoDate}T00:00:00`).toISOString(),
         scheduledStart: start,
         scheduledEnd: end,
         notes: notes.trim() || undefined,
-      });
-      navigate('/agendamentos');
-    } catch (err: unknown) {
-      const message = (err as { message?: string })?.message || 'Erro ao criar agendamento.';
-      setError(message);
-    } finally {
-      setIsSaving(false);
-    }
+      },
+      {
+        onSuccess: () => navigate('/agendamentos'),
+        onError: (err) => {
+          const message = (err as { message?: string })?.message || 'Erro ao criar agendamento.';
+          setError(message);
+        },
+      },
+    );
   };
 
   const isProfessionalUser = user?.role === 'professional' && !!user?.professionalId;

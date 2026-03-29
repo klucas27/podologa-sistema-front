@@ -41,4 +41,9 @@ export const appointmentService = {
       .then((res) => res.data),
 
   delete: (id: string) => api.delete<void>(`/api/appointments/${id}`),
+
+  listByPatient: (patientId: string) =>
+    api
+      .get<ApiResponse<Appointment[]>>(`/api/appointments/patient/${patientId}`)
+      .then((res) => res.data),
 };

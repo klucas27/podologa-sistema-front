@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { appointmentService } from '@/features/appointments/services/appointment.service';
+import { useAppointments } from '@/features/appointments/hooks/useAppointments';
+import { useDebounce } from '@/hooks/useDebounce';
 import type { Appointment, Anamnesis } from '@/types';
 
 const MEDICAL_HISTORY_LABELS: { key: keyof Anamnesis; label: string }[] = [
@@ -35,52 +36,43 @@ const toDateStr = (iso: string) => iso.slice(0, 10);
 
 export function useConsultasPage() {
   const navigate = useNavigate();
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [search, setSearch] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
   const [showCompleted, setShowCompleted] = useState(false);
+  const debouncedSearch = useDebounce(search, 300);
 
-  const fetchAppointments = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await appointmentService.list();
-      setAppointments(data);
-    } catch {
-      setAppointments([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchAppointments();
-  }, [fetchAppointments]);
+  const { data: appointments = [], isLoading } = useAppointments();
 
   const todayStr = new Date().toISOString().slice(0, 10);
 
   const matchSearch = (a: Appointment) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
+    if (!debouncedSearch) return true;
+    const q = debouncedSearch.toLowerCase();
     return (
       (a.patient?.fullName ?? '').toLowerCase().includes(q) ||
       (a.notes ?? '').toLowerCase().includes(q)
     );
   };
 
-  const todayAppts = appointments
+  // useMemo: estas 3 filtragens+sorts percorrem O(n) cada. Com 200+
+  // consultas, re-calcular em cada render (sidebar collapse, etc.)
+  // desperdiça ~5ms. Memoizando, só recalcula quando appointments ou search mudam.
+  const todayAppts = useMemo(() => appointments
     .filter((a) => toDateStr(a.scheduledDate) === todayStr && a.status !== 'completed' && a.status !== 'cancelled')
     .filter(matchSearch)
-    .sort((a, b) => new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime());
+    .sort((a, b) => new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime()),
+    [appointments, debouncedSearch, todayStr]);
 
-  const futureAppts = appointments
+  const futureAppts = useMemo(() => appointments
     .filter((a) => toDateStr(a.scheduledDate) > todayStr && a.status !== 'completed' && a.status !== 'cancelled')
     .filter(matchSearch)
-    .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime());
+    .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime()),
+    [appointments, debouncedSearch, todayStr]);
 
-  const completedAppts = appointments
+  const completedAppts = useMemo(() => appointments
     .filter((a) => a.status === 'completed' || a.status === 'cancelled')
     .filter(matchSearch)
-    .sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime());
+    .sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime()),
+    [appointments, debouncedSearch]);
 
   return {
     appointments, search, setSearch, isLoading,

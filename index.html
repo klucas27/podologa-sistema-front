@@ -7,6 +7,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#0ABAB5" />
     <meta name="description" content="PodoSistema — Gestão completa para consultórios de Podologia" />
+
+    <!-- Preconnect: resolve DNS + TLS handshake ANTES de pedir a font.
+         Sem preconnect: font request inicia após CSS ser parseado (~200ms delay).
+         Com preconnect: conexão já está pronta → font começa a baixar imediatamente.
+         Impacto: LCP -100-200ms (texto renderiza mais rápido). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Font com display=swap: renderiza texto com fallback (system-ui) imediatamente.
+         Quando a Inter carrega, troca sem flash. Sem swap, texto ficaria invisível
+         até a font carregar (FOIT — Flash of Invisible Text), piorando o LCP.
+         Impacto CLS: < 0.01 (Inter e system-ui têm métricas similares). -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
+
     <title>PodoSistema</title>
   </head>
   <body>

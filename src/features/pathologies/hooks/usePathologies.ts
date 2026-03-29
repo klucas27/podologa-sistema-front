@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { pathologyService } from "../services/pathology.service";
+import { notifySuccess } from "@/lib/notifications";
 
 export const pathologyKeys = {
   all: ["pathologies"] as const,
@@ -21,6 +22,7 @@ export function useCreatePathology() {
     mutationFn: pathologyService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: pathologyKeys.all });
+      notifySuccess("Patologia criada com sucesso.");
     },
   });
 }
@@ -38,6 +40,7 @@ export function useUpdatePathology() {
     }) => pathologyService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: pathologyKeys.all });
+      notifySuccess("Patologia atualizada.");
     },
   });
 }
@@ -49,6 +52,7 @@ export function useDeletePathology() {
     mutationFn: pathologyService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: pathologyKeys.all });
+      notifySuccess("Patologia excluída.");
     },
   });
 }

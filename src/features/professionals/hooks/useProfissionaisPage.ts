@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { professionalService } from '../services/professional.service';
+import { useState } from 'react';
+import { useProfessionals, useCreateProfessional, useUpdateProfessional, useDeleteProfessional } from './useProfessionals';
 import type { Professional } from '@/types';
 
 interface ProfessionalForm {
@@ -16,32 +16,20 @@ const EMPTY_FORM: ProfessionalForm = { fullName: '', specialty: '', phoneNumber:
 export type { ProfessionalForm };
 
 export function useProfissionaisPage() {
-  const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [search, setSearch] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ProfessionalForm>(EMPTY_FORM);
-  const [isSaving, setIsSaving] = useState(false);
   const [formError, setFormError] = useState('');
 
-  const fetchProfessionals = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await professionalService.list();
-      setProfessionals(data);
-    } catch {
-      setProfessionals([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const { data: professionals = [], isLoading } = useProfessionals();
+  const createMutation = useCreateProfessional();
+  const updateMutation = useUpdateProfessional();
+  const deleteMutation = useDeleteProfessional();
 
-  useEffect(() => {
-    fetchProfessionals();
-  }, [fetchProfessionals]);
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+  const deletingId = deleteMutation.isPending ? (deleteMutation.variables as string | undefined) ?? null : null;
 
   const filtered = professionals.filter((p) => {
     if (!search) return true;
@@ -81,7 +69,7 @@ export function useProfissionaisPage() {
     setFormError('');
   };
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
 
@@ -101,48 +89,35 @@ export function useProfissionaisPage() {
       }
     }
 
-    setIsSaving(true);
-    try {
-      const body: Record<string, unknown> = {
-        fullName: form.fullName.trim(),
-        specialty: form.specialty.trim() || null,
-        phoneNumber: form.phoneNumber.trim() || null,
-        email: form.email.trim() || null,
-      };
-
-      if (editingId) {
-        await professionalService.update(editingId, body);
-      } else {
-        body.username = form.username.trim();
-        body.password = form.password;
-        await professionalService.create(body);
-      }
-
-      closeModal();
-      fetchProfessionals();
-    } catch (err: unknown) {
+    const onSuccess = () => closeModal();
+    const onError = (err: unknown) => {
       const message = (err as { message?: string })?.message || 'Erro ao salvar profissional.';
       setFormError(message);
-    } finally {
-      setIsSaving(false);
+    };
+
+    const body: Record<string, unknown> = {
+      fullName: form.fullName.trim(),
+      specialty: form.specialty.trim() || null,
+      phoneNumber: form.phoneNumber.trim() || null,
+      email: form.email.trim() || null,
+    };
+
+    if (editingId) {
+      updateMutation.mutate({ id: editingId, data: body }, { onSuccess, onError });
+    } else {
+      body.username = form.username.trim();
+      body.password = form.password;
+      createMutation.mutate(body, { onSuccess, onError });
     }
   };
 
-  const handleDelete = async (id: string, name: string) => {
+  const handleDelete = (id: string, name: string) => {
     const confirmed = window.confirm(
       `Tem certeza que deseja excluir o profissional "${name}"? Esta ação não pode ser desfeita.`,
     );
     if (!confirmed) return;
 
-    setDeletingId(id);
-    try {
-      await professionalService.delete(id);
-      setProfessionals((prev) => prev.filter((p) => p.id !== id));
-    } catch {
-      alert('Erro ao excluir profissional. Verifique se não há consultas vinculadas.');
-    } finally {
-      setDeletingId(null);
-    }
+    deleteMutation.mutate(id);
   };
 
   const formatPhone = (phone: string | null): string => {

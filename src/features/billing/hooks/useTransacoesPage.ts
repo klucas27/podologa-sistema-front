@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { billingService } from '../services/billing.service';
+import { useBillings, useUpdateBillingStatus } from './useBillings';
+import { useDebounce } from '@/hooks/useDebounce';
 import type { Billing, BillingStatus, PaymentMethod } from '@/types';
 
 const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
@@ -31,48 +32,27 @@ export const STATUS_LABELS: Record<BillingStatus, { label: string; className: st
 
 export function useTransacoesPage() {
   const navigate = useNavigate();
-  const [billings, setBillings] = useState<Billing[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<BillingStatus | ''>('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const debouncedSearch = useDebounce(search, 300);
 
-  const fetchBillings = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await billingService.list();
-      setBillings(data);
-    } catch {
-      setBillings([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const { data: billings = [], isLoading } = useBillings();
+  const updateStatusMutation = useUpdateBillingStatus();
 
-  useEffect(() => {
-    fetchBillings();
-  }, [fetchBillings]);
+  const updatingId = updateStatusMutation.isPending ? (updateStatusMutation.variables?.id ?? null) : null;
 
-  const updateStatus = async (id: string, newStatus: BillingStatus) => {
-    setUpdatingId(id);
-    try {
-      await billingService.updateStatus(
-        id,
-        newStatus,
-        newStatus === 'paid' ? new Date().toISOString() : null,
-      );
-      await fetchBillings();
-    } catch {
-      alert('Erro ao atualizar status da transação.');
-    } finally {
-      setUpdatingId(null);
-    }
+  const updateStatus = (id: string, newStatus: BillingStatus) => {
+    updateStatusMutation.mutate({
+      id,
+      status: newStatus,
+      paidAt: newStatus === 'paid' ? new Date().toISOString() : null,
+    });
   };
 
-  const filtered = billings.filter((b) => {
+  const filtered = useMemo(() => billings.filter((b) => {
     if (statusFilter && b.status !== statusFilter) return false;
-    if (!search) return true;
-    const q = search.toLowerCase();
+    if (!debouncedSearch) return true;
+    const q = debouncedSearch.toLowerCase();
     const appt = b.appointment as Billing['appointment'] & {
       patient?: { fullName: string };
       professional?: { fullName: string };
@@ -82,17 +62,20 @@ export function useTransacoesPage() {
       (appt?.professional?.fullName ?? '').toLowerCase().includes(q) ||
       PAYMENT_METHOD_LABELS[b.paymentMethod].toLowerCase().includes(q)
     );
-  });
+  }), [billings, debouncedSearch, statusFilter]);
 
-  const totalAmount = filtered.reduce(
-    (sum, b) => sum + parseFloat(b.amount?.toString() ?? '0'), 0,
-  );
-  const paidAmount = filtered
-    .filter((b) => b.status === 'paid')
-    .reduce((sum, b) => sum + parseFloat(b.amount?.toString() ?? '0'), 0);
-  const pendingAmount = filtered
-    .filter((b) => b.status === 'pending')
-    .reduce((sum, b) => sum + parseFloat(b.amount?.toString() ?? '0'), 0);
+  const { totalAmount, paidAmount, pendingAmount } = useMemo(() => {
+    const total = filtered.reduce(
+      (sum, b) => sum + parseFloat(b.amount?.toString() ?? '0'), 0,
+    );
+    const paid = filtered
+      .filter((b) => b.status === 'paid')
+      .reduce((sum, b) => sum + parseFloat(b.amount?.toString() ?? '0'), 0);
+    const pending = filtered
+      .filter((b) => b.status === 'pending')
+      .reduce((sum, b) => sum + parseFloat(b.amount?.toString() ?? '0'), 0);
+    return { totalAmount: total, paidAmount: paid, pendingAmount: pending };
+  }, [filtered]);
 
   return {
     billings, filtered, search, setSearch, statusFilter, setStatusFilter,
