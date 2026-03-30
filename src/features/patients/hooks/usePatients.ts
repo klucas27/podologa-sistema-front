@@ -50,6 +50,7 @@ export function useCreatePatient() {
     mutationFn: patientService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: patientKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       notifySuccess("Paciente cadastrado com sucesso.");
     },
   });
@@ -99,6 +100,7 @@ export function useUpdatePatient() {
     onSettled: (_data, _error, { id }) => {
       queryClient.invalidateQueries({ queryKey: patientKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: patientKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
 
     onSuccess: () => {
@@ -114,6 +116,7 @@ export function useDeletePatient() {
     mutationFn: patientService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: patientKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       notifySuccess("Paciente excluído com sucesso.");
     },
   });
@@ -126,6 +129,7 @@ export function useForceDeletePatient() {
     mutationFn: patientService.forceDelete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: patientKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       notifySuccess("Paciente e registros vinculados excluídos.");
     },
   });

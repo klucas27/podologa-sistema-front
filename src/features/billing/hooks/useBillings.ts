@@ -24,6 +24,8 @@ export function useCreateBilling() {
     mutationFn: (data: CreateBillingData) => billingService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: billingKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["consultations"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       notifySuccess("Cobrança registrada com sucesso.");
     },
   });
@@ -42,6 +44,8 @@ export function useUpdateBilling() {
     }) => billingService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: billingKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["consultations"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }
@@ -54,6 +58,8 @@ export function useUpdateBillingStatus() {
       billingService.updateStatus(id, status, paidAt),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: billingKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["consultations"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       notifySuccess("Status atualizado com sucesso.");
     },
   });
@@ -66,6 +72,8 @@ export function useDeleteBilling() {
     mutationFn: billingService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: billingKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["consultations"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }

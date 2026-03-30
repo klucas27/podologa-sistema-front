@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { consultationService } from "../services/consultation.service";
 import type { SaveEvolutionData, SaveBillingData } from "../services/consultation.service";
+import { appointmentKeys } from "@/features/appointments/hooks/useAppointments";
 
 export const consultationKeys = {
   all: ["consultations"] as const,
@@ -54,6 +55,8 @@ export function useUpdateAppointmentStatus() {
       queryClient.invalidateQueries({
         queryKey: consultationKeys.appointment(variables.id),
       });
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }
@@ -76,6 +79,7 @@ export function useUpdateAppointmentTimes() {
       queryClient.invalidateQueries({
         queryKey: consultationKeys.appointment(variables.id),
       });
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.all });
     },
   });
 }
@@ -120,6 +124,8 @@ export function useSaveBilling() {
       queryClient.invalidateQueries({
         queryKey: consultationKeys.billings(variables.data.appointmentId),
       });
+      queryClient.invalidateQueries({ queryKey: ["billings"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }

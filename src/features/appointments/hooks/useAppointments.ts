@@ -53,6 +53,7 @@ export function useCreateAppointment() {
       appointmentService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: appointmentKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       notifySuccess("Agendamento criado com sucesso.");
     },
   });
@@ -100,6 +101,7 @@ export function useUpdateAppointment() {
 
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: appointmentKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }
@@ -111,6 +113,7 @@ export function useDeleteAppointment() {
     mutationFn: appointmentService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: appointmentKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       notifySuccess("Agendamento excluído.");
     },
   });
