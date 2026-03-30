@@ -4,11 +4,17 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import { PageSkeleton } from "@/components/ui/Skeleton";
+import { useAuthStore } from "@/stores/auth.store";
 
 // Auth — carregamento síncrono: são as primeiras páginas vistas (LCP crítico)
 import LoginPage from "@/features/auth/pages/LoginPage";
 import RegisterPage from "@/features/auth/pages/RegisterPage";
 import AcessoNegadoPage from "@/features/auth/pages/AcessoNegadoPage";
+
+function RoleRedirect() {
+  const role = useAuthStore((s) => s.role);
+  return <Navigate to={role === "admin" ? "/dashboard" : "/pacientes"} replace />;
+}
 
 // ─── Lazy-loaded pages ────────────────────────────────────────────
 // React.lazy split cada página em chunk separado. Impacto no LCP:
@@ -74,8 +80,14 @@ export const router = createBrowserRouter([
       {
         element: <MainLayout />,
         children: [
-          { index: true, element: <Navigate to="/dashboard" replace /> },
-          { path: "/dashboard", element: lazy(DashboardPage) },
+          { index: true, element: <RoleRedirect /> },
+          {
+            element: <ProtectedRoute allowedRoles={["admin"]} />,
+            children: [
+              { path: "/dashboard", element: lazy(DashboardPage) },
+              { path: "/profissionais", element: lazy(ProfissionaisPage) },
+            ],
+          },
           { path: "/pacientes", element: lazy(PacientesPage) },
           { path: "/pacientes/novo", element: lazy(CadastroPacientePage) },
           { path: "/pacientes/:id", element: lazy(ProntuarioPage) },
@@ -92,7 +104,6 @@ export const router = createBrowserRouter([
             path: "/consultas/:appointmentId/execucao",
             element: lazy(ConsultationExecutionPage),
           },
-          { path: "/profissionais", element: lazy(ProfissionaisPage) },
           { path: "/transacoes", element: lazy(TransacoesPage) },
           { path: "/configuracoes", element: lazy(ConfiguracoesPage) },
         ],
@@ -101,6 +112,6 @@ export const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <Navigate to="/dashboard" replace />,
+    element: <Navigate to="/" replace />,
   },
 ]);

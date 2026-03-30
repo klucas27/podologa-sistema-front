@@ -1,6 +1,6 @@
 import React from "react";
 import type { Appointment } from "@/types";
-import { formatTime } from "@/lib/dateUtils";
+import { formatTime, getHoursInTz } from "@/lib/dateUtils";
 import {
   SLOT_HEIGHT,
   WEEK_DAYS,
@@ -151,9 +151,9 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
               {/* Current time indicator */}
               {isToday &&
                 (() => {
-                  const now = new Date();
+                  const nowSP = getHoursInTz(new Date());
                   const nowMin =
-                    (now.getHours() - hourStart) * 60 + now.getMinutes();
+                    (nowSP.hours - hourStart) * 60 + nowSP.minutes;
                   if (nowMin < 0 || nowMin > (hourEnd - hourStart) * 60)
                     return null;
                   const top = (nowMin / 60) * SLOT_HEIGHT;

@@ -30,14 +30,8 @@ export function useCadastroPacientePage() {
 
     setIsSubmitting(true);
     try {
-      // Convert date from YYYY-MM-DD (HTML input) to ISO 8601 UTC
-      let dateOfBirth: string | null = null;
-      if (form.dateOfBirth) {
-        const parsed = new Date(form.dateOfBirth + 'T00:00:00');
-        if (!isNaN(parsed.getTime())) {
-          dateOfBirth = parsed.toISOString();
-        }
-      }
+      // Send date-only string directly; backend normalizes to noon UTC
+      const dateOfBirth: string | null = form.dateOfBirth || null;
 
       const created = await patientService.create({
         fullName: form.fullName,

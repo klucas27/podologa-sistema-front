@@ -23,7 +23,7 @@ export function useAuth() {
   const signOutMutation = useSignOut();
 
   const signIn = async (username: string, password: string) => {
-    await signInMutation.mutateAsync({ username, password });
+    return signInMutation.mutateAsync({ username, password });
   };
 
   const signOut = () => {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePatient, useUpdatePatient } from './usePatients';
+import { toDateInTz } from '@/lib/dateUtils';
 import type { PatientForm } from '../constants';
 
 export function useEditarPacientePage() {
@@ -22,7 +23,7 @@ export function useEditarPacientePage() {
       : [];
     setForm({
       fullName: patient.fullName,
-      dateOfBirth: patient.dateOfBirth ? patient.dateOfBirth.split('T')[0] : '',
+      dateOfBirth: patient.dateOfBirth ? toDateInTz(patient.dateOfBirth) : '',
       maritalStatus: patient.maritalStatus,
       occupation: patient.occupation ?? '',
       cpf: patient.cpf,
@@ -57,13 +58,8 @@ export function useEditarPacientePage() {
       return;
     }
 
-    let dateOfBirth: string | null = null;
-    if (form.dateOfBirth) {
-      const parsed = new Date(form.dateOfBirth + 'T00:00:00');
-      if (!isNaN(parsed.getTime())) {
-        dateOfBirth = parsed.toISOString();
-      }
-    }
+    // Send date-only string directly; backend normalizes to noon UTC
+    const dateOfBirth: string | null = form.dateOfBirth || null;
 
     updateMutation.mutate(
       {

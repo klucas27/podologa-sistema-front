@@ -11,6 +11,7 @@ import {
   useSaveBilling,
 } from "./useConsultations";
 import { consultationService } from "../services/consultation.service";
+import { getHoursInTz, nowSPISO, toDateInTz, spDateTimeToISO } from "@/lib/dateUtils";
 import type {
   AppointmentStatus,
   BodyPart,
@@ -112,19 +113,19 @@ export function useConsultationExecutionPage() {
   useEffect(() => {
     if (appointment) {
       const s = appointment.scheduledStart
-        ? new Date(appointment.scheduledStart)
+        ? getHoursInTz(appointment.scheduledStart)
         : null;
       const e = appointment.scheduledEnd
-        ? new Date(appointment.scheduledEnd)
+        ? getHoursInTz(appointment.scheduledEnd)
         : null;
       setEditStart(
         s
-          ? `${String(s.getHours()).padStart(2, "0")}:${String(s.getMinutes()).padStart(2, "0")}`
+          ? `${String(s.hours).padStart(2, "0")}:${String(s.minutes).padStart(2, "0")}`
           : "",
       );
       setEditEnd(
         e
-          ? `${String(e.getHours()).padStart(2, "0")}:${String(e.getMinutes()).padStart(2, "0")}`
+          ? `${String(e.hours).padStart(2, "0")}:${String(e.minutes).padStart(2, "0")}`
           : "",
       );
     }
@@ -167,22 +168,18 @@ export function useConsultationExecutionPage() {
       setError("Informe os horários de início e término.");
       return;
     }
-    const startIso =
-      (appointment?.scheduledDate ?? "").slice(0, 10) +
-      "T" +
-      editStart +
-      ":00";
-    const endIso =
-      (appointment?.scheduledDate ?? "").slice(0, 10) + "T" + editEnd + ":00";
-    if (new Date(startIso) >= new Date(endIso)) {
+    const dateStr = (appointment?.scheduledDate ?? "").slice(0, 10);
+    const startUtc = spDateTimeToISO(dateStr, editStart);
+    const endUtc = spDateTimeToISO(dateStr, editEnd);
+    if (new Date(startUtc) >= new Date(endUtc)) {
       setError("O horário de término deve ser posterior ao de início.");
       return;
     }
     try {
       await updateTimesMutation.mutateAsync({
         id: appointmentId,
-        scheduledStart: new Date(startIso).toISOString(),
-        scheduledEnd: new Date(endIso).toISOString(),
+        scheduledStart: startUtc,
+        scheduledEnd: endUtc,
       });
       showSuccess("Horários atualizados com sucesso.");
     } catch (err: unknown) {
@@ -236,7 +233,7 @@ export function useConsultationExecutionPage() {
           amount: Number(billingAmount),
           paymentMethod: billingPaymentMethod,
           status: billingPaidNow ? "paid" : "pending",
-          paidAt: billingPaidNow ? new Date().toISOString() : null,
+          paidAt: billingPaidNow ? nowSPISO() : null,
         },
       });
       showSuccess("Cobrança salva com sucesso.");

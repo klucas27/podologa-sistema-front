@@ -12,7 +12,7 @@ import {
   parseTimeHour,
   pad2,
 } from "../constants";
-import { getHoursInTz, toISODate, toDateInTz } from "@/lib/dateUtils";
+import { getHoursInTz, toISODate, toDateInTz, spDateTimeToISO } from "@/lib/dateUtils";
 
 export function useAgendamentosPage() {
   const navigate = useNavigate();
@@ -115,8 +115,8 @@ export function useAgendamentosPage() {
       const endHour = hour + Math.floor(DEFAULT_DURATION_MIN / 60);
       const endMin = DEFAULT_DURATION_MIN % 60;
       const endTime = `${pad2(endHour)}:${pad2(endMin)}`;
-      const candidate = new Date(`${dateStr}T${startTime}:00`);
-      if (candidate < new Date()) {
+      const candidateUtc = spDateTimeToISO(dateStr, startTime);
+      if (new Date(candidateUtc) < new Date()) {
         window.alert("Cannot create appointments in the past.");
         return;
       }
@@ -170,7 +170,7 @@ export function useAgendamentosPage() {
       const newEnd = new Date(
         dragState.originalEnd.getTime() + deltaMinutes * 60000,
       );
-      if (newStart.getHours() < hourStart || newEnd.getHours() > hourEnd) {
+      if (getHoursInTz(newStart).hours < hourStart || getHoursInTz(newEnd).hours > hourEnd) {
         setDragState(null);
         return;
       }

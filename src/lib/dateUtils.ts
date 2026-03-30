@@ -1,45 +1,46 @@
 /**
  * Utilitário central de formatação de data/hora.
  *
- * - Todas as datas armazenadas no banco estão em UTC (ISO 8601).
- * - A conversão para exibição é feita exclusivamente aqui.
- * - Timezone padrão de exibição: America/Sao_Paulo.
+ * - Todas as datas armazenadas no banco estão em horário de São Paulo.
+ * - Os valores trafegam com sufixo Z, mas representam horário de SP.
+ * - Formatadores usam timeZone "UTC" porque os slots UTC já contêm SP.
  * - Localidade: pt-BR, formato 24h.
+ * - NUNCA usar new Date() para "agora" — usar nowSPISO().
  */
 
-const TIMEZONE = "America/Sao_Paulo";
 const LOCALE = "pt-BR";
 
 // ── Helpers internos ─────────────────────────────────────────
 
 /**
  * Converte string/Date em Date de forma segura.
- * Strings date-only (YYYY-MM-DD) recebem T12:00:00 para evitar
- * troca de dia ao converter de UTC para fuso local.
+ * Strings date-only (YYYY-MM-DD) recebem T12:00:00Z para evitar
+ * troca de dia.
  */
 function toSafeDate(value: string | Date): Date {
   if (typeof value !== "string") return value;
-  return new Date(value.length === 10 ? value + "T12:00:00" : value);
+  return new Date(value.length === 10 ? value + "T12:00:00Z" : value);
 }
 
 // ── Formatadores pré-instanciados (performance) ─────────────
+// timeZone: "UTC" porque as datas do banco já têm SP nos slots UTC.
 
 const dateFormatter = new Intl.DateTimeFormat(LOCALE, {
-  timeZone: TIMEZONE,
+  timeZone: "UTC",
   day: "2-digit",
   month: "2-digit",
   year: "numeric",
 });
 
 const timeFormatter = new Intl.DateTimeFormat(LOCALE, {
-  timeZone: TIMEZONE,
+  timeZone: "UTC",
   hour: "2-digit",
   minute: "2-digit",
   hour12: false,
 });
 
 const dateTimeFormatter = new Intl.DateTimeFormat(LOCALE, {
-  timeZone: TIMEZONE,
+  timeZone: "UTC",
   day: "2-digit",
   month: "2-digit",
   year: "numeric",
@@ -49,7 +50,7 @@ const dateTimeFormatter = new Intl.DateTimeFormat(LOCALE, {
 });
 
 const monthYearFormatter = new Intl.DateTimeFormat(LOCALE, {
-  timeZone: TIMEZONE,
+  timeZone: "UTC",
   month: "long",
   year: "numeric",
 });
@@ -91,6 +92,18 @@ export function formatMonthYear(value: string | Date): string {
   return monthYearFormatter.format(d);
 }
 
+const shortMonthYearFmt = new Intl.DateTimeFormat(LOCALE, {
+  timeZone: "UTC",
+  month: "short",
+  year: "numeric",
+});
+
+/** "mar. de 2026" */
+export function formatShortMonthYear(value: string | Date): string {
+  const d = toSafeDate(value);
+  return shortMonthYearFmt.format(d);
+}
+
 /** "R$ 1.234,56" */
 export function formatCurrency(value: number | string): string {
   const num = typeof value === "string" ? parseFloat(value) : value;
@@ -106,37 +119,68 @@ export function toISODate(d: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-// ── Formatador interno para extração de data em SP ───────────
-
-const isoDateInTzFormatter = new Intl.DateTimeFormat("en-US", {
-  timeZone: TIMEZONE,
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-});
-
 /**
- * Extrai a data YYYY-MM-DD no fuso America/Sao_Paulo.
+ * Extrai a data YYYY-MM-DD dos slots UTC (que contêm horário de SP).
  *
- * Diferente de toISODate (que usa timezone do browser),
- * esta função extrai o dia REAL conforme São Paulo.
- *
- * Aceita strings ISO ("2026-03-28T02:00:00Z") e date-only ("2026-03-28").
+ * Aceita strings ISO e date-only.
  */
 export function toDateInTz(value: string | Date): string {
   const d = typeof value === "string" ? toSafeDate(value) : value;
-  const parts = isoDateInTzFormatter.formatToParts(d);
-  const y = parts.find((p) => p.type === "year")!.value;
-  const m = parts.find((p) => p.type === "month")!.value;
-  const dd = parts.find((p) => p.type === "day")!.value;
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(d.getUTCDate()).padStart(2, "0");
   return `${y}-${m}-${dd}`;
 }
 
-/** Extrai hora e minuto no fuso America/Sao_Paulo (para posicionamento no grid). */
+/** Extrai hora e minuto dos slots UTC (que contêm horário de SP). */
 export function getHoursInTz(value: string | Date): { hours: number; minutes: number } {
   const d = typeof value === "string" ? new Date(value) : value;
-  const parts = timeFormatter.formatToParts(d);
-  const hours = parseInt(parts.find((p) => p.type === "hour")!.value, 10);
-  const minutes = parseInt(parts.find((p) => p.type === "minute")!.value, 10);
-  return { hours, minutes };
+  return { hours: d.getUTCHours(), minutes: d.getUTCMinutes() };
+}
+
+/**
+ * Retorna agora em horário de SP como ISO string — para enviar ao backend.
+ * Usa Intl para garantir horário de SP independente do fuso do dispositivo.
+ */
+export function nowSPISO(): string {
+  const fmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  const parts = fmt.formatToParts(new Date());
+  const get = (type: string) => parts.find((p) => p.type === type)!.value;
+  return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}:${get("second")}.000Z`;
+}
+
+/**
+ * Converte data "YYYY-MM-DD" + hora "HH:MM" (horário de São Paulo)
+ * para string ISO, pronta para enviar ao backend.
+ * Sem conversão — o backend armazena horário de SP diretamente.
+ */
+export function spDateTimeToISO(dateStr: string, timeStr: string): string {
+  return `${dateStr}T${timeStr}:00.000Z`;
+}
+
+/**
+ * Formata data longa em SP.
+ * Ex.: "sábado, 28 de março de 2026"
+ */
+const longDateFormatter = new Intl.DateTimeFormat(LOCALE, {
+  timeZone: "UTC",
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
+
+export function formatLongDate(value: string | Date | null | undefined): string {
+  if (!value) return "—";
+  const d = toSafeDate(value);
+  if (isNaN(d.getTime())) return "—";
+  return longDateFormatter.format(d);
 }

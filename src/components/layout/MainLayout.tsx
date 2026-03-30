@@ -20,22 +20,24 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { routeImportMap } from '@/app/router';
 
-const navItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/pacientes', label: 'Pacientes', icon: Users },
-  { to: '/consultas', label: 'Consultas', icon: Stethoscope },
-  { to: '/agendamentos', label: 'Agendamentos', icon: CalendarDays },
-  { to: '/profissionais', label: 'Profissionais', icon: UserCog },
-  { to: '/transacoes', label: 'Transações', icon: DollarSign },
-  { to: '/patologias', label: 'Patologias', icon: Bug },
-  { to: '/configuracoes', label: 'Configurações', icon: Settings },
+const allNavItems = [
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: true },
+  { to: '/pacientes', label: 'Pacientes', icon: Users, adminOnly: false },
+  { to: '/consultas', label: 'Consultas', icon: Stethoscope, adminOnly: false },
+  { to: '/agendamentos', label: 'Agendamentos', icon: CalendarDays, adminOnly: false },
+  { to: '/profissionais', label: 'Profissionais', icon: UserCog, adminOnly: true },
+  { to: '/transacoes', label: 'Transações', icon: DollarSign, adminOnly: false },
+  { to: '/patologias', label: 'Patologias', icon: Bug, adminOnly: false },
+  { to: '/configuracoes', label: 'Configurações', icon: Settings, adminOnly: false },
 ];
 
 const MainLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, role, signOut } = useAuth();
   const navigate = useNavigate();
+
+  const navItems = allNavItems.filter((item) => !item.adminOnly || role === 'admin');
 
   // Prefetch: carrega o chunk da rota quando o cursor passa sobre o link.
   // Impacto: navegação parece instantânea (chunk já está em cache).
@@ -115,7 +117,7 @@ const MainLayout: React.FC = () => {
           {!collapsed && (
             <div className="overflow-hidden">
               <p className="text-sm font-semibold text-gray-800 truncate">{displayName}</p>
-              <p className="text-xs text-gray-400 truncate">Podóloga</p>
+              <p className="text-xs text-gray-400 truncate">{role === 'admin' ? 'Administrador' : 'Profissional'}</p>
             </div>
           )}
         </div>

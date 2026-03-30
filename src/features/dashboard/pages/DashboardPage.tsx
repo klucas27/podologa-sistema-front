@@ -10,6 +10,7 @@ import AlertsHeatmapChart from "../components/AlertsHeatmapChart";
 import PeriodFilter from "../components/PeriodFilter";
 import ReturnAlertsList from "../components/ReturnAlertsList";
 import { useDashboardPage } from "../hooks/useDashboardPage";
+import { formatLongDate } from "@/lib/dateUtils";
 
 const DashboardChart: React.FC<{
   activeKpi: string;
@@ -94,12 +95,7 @@ const DashboardPage: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
             <p className="text-sm text-gray-500 mt-1">
               Visão geral do seu consultório —{" "}
-              {new Date().toLocaleDateString("pt-BR", {
-                timeZone: "America/Sao_Paulo",
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-              })}
+              {formatLongDate(new Date())}
             </p>
           </div>
           <PeriodFilter selected={period} onChange={handlePeriodChange} />

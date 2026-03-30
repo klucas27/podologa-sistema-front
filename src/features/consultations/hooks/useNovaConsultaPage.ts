@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePatients } from '@/features/patients/hooks/usePatients';
 import { useActiveProfessionals } from '@/features/professionals/hooks/useProfessionals';
 import { useCreateAppointment } from '@/features/appointments/hooks/useAppointments';
+import { spDateTimeToISO } from '@/lib/dateUtils';
 import type { Patient } from '@/types';
 
 const toDisplayDate = (iso: string): string => {
@@ -121,7 +122,7 @@ export function useNovaConsultaPage() {
   const buildDateTime = (displayDate: string, time: string): string => {
     if (!displayDate || !time) return '';
     const isoDate = fromDisplayDate(displayDate);
-    return new Date(`${isoDate}T${time}:00`).toISOString();
+    return spDateTimeToISO(isoDate, time);
   };
 
   const handleSubmit = (e: React.FormEvent) => {

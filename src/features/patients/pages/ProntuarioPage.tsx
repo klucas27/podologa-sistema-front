@@ -2,13 +2,16 @@ import React from "react";
 import { ArrowLeft, ClipboardPlus, Pencil, Loader2 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { useAuth } from "@/hooks/useAuth";
 import { useProntuarioPage } from "../hooks/useProntuarioPage";
 import PatientCard from "../components/PatientCard";
 import AnamnesisSection from "../components/AnamnesisSection";
 import AppointmentHistory from "../components/AppointmentHistory";
+import PatientProfessionalAccess from "../components/PatientProfessionalAccess";
 
 const ProntuarioPageInner: React.FC = () => {
   const state = useProntuarioPage();
+  const { role } = useAuth();
 
   if (state.isLoading) {
     return (
@@ -57,6 +60,8 @@ const ProntuarioPageInner: React.FC = () => {
       </div>
 
       <PatientCard patient={state.patient} />
+
+      {role === "admin" && <PatientProfessionalAccess patientId={state.id ?? ""} />}
 
       <AnamnesisSection
         anamnesis={state.anamnesis}

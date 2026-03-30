@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBillings, useUpdateBillingStatus } from './useBillings';
 import { useDebounce } from '@/hooks/useDebounce';
+import { nowSPISO } from '@/lib/dateUtils';
 import type { Billing, BillingStatus, PaymentMethod } from '@/types';
 
 const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
@@ -37,7 +38,7 @@ export function useTransacoesPage() {
     updateStatusMutation.mutate({
       id,
       status: newStatus,
-      paidAt: newStatus === 'paid' ? new Date().toISOString() : null,
+      paidAt: newStatus === 'paid' ? nowSPISO() : null,
     });
   };
 

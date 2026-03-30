@@ -34,8 +34,8 @@ const LoginPage: React.FC = () => {
     setServerError('');
 
     try {
-      await signIn(data.username, data.password);
-      navigate('/dashboard');
+      const user = await signIn(data.username, data.password);
+      navigate(user.role === 'admin' ? '/dashboard' : '/pacientes');
     } catch (err) {
       if (err instanceof ApiError && err.status === 429) {
         setServerError('Muitas tentativas de login. Aguarde antes de tentar novamente.');

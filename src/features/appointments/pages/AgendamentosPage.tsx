@@ -11,6 +11,7 @@ import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { useAgendamentosPage } from "../hooks/useAgendamentosPage";
 import WeekCalendar from "../components/WeekCalendar";
 import { formatMonthYear } from "../constants";
+import { formatShortMonthYear } from "@/lib/dateUtils";
 
 const AgendamentosPageInner: React.FC = () => {
   const state = useAgendamentosPage();
@@ -19,7 +20,7 @@ const AgendamentosPageInner: React.FC = () => {
   const headerLabel =
     formatMonthYear(state.weekStart) === formatMonthYear(weekEndDate)
       ? formatMonthYear(state.weekStart)
-      : `${state.weekStart.toLocaleDateString("pt-BR", { month: "short" })} – ${weekEndDate.toLocaleDateString("pt-BR", { month: "short", year: "numeric" })}`;
+      : `${formatShortMonthYear(state.weekStart)} – ${formatShortMonthYear(weekEndDate)}`;
 
   return (
     <div className="flex flex-col h-full -m-4 md:-m-6">
