@@ -21,7 +21,8 @@ const MEDICAL_HISTORY_LABELS: { key: keyof Anamnesis; label: string }[] = [
 const getActiveConditions = (anamnesis: Anamnesis): string[] =>
   MEDICAL_HISTORY_LABELS.filter(({ key }) => anamnesis[key] === true).map(({ label }) => label);
 
-const formatCpf = (cpf: string) => {
+const formatCpf = (cpf: string | null) => {
+  if (!cpf) return '—';
   const digits = cpf.replace(/\D/g, '');
   if (digits.length !== 11) return cpf;
   return `${digits.slice(0, 3)}.***.***-${digits.slice(9)}`;

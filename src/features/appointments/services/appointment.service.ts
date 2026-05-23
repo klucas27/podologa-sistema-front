@@ -11,6 +11,7 @@ export interface CreateAppointmentData {
   scheduledDate: string;
   scheduledStart: string;
   scheduledEnd: string;
+  chiefComplaint?: string;
   notes?: string;
 }
 

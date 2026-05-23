@@ -145,6 +145,13 @@ const AppointmentInfoCard: React.FC<AppointmentInfoCardProps> = ({
             )}
           </div>
 
+          {appointment.chiefComplaint && (
+            <div className="mt-3">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Motivo da consulta</p>
+              <p className="text-sm text-gray-700">{appointment.chiefComplaint}</p>
+            </div>
+          )}
+
           {appointment.notes && (
             <p className="mt-3 text-sm text-gray-600 italic">
               {appointment.notes}

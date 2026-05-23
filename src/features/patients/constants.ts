@@ -46,7 +46,8 @@ export const STATUS_LABELS: Record<
   cancelled: { label: "Cancelada", className: "bg-gray-100 text-gray-500" },
 };
 
-export const formatCpf = (cpf: string) => {
+export const formatCpf = (cpf: string | null) => {
+  if (!cpf) return "—";
   const d = cpf.replace(/\D/g, "");
   if (d.length !== 11) return cpf;
   return `${d.slice(0, 3)}.***.***-${d.slice(9)}`;

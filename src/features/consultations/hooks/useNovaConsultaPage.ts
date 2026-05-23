@@ -57,6 +57,7 @@ export function useNovaConsultaPage() {
   const [scheduledDate, setScheduledDate] = useState(() => toDisplayDate(preselectedDate));
   const [scheduledStart, setScheduledStart] = useState(preselectedStart);
   const [scheduledEnd, setScheduledEnd] = useState(preselectedEnd);
+  const [chiefComplaint, setChiefComplaint] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
 
@@ -160,6 +161,7 @@ export function useNovaConsultaPage() {
         scheduledDate: isoDate,
         scheduledStart: start,
         scheduledEnd: end,
+        chiefComplaint: chiefComplaint.trim() || undefined,
         notes: notes.trim() || undefined,
       },
       {
@@ -179,11 +181,11 @@ export function useNovaConsultaPage() {
     professionals, isLoadingProfessionals, professionalId, setProfessionalId,
     isProfessionalUser,
     patientId, selectedPatientName,
-    scheduledDate, scheduledStart, scheduledEnd, notes,
+    scheduledDate, scheduledStart, scheduledEnd, chiefComplaint, notes,
     isSaving, error,
     query, setQuery, showResults, setShowResults, wrapperRef,
     selectPatient, clearPatient,
-    handleDateChange, setScheduledStart, setScheduledEnd, setNotes,
+    handleDateChange, setScheduledStart, setScheduledEnd, setChiefComplaint, setNotes,
     handleSubmit,
     goBack: () => navigate(-1),
   };

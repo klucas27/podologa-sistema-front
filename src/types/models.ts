@@ -84,6 +84,7 @@ export interface Appointment {
   actualStartTime: string | null;
   actualEndTime: string | null;
   status: AppointmentStatus;
+  chiefComplaint: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;

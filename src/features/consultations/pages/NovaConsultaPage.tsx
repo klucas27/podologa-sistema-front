@@ -77,6 +77,14 @@ const NovaConsultaPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Chief Complaint */}
+          <div>
+            <label htmlFor="chief-complaint" className="block text-sm font-medium text-gray-700 mb-1">
+              Motivo da Consulta <span className="text-danger-500">*</span>
+            </label>
+            <textarea id="chief-complaint" value={h.chiefComplaint} onChange={(e) => h.setChiefComplaint(e.target.value)} rows={3} className={`${INPUT_CLASS} resize-none`} placeholder="Descreva o motivo da consulta relatado pelo paciente..." />
+          </div>
+
           {/* Notes */}
           <div>
             <label htmlFor="appointment-notes" className="block text-sm font-medium text-gray-700 mb-1">Observações</label>
