@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Lock, Clock } from 'lucide-react';
+import { Lock, Clock, MessageSquare } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import SecurityTab from '../components/SecurityTab';
 import WorkingHoursTab from '../components/WorkingHoursTab';
+import WhatsappTab from '../components/WhatsappTab';
 
-type TabKey = 'security' | 'workingHours';
+type TabKey = 'security' | 'workingHours' | 'whatsapp';
 
 interface TabDef {
   key: TabKey;
@@ -15,6 +16,7 @@ interface TabDef {
 const TABS: TabDef[] = [
   { key: 'security', label: 'Segurança', icon: <Lock size={16} /> },
   { key: 'workingHours', label: 'Horário de Trabalho', icon: <Clock size={16} /> },
+  { key: 'whatsapp', label: 'WhatsApp', icon: <MessageSquare size={16} /> },
 ];
 
 const ConfiguracoesPage: React.FC = () => {
@@ -48,6 +50,7 @@ const ConfiguracoesPage: React.FC = () => {
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         {activeTab === 'security' && <SecurityTab />}
         {activeTab === 'workingHours' && <WorkingHoursTab />}
+        {activeTab === 'whatsapp' && <WhatsappTab />}
       </div>
     </div>
     </ErrorBoundary>

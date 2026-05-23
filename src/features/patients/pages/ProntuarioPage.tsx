@@ -8,6 +8,7 @@ import PatientCard from "../components/PatientCard";
 import AnamnesisSection from "../components/AnamnesisSection";
 import AppointmentHistory from "../components/AppointmentHistory";
 import PatientProfessionalAccess from "../components/PatientProfessionalAccess";
+import WhatsappHistorySection from "../components/WhatsappHistorySection";
 
 const ProntuarioPageInner: React.FC = () => {
   const state = useProntuarioPage();
@@ -75,6 +76,12 @@ const ProntuarioPageInner: React.FC = () => {
         appointments={state.appointments}
         expandedAppointment={state.expandedAppointment}
         onToggle={state.toggleAppointment}
+      />
+
+      <WhatsappHistorySection
+        patientId={state.id ?? ""}
+        isOpen={state.whatsappOpen}
+        onToggle={state.toggleWhatsapp}
       />
     </div>
   );

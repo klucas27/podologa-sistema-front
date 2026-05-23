@@ -8,6 +8,7 @@ export function useProntuarioPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [anamnesisOpen, setAnamnesisOpen] = useState(false);
+  const [whatsappOpen, setWhatsappOpen] = useState(false);
   const [expandedAppointment, setExpandedAppointment] = useState<string | null>(
     null,
   );
@@ -24,6 +25,10 @@ export function useProntuarioPage() {
     setAnamnesisOpen((prev) => !prev);
   }, []);
 
+  const toggleWhatsapp = useCallback(() => {
+    setWhatsappOpen((prev) => !prev);
+  }, []);
+
   const toggleAppointment = useCallback(
     (apptId: string) => {
       setExpandedAppointment(expandedAppointment === apptId ? null : apptId);
@@ -38,8 +43,10 @@ export function useProntuarioPage() {
     appointments,
     isLoading,
     anamnesisOpen,
+    whatsappOpen,
     expandedAppointment,
     toggleAnamnesis,
+    toggleWhatsapp,
     toggleAppointment,
     navigate,
   };

@@ -139,3 +139,24 @@ export interface Billing {
   updatedAt: string;
   appointment?: Appointment;
 }
+
+export type MessageDirection = 'inbound' | 'outbound';
+export type MessageStatus = 'sent' | 'delivered' | 'read' | 'failed';
+
+export interface WhatsappMessage {
+  id: string;
+  patientId: string | null;
+  phone: string;
+  direction: MessageDirection;
+  content: string;
+  status: MessageStatus;
+  externalId: string | null;
+  createdAt: string;
+  patient?: Pick<Patient, 'id' | 'fullName'> | null;
+}
+
+export interface WhatsappConversationState {
+  phone: string;
+  state: string;
+  updatedAt: string;
+}

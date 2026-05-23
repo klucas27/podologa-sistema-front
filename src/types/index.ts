@@ -27,4 +27,8 @@ export type {
   Billing,
   BillingStatus,
   PaymentMethod,
+  WhatsappMessage,
+  WhatsappConversationState,
+  MessageDirection,
+  MessageStatus,
 } from "./models";
