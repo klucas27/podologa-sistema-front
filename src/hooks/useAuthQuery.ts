@@ -89,29 +89,27 @@ export function setupAuthInterceptors(): () => void {
 // ── useSessionQuery: substitui useEffect(/auth/me) ─────────
 
 export function useSessionQuery() {
-  const { setAuth, clearAuth, setLoading } = useAuthStore.getState();
+  const { setAuth, clearAuth } = useAuthStore.getState();
 
   return useQuery({
     queryKey: authKeys.session,
     queryFn: async (): Promise<User> => {
-      const res = await api.get<AuthApiResponse>("/api/auth/me");
-      const user = res.data.user;
-      const role = extractRole(user);
-      setCsrfToken(res.data.csrfToken);
-      setAuth({ ...user, role }, role);
-      return user;
+      try {
+        const res = await api.get<AuthApiResponse>("/api/auth/me");
+        const user = res.data.user;
+        const role = extractRole(user);
+        setCsrfToken(res.data.csrfToken);
+        setAuth({ ...user, role }, role);
+        return user;
+      } catch (error) {
+        clearAuth(); // garante isLoading: false em qualquer falha
+        throw error;
+      }
     },
     retry: false,
-    staleTime: Infinity, // sessão não fica "stale" — só invalida explicitamente
+    staleTime: Infinity,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
-    meta: {
-      onSettled: (_data: unknown, error: unknown) => {
-        if (error) {
-          clearAuth();
-        }
-      },
-    },
   });
 }
 

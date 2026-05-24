@@ -15,7 +15,6 @@ import {
   Menu,
   X,
   Footprints,
-  Bell,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { routeImportMap } from '@/app/router';
@@ -110,14 +109,18 @@ const MainLayout: React.FC = () => {
         </div>
 
         {/* User profile */}
-        <div className={`flex items-center gap-3 px-4 py-4 border-b border-gray-100 ${collapsed ? 'justify-center' : ''}`}>
+        <div
+          className={`flex items-center gap-3 px-4 py-4 border-b border-gray-100 ${collapsed ? 'justify-center' : ''}`}
+        >
           <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-white font-semibold flex-shrink-0 text-sm shadow-sm">
             {initials}
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
               <p className="text-sm font-semibold text-gray-800 truncate">{displayName}</p>
-              <p className="text-xs text-gray-400 truncate">{role === 'admin' ? 'Administrador' : 'Profissional'}</p>
+              <p className="text-xs text-gray-400 truncate">
+                {role === 'admin' ? 'Administrador' : 'Profissional'}
+              </p>
             </div>
           )}
         </div>
@@ -193,12 +196,8 @@ const MainLayout: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: notification bell + avatar */}
+          {/* Right: avatar */}
           <div className="flex items-center gap-3">
-            <button type="button" className="relative p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors" aria-label="Notificações">
-              <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger-500 rounded-full" />
-            </button>
             <div className="hidden lg:flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-white text-sm font-semibold">
               {initials}
             </div>
