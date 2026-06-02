@@ -10,7 +10,7 @@
  *   access token via /api/auth/refresh antes de falhar.
  */
 
-import { env } from "@/config/env";
+import { env } from '@/config/env';
 
 const API_BASE_URL = env.VITE_API_URL;
 
@@ -57,15 +57,15 @@ export const setOnForbidden = (callback: (() => void) | null): void => {
 
 let onRateLimited: ((retryAfter: number | null) => void) | null = null;
 
-export const setOnRateLimited = (
-  callback: ((retryAfter: number | null) => void) | null,
-): void => {
+const MAX_RETRY_AFTER_SECONDS = 15;
+
+export const setOnRateLimited = (callback: ((retryAfter: number | null) => void) | null): void => {
   onRateLimited = callback;
 };
 
 // ── Request internals ───────────────────────────────────────
 
-interface RequestOptions extends Omit<RequestInit, "body"> {
+interface RequestOptions extends Omit<RequestInit, 'body'> {
   params?: Record<string, string>;
 }
 
@@ -75,27 +75,22 @@ export class ApiError extends Error {
     message: string,
   ) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
   }
 }
 
 function buildUrl(endpoint: string, params?: Record<string, string>): string {
   const url = new URL(`${API_BASE_URL}${endpoint}`, window.location.origin);
   if (params) {
-    Object.entries(params).forEach(([key, value]) =>
-      url.searchParams.set(key, value),
-    );
+    Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
   }
   return url.toString();
 }
 
-function buildHeaders(
-  isMutation: boolean,
-  extra?: HeadersInit,
-): Record<string, string> {
+function buildHeaders(isMutation: boolean, extra?: HeadersInit): Record<string, string> {
   return {
-    "Content-Type": "application/json",
-    ...(isMutation && csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+    'Content-Type': 'application/json',
+    ...(isMutation && csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
     ...(extra as Record<string, string>),
   };
 }
@@ -114,14 +109,14 @@ async function attemptRefresh(): Promise<boolean> {
   isRefreshing = true;
 
   try {
-    const res = await fetch(buildUrl("/api/auth/refresh"), {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
+    const res = await fetch(buildUrl('/api/auth/refresh'), {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
     });
 
     if (!res.ok) {
-      processQueue(false, new Error("Refresh failed"));
+      processQueue(false, new Error('Refresh failed'));
       return false;
     }
 
@@ -143,26 +138,20 @@ async function request<T>(
 ): Promise<T> {
   const { params, headers, ...rest } = options;
 
-  const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(
-    rest.method ?? "GET",
-  );
+  const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(rest.method ?? 'GET');
 
   const url = buildUrl(endpoint, params);
 
   const doFetch = (): Promise<Response> =>
     fetch(url, {
       ...rest,
-      credentials: "include",
+      credentials: 'include',
       headers: buildHeaders(isMutation, headers),
     });
 
   let response = await doFetch();
 
-  const skipRefreshEndpoints = [
-    "/api/auth/login",
-    "/api/auth/refresh",
-    "/api/auth/register",
-  ];
+  const skipRefreshEndpoints = ['/api/auth/login', '/api/auth/refresh', '/api/auth/register'];
   if (response.status === 401 && !skipRefreshEndpoints.includes(endpoint)) {
     const refreshed = await attemptRefresh();
 
@@ -170,29 +159,30 @@ async function request<T>(
       response = await doFetch();
     } else {
       onAuthFailure?.();
-      throw new ApiError(401, "Sessão expirada. Faça login novamente.");
+      throw new ApiError(401, 'Sessão expirada. Faça login novamente.');
     }
   }
 
   if (response.status === 403) {
     onForbidden?.();
-    throw new ApiError(403, "Acesso negado.");
+    throw new ApiError(403, 'Acesso negado.');
   }
 
   if (response.status === 429) {
-    const retryAfter = response.headers.get("Retry-After");
-    onRateLimited?.(retryAfter ? parseInt(retryAfter, 10) : null);
-    throw new ApiError(
-      429,
-      "Muitas requisições. Aguarde um momento e tente novamente.",
-    );
+    const retryAfter = response.headers.get('Retry-After');
+    const parsedRetryAfter = retryAfter ? parseInt(retryAfter, 10) : null;
+    const boundedRetryAfter =
+      parsedRetryAfter !== null && Number.isFinite(parsedRetryAfter)
+        ? Math.min(Math.max(parsedRetryAfter, 0), MAX_RETRY_AFTER_SECONDS)
+        : null;
+    onRateLimited?.(boundedRetryAfter);
+    throw new ApiError(429, 'Muitas requisições. Aguarde um momento e tente novamente.');
   }
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
     const message =
-      (body as { message?: string }).message ||
-      `HTTP ${response.status}: ${response.statusText}`;
+      (body as { message?: string }).message || `HTTP ${response.status}: ${response.statusText}`;
     throw new ApiError(response.status, message);
   }
 
@@ -201,29 +191,29 @@ async function request<T>(
 
 export const api = {
   get: <T>(endpoint: string, options?: RequestOptions) =>
-    request<T>(endpoint, { ...options, method: "GET" }),
+    request<T>(endpoint, { ...options, method: 'GET' }),
 
   post: <T>(endpoint: string, body?: unknown, options?: RequestOptions) =>
     request<T>(endpoint, {
       ...options,
-      method: "POST",
+      method: 'POST',
       body: body !== undefined ? JSON.stringify(body) : undefined,
     }),
 
   put: <T>(endpoint: string, body: unknown, options?: RequestOptions) =>
     request<T>(endpoint, {
       ...options,
-      method: "PUT",
+      method: 'PUT',
       body: JSON.stringify(body),
     }),
 
   patch: <T>(endpoint: string, body: unknown, options?: RequestOptions) =>
     request<T>(endpoint, {
       ...options,
-      method: "PATCH",
+      method: 'PATCH',
       body: JSON.stringify(body),
     }),
 
   delete: <T>(endpoint: string, options?: RequestOptions) =>
-    request<T>(endpoint, { ...options, method: "DELETE" }),
+    request<T>(endpoint, { ...options, method: 'DELETE' }),
 };

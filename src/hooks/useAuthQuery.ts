@@ -28,11 +28,11 @@
  *   para aplicações com CRUD intenso.
  */
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, setCsrfToken, setOnAuthFailure, setOnForbidden, setOnRateLimited } from "@/lib/api";
-import { useAuthStore } from "@/stores/auth.store";
-import { notifyError, notifyWarning } from "@/lib/notifications";
-import type { User, UserRole } from "@/types";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api, setCsrfToken, setOnAuthFailure, setOnForbidden, setOnRateLimited } from '@/lib/api';
+import { useAuthStore } from '@/stores/auth.store';
+import { notifyError, notifyWarning } from '@/lib/notifications';
+import type { User, UserRole } from '@/types';
 
 // ── Types ───────────────────────────────────────────────────
 
@@ -46,15 +46,15 @@ interface AuthApiResponse {
 // ── Query Keys ──────────────────────────────────────────────
 
 export const authKeys = {
-  session: ["auth", "session"] as const,
+  session: ['auth', 'session'] as const,
 };
 
 // ── Helpers ─────────────────────────────────────────────────
 
 function extractRole(user: Partial<User>): UserRole {
   const raw = (user as Record<string, unknown>).role;
-  if (raw === "admin" || raw === "professional") return raw;
-  return "admin";
+  if (raw === 'admin' || raw === 'professional') return raw;
+  return 'admin';
 }
 
 // ── Setup interceptors (chamado uma vez no provider) ───────
@@ -69,14 +69,12 @@ export function setupAuthInterceptors(): () => void {
   setOnForbidden(() => {
     // ProtectedRoute trata redirect por role.
     // Toast feedback para o usuário:
-    notifyError({ status: 403, message: "Acesso negado", name: "ApiError" });
+    notifyError({ status: 403, message: 'Acesso negado', name: 'ApiError' });
   });
 
   setOnRateLimited((retryAfter) => {
-    const seconds = retryAfter ?? 30;
-    notifyWarning(
-      `Muitas requisições. Aguarde ${seconds}s antes de tentar novamente.`,
-    );
+    const seconds = retryAfter ?? 15;
+    notifyWarning(`Muitas requisições. Aguarde ${seconds}s antes de tentar novamente.`);
   });
 
   return () => {
@@ -95,7 +93,7 @@ export function useSessionQuery() {
     queryKey: authKeys.session,
     queryFn: async (): Promise<User> => {
       try {
-        const res = await api.get<AuthApiResponse>("/api/auth/me");
+        const res = await api.get<AuthApiResponse>('/api/auth/me');
         const user = res.data.user;
         const role = extractRole(user);
         setCsrfToken(res.data.csrfToken);
@@ -129,7 +127,7 @@ export function useSignIn() {
       const { setLoading } = useAuthStore.getState();
       setLoading(true);
 
-      const res = await api.post<AuthApiResponse>("/api/auth/login", {
+      const res = await api.post<AuthApiResponse>('/api/auth/login', {
         username,
         password,
       });
@@ -163,7 +161,7 @@ export function useSignOut() {
   return useMutation({
     mutationFn: async (): Promise<void> => {
       try {
-        await api.post("/api/auth/logout");
+        await api.post('/api/auth/logout');
       } catch {
         // Mesmo se o logout falhar no server, limpamos localmente
       }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,6 +6,7 @@ import { Footprints, User, Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { ApiError } from '@/lib/api';
 import { loginSchema, type LoginFormData } from '../schemas/auth.schema';
+import { authService } from '../services/auth.service';
 
 /**
  * POR QUÊ a mensagem de erro é genérica ("Credenciais inválidas")?
@@ -18,8 +19,26 @@ import { loginSchema, type LoginFormData } from '../schemas/auth.schema';
  */
 const LoginPage: React.FC = () => {
   const [serverError, setServerError] = useState('');
+  const [registrationEnabled, setRegistrationEnabled] = useState(false);
   const { signIn, isLoading } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    void authService
+      .getRegistrationStatus()
+      .then((enabled) => {
+        if (isMounted) setRegistrationEnabled(enabled);
+      })
+      .catch(() => {
+        if (isMounted) setRegistrationEnabled(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const {
     register,
@@ -116,15 +135,17 @@ const LoginPage: React.FC = () => {
             {isLoading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
-        <div className="mt-4 text-center">
-          <button
-            type="button"
-            onClick={() => navigate('/register')}
-            className="text-sm text-primary-600 hover:underline"
-          >
-            Não tem conta? Criar conta
-          </button>
-        </div>
+        {registrationEnabled && (
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => navigate('/register')}
+              className="text-sm text-primary-600 hover:underline"
+            >
+              Não tem conta? Criar conta
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

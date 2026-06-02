@@ -1,4 +1,5 @@
 {
+  "_note": "Topologia Vercel+Render — obsoleta se usar AlwaysData same-origin (build.py/deploy.sh). Atualize 'destination' para o URL correto do back-end ou remova este arquivo no deploy AlwaysData.",
   "rewrites": [
     {
       "source": "/api/:path*",

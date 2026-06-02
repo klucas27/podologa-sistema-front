@@ -160,7 +160,7 @@ describe('api', () => {
       expect(onForbiddenFn).toHaveBeenCalledOnce();
     });
 
-    it('chama onRateLimited callback com Retry-After em resposta 429', async () => {
+    it('chama onRateLimited callback com Retry-After limitado a 15s em resposta 429', async () => {
       // Arrange
       const onRateLimitedFn = vi.fn();
       setOnRateLimited(onRateLimitedFn);
@@ -174,7 +174,7 @@ describe('api', () => {
 
       // Act & Assert
       await expect(api.get('/api/patients')).rejects.toThrow(ApiError);
-      expect(onRateLimitedFn).toHaveBeenCalledWith(30);
+      expect(onRateLimitedFn).toHaveBeenCalledWith(15);
     });
   });
 
@@ -187,8 +187,7 @@ describe('api', () => {
           return Promise.resolve({
             ok: true,
             status: 200,
-            json: () =>
-              Promise.resolve({ data: { csrfToken: 'new-csrf' } }),
+            json: () => Promise.resolve({ data: { csrfToken: 'new-csrf' } }),
           });
         }
         callCount++;
@@ -205,8 +204,7 @@ describe('api', () => {
         return Promise.resolve({
           ok: true,
           status: 200,
-          json: () =>
-            Promise.resolve({ data: { id: '1', fullName: 'João' } }),
+          json: () => Promise.resolve({ data: { id: '1', fullName: 'João' } }),
         });
       });
 
@@ -253,9 +251,7 @@ describe('api', () => {
       });
 
       // Act & Assert
-      await expect(
-        api.post('/api/auth/login', { username: 'x', password: 'y' }),
-      ).rejects.toThrow();
+      await expect(api.post('/api/auth/login', { username: 'x', password: 'y' })).rejects.toThrow();
 
       // Assert — fetch chamado apenas 1x (sem refresh)
       expect(globalThis.fetch).toHaveBeenCalledTimes(1);
