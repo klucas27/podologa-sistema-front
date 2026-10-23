@@ -40,6 +40,7 @@ const PatologiasPage = React.lazy(() => import("@/features/pathologies/pages/Pat
 const ProfissionaisPage = React.lazy(() => import("@/features/professionals/pages/ProfissionaisPage"));
 const TransacoesPage = React.lazy(() => import("@/features/billing/pages/TransacoesPage"));
 const ConfiguracoesPage = React.lazy(() => import("@/features/settings/pages/ConfiguracoesPage"));
+const ServicosPage = React.lazy(() => import("@/features/services/pages/ServicosPage"));
 
 // ─── Route → import map para prefetch no hover ───────────────────
 // Exportado para que o NavLink no MainLayout possa chamar
@@ -54,6 +55,7 @@ export const routeImportMap: Record<string, () => Promise<unknown>> = {
   "/transacoes": () => import("@/features/billing/pages/TransacoesPage"),
   "/patologias": () => import("@/features/pathologies/pages/PatologiasPage"),
   "/configuracoes": () => import("@/features/settings/pages/ConfiguracoesPage"),
+  "/servicos": () => import("@/features/services/pages/ServicosPage"),
 };
 
 const lazy = (Component: React.LazyExoticComponent<React.ComponentType>) => (
@@ -88,6 +90,10 @@ export const router = createBrowserRouter([
               { path: "/dashboard", element: lazy(DashboardPage) },
               { path: "/profissionais", element: lazy(ProfissionaisPage) },
             ],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={["admin", "recepcao"]} />,
+            children: [{ path: "/servicos", element: lazy(ServicosPage) }],
           },
           { path: "/pacientes", element: lazy(PacientesPage) },
           { path: "/pacientes/novo", element: lazy(CadastroPacientePage) },

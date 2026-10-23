@@ -18,4 +18,5 @@ export const ROUTES = {
   BILLING: "/transacoes",
   PATHOLOGIES: "/patologias",
   SETTINGS: "/configuracoes",
+  SERVICES: "/servicos",
 } as const;
