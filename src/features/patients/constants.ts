@@ -1,4 +1,4 @@
-import type { MaritalStatus, Perfusion, PainSensitivity, BodyPart } from "@/types";
+import type { MaritalStatus, Perfusion, PainSensitivity, BodyPart, AcquisitionSource } from "@/types";
 
 export const MARITAL_LABELS: Record<MaritalStatus, string> = {
   single: "Solteiro(a)",
@@ -33,6 +33,8 @@ export const STATUS_LABELS: Record<
   string,
   { label: string; className: string }
 > = {
+  pending: { label: "Pedido pelo link", className: "bg-amber-50 text-amber-700" },
+  no_show: { label: "Faltou", className: "bg-red-50 text-red-700" },
   scheduled: { label: "Agendada", className: "bg-blue-50 text-blue-700" },
   confirmed: {
     label: "Confirmada",
@@ -80,8 +82,21 @@ export interface PatientForm {
   neighborhood: string;
   city: string;
   state: string;
+  instagram: string;
+  acquisitionSource: AcquisitionSource | '';
+  lgpdConsent: boolean;
+  imageConsent: boolean;
   professionalIds: string[];
 }
+
+export const ACQUISITION_OPTIONS: { value: AcquisitionSource; label: string }[] = [
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'indicacao', label: 'Indicação' },
+  { value: 'google', label: 'Google' },
+  { value: 'passagem', label: 'Passou na frente' },
+  { value: 'link', label: 'Link de agendamento' },
+  { value: 'outro', label: 'Outro' },
+];
 
 export const INITIAL_PATIENT_FORM: PatientForm = {
   fullName: '',
@@ -97,6 +112,10 @@ export const INITIAL_PATIENT_FORM: PatientForm = {
   neighborhood: '',
   city: '',
   state: '',
+  instagram: '',
+  acquisitionSource: '',
+  lgpdConsent: false,
+  imageConsent: false,
   professionalIds: [],
 };
 
@@ -114,4 +133,26 @@ export const BRAZILIAN_STATES = [
 ];
 
 export const INPUT_CLASS =
-  'w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition';
+  'w-full px-3 py-2.5 rounded-lg border border-gray-300 text-base focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition';
+
+/** Campos enviados à API a partir do formulário (cadastro e edição). */
+export function patientPayload(form: PatientForm): Record<string, unknown> {
+  return {
+    fullName: form.fullName.trim(),
+    phoneNumber: form.phoneNumber,
+    dateOfBirth: form.dateOfBirth || null,
+    maritalStatus: form.maritalStatus,
+    occupation: form.occupation || null,
+    cpf: form.cpf.replace(/\D/g, '') || null,
+    email: form.email || null,
+    zipCode: form.zipCode || null,
+    street: form.street || null,
+    addressNumber: form.addressNumber || null,
+    neighborhood: form.neighborhood || null,
+    city: form.city || null,
+    state: form.state || null,
+    instagram: form.instagram.trim().replace(/^@/, '') || null,
+    acquisitionSource: form.acquisitionSource || null,
+    imageConsent: form.imageConsent,
+  };
+}

@@ -16,6 +16,11 @@ export const patientService = {
   getById: (id: string) =>
     api.get<ApiResponse<Patient>>(`/api/patients/${id}`).then((res) => res.data),
 
+  findByPhone: (phone: string) =>
+    api
+      .get<ApiResponse<Patient | null>>(`/api/patients/by-phone/${encodeURIComponent(phone)}`)
+      .then((res) => res.data),
+
   create: (data: Partial<Patient>) =>
     api
       .post<ApiResponse<Patient>>("/api/patients", data)

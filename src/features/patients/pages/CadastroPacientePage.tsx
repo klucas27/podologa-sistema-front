@@ -13,17 +13,17 @@ const CadastroPacientePage: React.FC = () => {
   } = useCadastroPacientePage();
 
   return (
-    <ErrorBoundary featureName="Cadastro de Paciente">
+    <ErrorBoundary featureName="Cadastro de Cliente">
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" icon={<ArrowLeft size={18} />} onClick={goBack}>Voltar</Button>
-        <h1 className="text-2xl font-bold text-gray-800">Novo Paciente</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Nova cliente</h1>
       </div>
 
       {error && <div className="p-3 rounded-lg bg-danger-50 text-danger-700 text-sm">{error}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        <PatientFormFields form={form} onChange={handleChange} onProfessionalIdsChange={handleProfessionalIdsChange} />
+        <PatientFormFields form={form} mode="create" onChange={handleChange} onProfessionalIdsChange={handleProfessionalIdsChange} />
 
         {/* Ações */}
         <div className="flex flex-col sm:flex-row justify-end gap-3">

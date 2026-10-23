@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { patientService } from '../services/patient.service';
-import { INITIAL_PATIENT_FORM, type PatientForm } from '../constants';
+import { INITIAL_PATIENT_FORM, patientPayload, type PatientForm } from '../constants';
+import { maskPhone, normalizePhone } from '@/lib/phone';
 
 export function useCadastroPacientePage() {
   const navigate = useNavigate();
@@ -12,7 +13,10 @@ export function useCadastroPacientePage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const next = e.target instanceof HTMLInputElement && e.target.type === 'checkbox'
+      ? e.target.checked
+      : name === 'phoneNumber' ? maskPhone(value) : value;
+    setForm((prev) => ({ ...prev, [name]: next }));
   };
 
   const handleProfessionalIdsChange = (ids: string[]) => {
@@ -23,30 +27,15 @@ export function useCadastroPacientePage() {
     e.preventDefault();
     setError('');
 
-    if (!form.fullName.trim() || !form.cpf.trim()) {
-      setError('Nome completo e CPF são obrigatórios');
-      return;
-    }
+    if (!form.fullName.trim()) return setError('Informe o nome da cliente.');
+    if (!normalizePhone(form.phoneNumber)) return setError('Informe um celular válido com DDD.');
+    if (!form.lgpdConsent) return setError('Confirme o consentimento LGPD da cliente.');
 
     setIsSubmitting(true);
     try {
-      // Send date-only string directly; backend normalizes to noon UTC
-      const dateOfBirth: string | null = form.dateOfBirth || null;
-
       const created = await patientService.create({
-        fullName: form.fullName,
-        dateOfBirth,
-        maritalStatus: form.maritalStatus,
-        occupation: form.occupation || null,
-        cpf: form.cpf.replace(/\D/g, ''),
-        phoneNumber: form.phoneNumber || null,
-        email: form.email || null,
-        zipCode: form.zipCode || null,
-        street: form.street || null,
-        addressNumber: form.addressNumber || null,
-        neighborhood: form.neighborhood || null,
-        city: form.city || null,
-        state: form.state || null,
+        ...patientPayload(form),
+        lgpdConsent: true,
         professionalIds: form.professionalIds.length > 0 ? form.professionalIds : undefined,
       } as Record<string, unknown>);
 
@@ -56,7 +45,7 @@ export function useCadastroPacientePage() {
         navigate('/pacientes');
       }
     } catch (err) {
-      const message = (err as { message?: string })?.message || 'Erro ao cadastrar paciente. Tente novamente.';
+      const message = (err as { message?: string })?.message || 'Erro ao cadastrar cliente. Tente novamente.';
       setError(message);
     } finally {
       setIsSubmitting(false);

@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePatient, useUpdatePatient } from './usePatients';
 import { toDateInTz } from '@/lib/dateUtils';
-import type { PatientForm } from '../constants';
+import { patientPayload, type PatientForm } from '../constants';
+import { maskPhone, normalizePhone } from '@/lib/phone';
 
 export function useEditarPacientePage() {
   const { id } = useParams<{ id: string }>();
@@ -27,7 +28,7 @@ export function useEditarPacientePage() {
       maritalStatus: patient.maritalStatus,
       occupation: patient.occupation ?? '',
       cpf: patient.cpf ?? '',
-      phoneNumber: patient.phoneNumber ?? '',
+      phoneNumber: maskPhone(patient.phoneNormalized ?? patient.phoneNumber ?? ''),
       email: patient.email ?? '',
       zipCode: patient.zipCode ?? '',
       street: patient.street ?? '',
@@ -35,13 +36,20 @@ export function useEditarPacientePage() {
       neighborhood: patient.neighborhood ?? '',
       city: patient.city ?? '',
       state: patient.state ?? '',
+      instagram: patient.instagram ?? '',
+      acquisitionSource: patient.acquisitionSource ?? '',
+      lgpdConsent: !!patient.lgpdConsentAt,
+      imageConsent: !!patient.imageConsentAt,
       professionalIds,
     });
   }, [patient, form]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setForm((prev) => (prev ? { ...prev, [name]: value } : prev));
+    const next = e.target instanceof HTMLInputElement && e.target.type === 'checkbox'
+      ? e.target.checked
+      : name === 'phoneNumber' ? maskPhone(value) : value;
+    setForm((prev) => (prev ? { ...prev, [name]: next } : prev));
   };
 
   const handleProfessionalIdsChange = (ids: string[]) => {
@@ -53,31 +61,14 @@ export function useEditarPacientePage() {
     if (!form || !id) return;
     setError('');
 
-    if (!form.fullName.trim() || !form.cpf.trim()) {
-      setError('Nome completo e CPF são obrigatórios');
-      return;
-    }
-
-    // Send date-only string directly; backend normalizes to noon UTC
-    const dateOfBirth: string | null = form.dateOfBirth || null;
+    if (!form.fullName.trim()) return setError('Informe o nome da cliente.');
+    if (!normalizePhone(form.phoneNumber)) return setError('Informe um celular válido com DDD.');
 
     updateMutation.mutate(
       {
         id,
         data: {
-          fullName: form.fullName,
-          dateOfBirth,
-          maritalStatus: form.maritalStatus,
-          occupation: form.occupation || null,
-          cpf: form.cpf.replace(/\D/g, ''),
-          phoneNumber: form.phoneNumber || null,
-          email: form.email || null,
-          zipCode: form.zipCode || null,
-          street: form.street || null,
-          addressNumber: form.addressNumber || null,
-          neighborhood: form.neighborhood || null,
-          city: form.city || null,
-          state: form.state || null,
+          ...patientPayload(form),
           ...(form.professionalIds.length > 0 ? { professionalIds: form.professionalIds } : {}),
         } as Parameters<typeof updateMutation.mutate>[0]['data'],
       },
