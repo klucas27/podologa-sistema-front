@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppointments, useUpdateAppointment } from "./useAppointments";
-import type { Appointment } from "@/types";
+import { useActiveProfessionals } from "@/features/professionals/hooks/useProfessionals";
+import { useServices } from "@/features/services/hooks/useServices";
+import { isProfessionalRole } from "@/config/permissions";
+import type { Appointment, ServiceCategory } from "@/types";
 import {
   SLOT_HEIGHT,
   DEFAULT_DURATION_MIN,
@@ -17,6 +20,9 @@ import { getHoursInTz, toISODate, toDateInTz, spDateTimeToISO } from "@/lib/date
 export function useAgendamentosPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [viewMode, setViewMode] = useState<"day" | "week">("day");
+  const [day, setDay] = useState(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; });
+  const [professionalFilter, setProfessionalFilter] = useState("");
   const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
   const gridRef = useRef<HTMLDivElement>(null);
   const [dragState, setDragState] = useState<{
@@ -27,8 +33,13 @@ export function useAgendamentosPage() {
     dayCol: number;
   } | null>(null);
 
-  // React Query: substitui useEffect + api.get + useState
-  const { data: appointments = [], isLoading } = useAppointments();
+  // Busca só o período visível (dia ou semana)
+  const range = viewMode === "day"
+    ? { from: toISODate(day), to: toISODate(day) }
+    : { from: toISODate(weekStart), to: toISODate(addDays(weekStart, 6)) };
+  const { data: appointments = [], isLoading } = useAppointments({ ...range, limit: "200" });
+  const { data: professionals = [] } = useActiveProfessionals();
+  const { data: services = [] } = useServices();
   const updateAppointment = useUpdateAppointment();
 
   const hourStart = useMemo(
@@ -68,7 +79,50 @@ export function useAgendamentosPage() {
     () => setWeekStart((ws) => addDays(ws, 7)),
     [],
   );
-  const goToday = useCallback(() => setWeekStart(getMonday(new Date())), []);
+  const goToday = useCallback(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    setDay(d);
+    setWeekStart(getMonday(d));
+  }, []);
+  const prevDay = useCallback(() => setDay((d) => addDays(d, -1)), []);
+  const nextDay = useCallback(() => setDay((d) => addDays(d, 1)), []);
+
+  // Colunas: manicure/podóloga só a própria; demais perfis todas (ou a filtrada)
+  const columns = useMemo(() => {
+    const own = isProfessionalRole(user?.role) ? user?.professionalId : null;
+    return professionals
+      .filter((p) => (own ? p.id === own : !professionalFilter || p.id === professionalFilter))
+      .map((p) => ({ id: p.id, name: p.fullName }));
+  }, [professionals, professionalFilter, user?.role, user?.professionalId]);
+
+  const dayAppointments = useMemo(() => {
+    const iso = toISODate(day);
+    return appointments.filter((a) => a.scheduledDate.slice(0, 10) === iso);
+  }, [appointments, day]);
+
+  const serviceById = useMemo(() => new Map(services.map((sv) => [sv.id, sv])), [services]);
+  const categoryOf = useCallback(
+    (serviceId: string | null): ServiceCategory | null => (serviceId ? serviceById.get(serviceId)?.category ?? null : null),
+    [serviceById],
+  );
+  const serviceNameOf = useCallback(
+    (serviceId: string | null): string | null => (serviceId ? serviceById.get(serviceId)?.name ?? null : null),
+    [serviceById],
+  );
+
+  const handleDaySlotClick = useCallback(
+    (professionalId: string, hour: number) => {
+      const dateStr = formatDateISO(day);
+      const startTime = `${pad2(hour)}:00`;
+      if (new Date(spDateTimeToISO(dateStr, startTime)) < new Date()) {
+        window.alert("Não é possível agendar no passado.");
+        return;
+      }
+      navigate(`/consultas/nova?date=${dateStr}&startTime=${startTime}&professionalId=${professionalId}`);
+    },
+    [day, navigate],
+  );
 
   const appointmentsByDay = useMemo(() => {
     const map: Record<number, Appointment[]> = {};
@@ -117,7 +171,7 @@ export function useAgendamentosPage() {
       const endTime = `${pad2(endHour)}:${pad2(endMin)}`;
       const candidateUtc = spDateTimeToISO(dateStr, startTime);
       if (new Date(candidateUtc) < new Date()) {
-        window.alert("Cannot create appointments in the past.");
+        window.alert("Não é possível agendar no passado.");
         return;
       }
       navigate(
@@ -197,6 +251,20 @@ export function useAgendamentosPage() {
 
   return {
     isLoading,
+    viewMode,
+    setViewMode,
+    day,
+    prevDay,
+    nextDay,
+    professionals,
+    professionalFilter,
+    setProfessionalFilter,
+    columns,
+    dayAppointments,
+    categoryOf,
+    serviceNameOf,
+    handleDaySlotClick,
+    isProfessionalUser: isProfessionalRole(user?.role),
     weekStart,
     weekDays,
     today,
