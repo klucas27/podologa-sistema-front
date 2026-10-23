@@ -124,4 +124,16 @@ describe('ProtectedRoute', () => {
     // Assert
     expect(screen.getByText('Dashboard Content')).toBeInTheDocument();
   });
+
+  it('recepção entra em rota de admin e recepção, mas não em rota só de admin', () => {
+    useAuthStore.getState().setAuth({ ...mockAdmin, role: 'recepcao' }, 'recepcao');
+    renderWithRouter('/admin', ['admin', 'recepcao']);
+    expect(screen.getByText('Admin Panel')).toBeInTheDocument();
+  });
+
+  it('recepção é barrada em rota só de admin', () => {
+    useAuthStore.getState().setAuth({ ...mockAdmin, role: 'recepcao' }, 'recepcao');
+    renderWithRouter('/admin', ['admin']);
+    expect(screen.getByText('Acesso Negado')).toBeInTheDocument();
+  });
 });

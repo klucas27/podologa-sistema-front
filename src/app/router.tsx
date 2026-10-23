@@ -112,14 +112,20 @@ export const router = createBrowserRouter([
             element: lazy(CadastroAnamnesePage),
           },
           { path: "/agendamentos", element: lazy(AgendamentosPage) },
-          { path: "/patologias", element: lazy(PatologiasPage) },
+          {
+            element: <ProtectedRoute allowedRoles={["admin", "podologa"]} />,
+            children: [{ path: "/patologias", element: lazy(PatologiasPage) }],
+          },
           { path: "/consultas", element: lazy(ConsultasPage) },
           { path: "/consultas/nova", element: lazy(NovaConsultaPage) },
           {
             path: "/consultas/:appointmentId/execucao",
             element: lazy(ConsultationExecutionPage),
           },
-          { path: "/transacoes", element: lazy(TransacoesPage) },
+          {
+            element: <ProtectedRoute allowedRoles={["admin", "recepcao"]} />,
+            children: [{ path: "/transacoes", element: lazy(TransacoesPage) }],
+          },
           { path: "/configuracoes", element: lazy(ConfiguracoesPage) },
         ],
       },

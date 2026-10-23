@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { ROLE_LABELS } from '@/config/permissions';
+import { ROLE_LABELS, canAccess } from '@/config/permissions';
 import {
   LayoutDashboard,
   Users,
@@ -22,30 +22,31 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { routeImportMap } from '@/app/router';
 import { useBookingRequests } from '@/features/booking-requests/hooks/useBookingRequests';
-import type { UserRole } from '@/types';
 
 const allNavItems: Array<{
   to: string;
   label: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
-  adminOnly?: boolean;
-  roles?: UserRole[];
 }> = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: true },
-  { to: '/pacientes', label: 'Pacientes', icon: Users, adminOnly: false },
-  { to: '/consultas', label: 'Consultas', icon: Stethoscope, adminOnly: false },
-  { to: '/agendamentos', label: 'Agendamentos', icon: CalendarDays, adminOnly: false },
-  { to: '/pedidos', label: 'Pedidos', icon: Inbox, roles: ['admin', 'recepcao'] },
-  { to: '/profissionais', label: 'Profissionais', icon: UserCog, adminOnly: true },
-  { to: '/servicos', label: 'Serviços', icon: Sparkles, adminOnly: true },
-  { to: '/usuarios', label: 'Usuários', icon: KeyRound, adminOnly: true },
-  { to: '/transacoes', label: 'Transações', icon: DollarSign, adminOnly: false },
-  { to: '/patologias', label: 'Patologias', icon: Bug, adminOnly: false },
-  { to: '/configuracoes', label: 'Configurações', icon: Settings, adminOnly: false },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/pacientes', label: 'Pacientes', icon: Users },
+  { to: '/consultas', label: 'Consultas', icon: Stethoscope },
+  { to: '/agendamentos', label: 'Agendamentos', icon: CalendarDays },
+  { to: '/pedidos', label: 'Pedidos', icon: Inbox },
+  { to: '/profissionais', label: 'Profissionais', icon: UserCog },
+  { to: '/servicos', label: 'Serviços', icon: Sparkles },
+  { to: '/usuarios', label: 'Usuários', icon: KeyRound },
+  { to: '/transacoes', label: 'Transações', icon: DollarSign },
+  { to: '/patologias', label: 'Patologias', icon: Bug },
+  { to: '/configuracoes', label: 'Configurações', icon: Settings },
 ];
 
+// iPad em retrato (768–1023 px): menu começa recolhido para sobrar espaço para a agenda
+const startsCollapsed = () =>
+  typeof window.matchMedia === 'function' && window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
+
 const MainLayout: React.FC = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(startsCollapsed);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, role, signOut } = useAuth();
   const navigate = useNavigate();
@@ -53,10 +54,7 @@ const MainLayout: React.FC = () => {
   const pending = useBookingRequests(canSeeRequests);
   const pendingCount = pending.data?.length ?? 0;
 
-  const navItems = allNavItems.filter((item) => {
-    if (item.roles) return !!role && item.roles.includes(role);
-    return !item.adminOnly || role === 'admin';
-  });
+  const navItems = allNavItems.filter((item) => canAccess(role, item.to));
 
   // Prefetch: carrega o chunk da rota quando o cursor passa sobre o link.
   // Impacto: navegação parece instantânea (chunk já está em cache).
@@ -155,7 +153,7 @@ const MainLayout: React.FC = () => {
               onMouseEnter={() => handlePrefetch(to)}
               aria-label={count > 0 ? `${label}, ${count} pendentes` : undefined}
               className={({ isActive }) =>
-                `group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                `group flex items-center gap-3 px-3 py-2.5 min-h-11 rounded-lg text-sm font-medium transition-all duration-150
                 ${
                   isActive
                     ? 'bg-primary-50 text-primary-700 shadow-sm shadow-primary-100'

@@ -22,3 +22,24 @@ export function isProfessionalRole(role: UserRole | null | undefined): boolean {
 export function homePathFor(role: UserRole | null | undefined): string {
   return role === 'admin' ? '/dashboard' : '/agendamentos';
 }
+
+const ALL: readonly UserRole[] = ROLES;
+
+/** Quem vê cada item do menu (espelha a matriz de perfis do back). */
+export const NAV_ROLES: Record<string, readonly UserRole[]> = {
+  '/dashboard': ['admin'],
+  '/pacientes': ALL,
+  '/consultas': ALL,
+  '/agendamentos': ALL,
+  '/pedidos': ['admin', 'recepcao'],
+  '/profissionais': ['admin'],
+  '/servicos': ['admin', 'recepcao'],
+  '/usuarios': ['admin'],
+  '/transacoes': ['admin', 'recepcao'],
+  '/patologias': ['admin', 'podologa'],
+  '/configuracoes': ALL,
+};
+
+export function canAccess(role: UserRole | null | undefined, path: string): boolean {
+  return !!role && (NAV_ROLES[path] ?? []).includes(role);
+}
