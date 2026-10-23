@@ -42,14 +42,16 @@ const ProfissionaisPage: React.FC = () => {
                     {!p.isActive && <span className="ml-2 text-xs font-normal text-gray-400">(inativo)</span>}
                   </p>
                   <div className="flex items-center gap-3 mt-0.5">
+                    <span className="text-xs text-gray-500">{p.type === 'podologa' ? 'Podóloga' : 'Manicure'}</span>
+                    {p.commissionRate !== null && <span className="text-xs text-gray-400">{p.commissionRate}%</span>}
                     {p.specialty && <span className="text-xs text-gray-500 truncate">{p.specialty}</span>}
                     {p.phoneNumber && <span className="text-xs text-gray-400 truncate">{h.formatPhone(p.phoneNumber)}</span>}
                     {p.email && <span className="text-xs text-gray-400 truncate">{p.email}</span>}
                   </div>
                 </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                  <button onClick={() => h.openEdit(p)} className="p-2 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-600 transition" title="Editar profissional"><Pencil size={16} /></button>
-                  <button onClick={() => h.handleDelete(p.id, p.fullName)} disabled={h.deletingId === p.id} className="p-2 rounded-lg text-gray-400 hover:bg-danger-50 hover:text-danger-600 transition disabled:opacity-50" title="Excluir profissional">
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <button onClick={() => h.openEdit(p)} className="p-3 rounded-lg text-gray-500 hover:bg-primary-50 hover:text-primary-600 transition" title="Editar profissional" aria-label={`Editar ${p.fullName}`}><Pencil size={16} /></button>
+                  <button onClick={() => h.handleDelete(p.id, p.fullName)} disabled={h.deletingId === p.id} className="p-3 rounded-lg text-gray-500 hover:bg-danger-50 hover:text-danger-600 transition disabled:opacity-50" title="Excluir profissional" aria-label={`Excluir ${p.fullName}`}>
                     {h.deletingId === p.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                   </button>
                 </div>

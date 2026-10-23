@@ -1,9 +1,15 @@
 import { useState } from 'react';
 import { useProfessionals, useCreateProfessional, useUpdateProfessional, useDeleteProfessional } from './useProfessionals';
-import type { Professional } from '@/types';
+import { useSetProfessionalServices } from '@/features/services/hooks/useServices';
+import { serviceService } from '@/features/services/services/service.service';
+import type { Professional, ProfessionalType } from '@/types';
 
 interface ProfessionalForm {
   fullName: string;
+  type: ProfessionalType;
+  commissionRate: string;
+  acceptsOnlineBooking: boolean;
+  serviceIds: string[];
   specialty: string;
   phoneNumber: string;
   email: string;
@@ -11,7 +17,10 @@ interface ProfessionalForm {
   password: string;
 }
 
-const EMPTY_FORM: ProfessionalForm = { fullName: '', specialty: '', phoneNumber: '', email: '', username: '', password: '' };
+const EMPTY_FORM: ProfessionalForm = {
+  fullName: '', type: 'manicure', commissionRate: '', acceptsOnlineBooking: true, serviceIds: [],
+  specialty: '', phoneNumber: '', email: '', username: '', password: '',
+};
 
 export type { ProfessionalForm };
 
@@ -27,8 +36,9 @@ export function useProfissionaisPage() {
   const createMutation = useCreateProfessional();
   const updateMutation = useUpdateProfessional();
   const deleteMutation = useDeleteProfessional();
+  const setServicesMutation = useSetProfessionalServices();
 
-  const isSaving = createMutation.isPending || updateMutation.isPending;
+  const isSaving = createMutation.isPending || updateMutation.isPending || setServicesMutation.isPending;
   const deletingId = deleteMutation.isPending ? (deleteMutation.variables as string | undefined) ?? null : null;
 
   const filtered = professionals.filter((p) => {
@@ -50,8 +60,16 @@ export function useProfissionaisPage() {
 
   const openEdit = (p: Professional) => {
     setEditingId(p.id);
+    // Serviços que ela executa chegam depois; o modal já abre com os demais dados
+    serviceService.listByProfessional(p.id)
+      .then((list) => setForm((f) => ({ ...f, serviceIds: list.map((s) => s.id) })))
+      .catch(() => setFormError('Não foi possível carregar os serviços da profissional.'));
     setForm({
       fullName: p.fullName,
+      type: p.type,
+      commissionRate: p.commissionRate === null ? '' : String(p.commissionRate),
+      acceptsOnlineBooking: p.acceptsOnlineBooking,
+      serviceIds: [],
       specialty: p.specialty ?? '',
       phoneNumber: p.phoneNumber ?? '',
       email: p.email ?? '',
@@ -89,7 +107,18 @@ export function useProfissionaisPage() {
       }
     }
 
-    const onSuccess = () => closeModal();
+    const commission = form.commissionRate.trim() === '' ? null : Number(form.commissionRate.replace(',', '.'));
+    if (commission !== null && (Number.isNaN(commission) || commission < 0 || commission > 100)) {
+      setFormError('Comissão deve ser de 0 a 100%.');
+      return;
+    }
+
+    const onSuccess = (saved: Professional) => {
+      setServicesMutation.mutate(
+        { professionalId: saved.id, serviceIds: form.serviceIds },
+        { onSuccess: closeModal, onError: () => setFormError('Profissional salva, mas os serviços não foram atualizados.') },
+      );
+    };
     const onError = (err: unknown) => {
       const message = (err as { message?: string })?.message || 'Erro ao salvar profissional.';
       setFormError(message);
@@ -97,6 +126,9 @@ export function useProfissionaisPage() {
 
     const body: Record<string, unknown> = {
       fullName: form.fullName.trim(),
+      type: form.type,
+      commissionRate: commission,
+      acceptsOnlineBooking: form.acceptsOnlineBooking,
       specialty: form.specialty.trim() || null,
       phoneNumber: form.phoneNumber.trim() || null,
       email: form.email.trim() || null,
