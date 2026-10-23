@@ -3,7 +3,6 @@ import { screen, waitFor } from '@testing-library/react';
 import { renderWithProviders } from '@/test/test-utils';
 import LoginPage from '@/features/auth/pages/LoginPage';
 import { useAuthStore } from '@/stores/auth.store';
-import { authService } from '@/features/auth/services/auth.service';
 
 // Mock useAuth
 const mockSignIn = vi.fn();
@@ -25,17 +24,10 @@ vi.mock('react-router-dom', async () => {
   return { ...actual, useNavigate: () => mockNavigate };
 });
 
-vi.mock('@/features/auth/services/auth.service', () => ({
-  authService: {
-    getRegistrationStatus: vi.fn(),
-  },
-}));
-
 describe('LoginPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useAuthStore.getState().clearAuth();
-    vi.mocked(authService.getRegistrationStatus).mockResolvedValue(true);
   });
 
   it('renderiza campos de usuário e senha com labels', () => {
@@ -46,6 +38,7 @@ describe('LoginPage', () => {
     expect(screen.getByLabelText('Usuário')).toBeInTheDocument();
     expect(screen.getByLabelText('Senha')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Entrar' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /não tem conta/i })).not.toBeInTheDocument();
   });
 
   it('submete formulário válido e navega para /dashboard', async () => {
@@ -142,39 +135,5 @@ describe('LoginPage', () => {
 
     // Assert
     expect(screen.getByRole('button', { name: 'Entrando...' })).toBeDisabled();
-  });
-
-  it('tem link para página de registro', async () => {
-    // Arrange & Act
-    renderWithProviders(<LoginPage />);
-
-    // Assert
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /não tem conta/i })).toBeInTheDocument();
-    });
-  });
-
-  it('navega para /register ao clicar no link de registro', async () => {
-    // Arrange
-    const { user } = renderWithProviders(<LoginPage />);
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /não tem conta/i })).toBeInTheDocument();
-    });
-
-    // Act
-    await user.click(screen.getByRole('button', { name: /não tem conta/i }));
-
-    // Assert
-    expect(mockNavigate).toHaveBeenCalledWith('/register');
-  });
-
-  it('não mostra opção de registro quando backend desabilita cadastro', async () => {
-    vi.mocked(authService.getRegistrationStatus).mockResolvedValue(false);
-
-    renderWithProviders(<LoginPage />);
-
-    await waitFor(() => {
-      expect(screen.queryByRole('button', { name: /não tem conta/i })).not.toBeInTheDocument();
-    });
   });
 });

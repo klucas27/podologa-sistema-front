@@ -1,6 +1,5 @@
 export const ROUTES = {
   LOGIN: "/login",
-  REGISTER: "/register",
   ACCESS_DENIED: "/acesso-negado",
   DASHBOARD: "/dashboard",
   PATIENTS: "/pacientes",

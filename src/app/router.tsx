@@ -9,7 +9,6 @@ import { homePathFor } from "@/config/permissions";
 
 // Auth — carregamento síncrono: são as primeiras páginas vistas (LCP crítico)
 import LoginPage from "@/features/auth/pages/LoginPage";
-import RegisterPage from "@/features/auth/pages/RegisterPage";
 import AcessoNegadoPage from "@/features/auth/pages/AcessoNegadoPage";
 
 function RoleRedirect() {
@@ -75,10 +74,6 @@ export const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
-  },
-  {
-    path: "/register",
-    element: <RegisterPage />,
   },
   {
     path: "/acesso-negado",
