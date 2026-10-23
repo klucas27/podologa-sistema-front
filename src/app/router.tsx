@@ -41,6 +41,7 @@ const ProfissionaisPage = React.lazy(() => import("@/features/professionals/page
 const TransacoesPage = React.lazy(() => import("@/features/billing/pages/TransacoesPage"));
 const ConfiguracoesPage = React.lazy(() => import("@/features/settings/pages/ConfiguracoesPage"));
 const ServicosPage = React.lazy(() => import("@/features/services/pages/ServicosPage"));
+const PedidosPage = React.lazy(() => import("@/features/booking-requests/pages/PedidosPage"));
 const PublicBookingPage = React.lazy(() => import("@/features/public-booking/pages/PublicBookingPage"));
 
 // ─── Route → import map para prefetch no hover ───────────────────
@@ -57,6 +58,7 @@ export const routeImportMap: Record<string, () => Promise<unknown>> = {
   "/patologias": () => import("@/features/pathologies/pages/PatologiasPage"),
   "/configuracoes": () => import("@/features/settings/pages/ConfiguracoesPage"),
   "/servicos": () => import("@/features/services/pages/ServicosPage"),
+  "/pedidos": () => import("@/features/booking-requests/pages/PedidosPage"),
 };
 
 const lazy = (Component: React.LazyExoticComponent<React.ComponentType>) => (
@@ -98,7 +100,10 @@ export const router = createBrowserRouter([
           },
           {
             element: <ProtectedRoute allowedRoles={["admin", "recepcao"]} />,
-            children: [{ path: "/servicos", element: lazy(ServicosPage) }],
+            children: [
+              { path: "/servicos", element: lazy(ServicosPage) },
+              { path: "/pedidos", element: lazy(PedidosPage) },
+            ],
           },
           { path: "/pacientes", element: lazy(PacientesPage) },
           { path: "/pacientes/novo", element: lazy(CadastroPacientePage) },

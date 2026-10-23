@@ -16,15 +16,25 @@ import {
   ChevronRight,
   Menu,
   X,
+  Inbox,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { routeImportMap } from '@/app/router';
+import { useBookingRequests } from '@/features/booking-requests/hooks/useBookingRequests';
+import type { UserRole } from '@/types';
 
-const allNavItems = [
+const allNavItems: Array<{
+  to: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  adminOnly?: boolean;
+  roles?: UserRole[];
+}> = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: true },
   { to: '/pacientes', label: 'Pacientes', icon: Users, adminOnly: false },
   { to: '/consultas', label: 'Consultas', icon: Stethoscope, adminOnly: false },
   { to: '/agendamentos', label: 'Agendamentos', icon: CalendarDays, adminOnly: false },
+  { to: '/pedidos', label: 'Pedidos', icon: Inbox, roles: ['admin', 'recepcao'] },
   { to: '/profissionais', label: 'Profissionais', icon: UserCog, adminOnly: true },
   { to: '/servicos', label: 'Serviços', icon: Sparkles, adminOnly: true },
   { to: '/transacoes', label: 'Transações', icon: DollarSign, adminOnly: false },
@@ -37,8 +47,14 @@ const MainLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, role, signOut } = useAuth();
   const navigate = useNavigate();
+  const canSeeRequests = role === 'admin' || role === 'recepcao';
+  const pending = useBookingRequests(canSeeRequests);
+  const pendingCount = pending.data?.length ?? 0;
 
-  const navItems = allNavItems.filter((item) => !item.adminOnly || role === 'admin');
+  const navItems = allNavItems.filter((item) => {
+    if (item.roles) return !!role && item.roles.includes(role);
+    return !item.adminOnly || role === 'admin';
+  });
 
   // Prefetch: carrega o chunk da rota quando o cursor passa sobre o link.
   // Impacto: navegação parece instantânea (chunk já está em cache).
@@ -127,12 +143,15 @@ const MainLayout: React.FC = () => {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          {navItems.map(({ to, label, icon: Icon }) => (
+          {navItems.map(({ to, label, icon: Icon }) => {
+            const count = to === '/pedidos' ? pendingCount : 0;
+            return (
             <NavLink
               key={to}
               to={to}
               onClick={() => setMobileOpen(false)}
               onMouseEnter={() => handlePrefetch(to)}
+              aria-label={count > 0 ? `${label}, ${count} pendentes` : undefined}
               className={({ isActive }) =>
                 `group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                 ${
@@ -144,10 +163,23 @@ const MainLayout: React.FC = () => {
               }
               title={collapsed ? label : undefined}
             >
-              <Icon size={20} className="flex-shrink-0" />
-              {!collapsed && <span>{label}</span>}
+              <span className="relative flex-shrink-0">
+                <Icon size={20} />
+                {count > 0 && collapsed && (
+                  <span className="absolute -top-2 -right-2 min-w-4 rounded-full bg-primary-500 px-1 text-center text-[10px] leading-4 text-white">
+                    {count}
+                  </span>
+                )}
+              </span>
+              {!collapsed && <span className="flex-1">{label}</span>}
+              {count > 0 && !collapsed && (
+                <span className="min-w-5 rounded-full bg-primary-500 px-1.5 text-center text-xs leading-5 text-white">
+                  {count}
+                </span>
+              )}
             </NavLink>
-          ))}
+            );
+          })}
         </nav>
 
         {/* Footer */}
