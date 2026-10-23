@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Lock, Clock, QrCode } from 'lucide-react';
+import { Lock, Clock, QrCode, CalendarOff } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import SecurityTab from '../components/SecurityTab';
 import WorkingHoursTab from '../components/WorkingHoursTab';
 import BookingLinkTab from '../components/BookingLinkTab';
+import ScheduleBlocksTab from '../components/ScheduleBlocksTab';
 import { useAuth } from '@/hooks/useAuth';
 
-type TabKey = 'security' | 'workingHours' | 'bookingLink';
+type TabKey = 'security' | 'workingHours' | 'bookingLink' | 'blocks';
 
 interface TabDef {
   key: TabKey;
@@ -19,6 +20,7 @@ const ALL_TABS: TabDef[] = [
   { key: 'security', label: 'Segurança', icon: <Lock size={16} /> },
   { key: 'workingHours', label: 'Expediente', icon: <Clock size={16} />, adminOnly: true },
   { key: 'bookingLink', label: 'Link de agendamento', icon: <QrCode size={16} />, adminOnly: true },
+  { key: 'blocks', label: 'Bloqueios de agenda', icon: <CalendarOff size={16} />, adminOnly: true },
 ];
 
 const ConfiguracoesPage: React.FC = () => {
@@ -55,6 +57,7 @@ const ConfiguracoesPage: React.FC = () => {
         {activeTab === 'security' && <SecurityTab />}
         {activeTab === 'workingHours' && <WorkingHoursTab />}
         {activeTab === 'bookingLink' && <BookingLinkTab />}
+        {activeTab === 'blocks' && <ScheduleBlocksTab />}
       </div>
     </div>
     </ErrorBoundary>

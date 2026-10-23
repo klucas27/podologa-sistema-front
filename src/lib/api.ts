@@ -73,6 +73,8 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
+    /** Dados extras do servidor (ex.: horários em conflito num 409). */
+    public details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -181,9 +183,9 @@ async function request<T>(
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    const message =
-      (body as { message?: string }).message || `HTTP ${response.status}: ${response.statusText}`;
-    throw new ApiError(response.status, message);
+    const { message: serverMessage, details } = body as { message?: string; details?: Record<string, unknown> };
+    const message = serverMessage || `HTTP ${response.status}: ${response.statusText}`;
+    throw new ApiError(response.status, message, details);
   }
 
   return response.json();
