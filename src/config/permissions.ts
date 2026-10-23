@@ -13,6 +13,13 @@ export function isUserRole(value: unknown): value is UserRole {
   return typeof value === 'string' && (ROLES as readonly string[]).includes(value);
 }
 
+/** Dados de saúde (anamnese, evolução, patologias): só podóloga e admin. */
+export const HEALTH_ROLES: readonly UserRole[] = ['admin', 'podologa'];
+
+export function canSeeHealth(role: UserRole | null | undefined): boolean {
+  return !!role && HEALTH_ROLES.includes(role);
+}
+
 /** Manicure e podóloga veem apenas a própria agenda. */
 export function isProfessionalRole(role: UserRole | null | undefined): boolean {
   return role === 'manicure' || role === 'podologa';

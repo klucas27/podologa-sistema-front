@@ -9,11 +9,11 @@ export const anamnesisKeys = {
     [...anamnesisKeys.all, "patient", patientId] as const,
 };
 
-export function useAnamnesesByPatient(patientId: string) {
+export function useAnamnesesByPatient(patientId: string, enabled = true) {
   return useQuery({
     queryKey: anamnesisKeys.byPatient(patientId),
     queryFn: () => anamnesisService.getByPatientId(patientId),
-    enabled: !!patientId,
+    enabled: enabled && !!patientId,
   });
 }
 

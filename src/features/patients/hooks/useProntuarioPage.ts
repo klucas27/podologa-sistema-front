@@ -3,10 +3,17 @@ import { useNavigate, useParams } from "react-router-dom";
 import { usePatient } from "./usePatients";
 import { useAnamnesesByPatient } from "@/features/anamneses/hooks/useAnamneses";
 import { useAppointmentsByPatient } from "@/features/appointments/hooks/useAppointments";
+import { useAuth } from "@/hooks/useAuth";
+import { canSeeHealth } from "@/config/permissions";
+
+export type ProntuarioTab = "dados" | "historico" | "saude";
 
 export function useProntuarioPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { role } = useAuth();
+  const showHealth = canSeeHealth(role);
+  const [tab, setTab] = useState<ProntuarioTab>("dados");
   const [anamnesisOpen, setAnamnesisOpen] = useState(false);
   const [expandedAppointment, setExpandedAppointment] = useState<string | null>(
     null,
@@ -14,11 +21,11 @@ export function useProntuarioPage() {
 
   // React Query: substitui useEffect + api.get + Promise.all + useState
   const { data: patient = null, isLoading: isLoadingPatient } = usePatient(id ?? "");
-  const { data: anamnesesList = [], isLoading: isLoadingAnamneses } = useAnamnesesByPatient(id ?? "");
+  const { data: anamnesesList = [], isLoading: isLoadingAnamneses } = useAnamnesesByPatient(id ?? "", showHealth);
   const { data: appointments = [], isLoading: isLoadingAppointments } = useAppointmentsByPatient(id ?? "");
 
   const anamnesis = anamnesesList.length > 0 ? anamnesesList[0]! : null;
-  const isLoading = isLoadingPatient || isLoadingAnamneses || isLoadingAppointments;
+  const isLoading = isLoadingPatient || (showHealth && isLoadingAnamneses) || isLoadingAppointments;
 
   const toggleAnamnesis = useCallback(() => {
     setAnamnesisOpen((prev) => !prev);
@@ -33,6 +40,9 @@ export function useProntuarioPage() {
 
   return {
     id,
+    tab,
+    setTab,
+    showHealth,
     patient,
     anamnesis,
     appointments,
