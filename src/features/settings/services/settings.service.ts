@@ -1,5 +1,5 @@
 import { api } from '@/lib/api';
-import type { WorkingHours } from '@/types';
+import type { BusinessSettings, WorkingHours } from '@/types';
 
 interface ApiResponse<T> {
   data: T;
@@ -18,4 +18,10 @@ export const settingsService = {
     api
       .put<ApiResponse<WorkingHours[]>>(`/api/professionals/${professionalId}/working-hours`, { days })
       .then((res) => res.data),
+
+  getBusiness: () =>
+    api.get<ApiResponse<BusinessSettings>>('/api/settings/business').then((res) => res.data),
+
+  updateBusiness: (data: BusinessSettings) =>
+    api.put<ApiResponse<BusinessSettings>>('/api/settings/business', data).then((res) => res.data),
 };
