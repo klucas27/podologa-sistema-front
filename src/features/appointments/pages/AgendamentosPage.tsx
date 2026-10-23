@@ -32,7 +32,7 @@ const AgendamentosPageInner: React.FC = () => {
         <div className="flex items-center gap-3">
           <CalendarDays size={22} className="text-primary-500" />
           <div>
-            <h1 className="text-xl font-bold text-gray-800 capitalize">
+            <h1 className={`text-xl font-bold text-gray-800 ${isDay ? "first-letter:uppercase" : "capitalize"}`}>
               {headerLabel}
             </h1>
             <p className="text-xs text-gray-400">
