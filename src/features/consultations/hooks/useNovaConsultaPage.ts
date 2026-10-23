@@ -1,7 +1,9 @@
 import { isProfessionalRole } from '@/config/permissions';
 import { useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { availabilityService } from '../services/availability.service';
 import { usePatients } from '@/features/patients/hooks/usePatients';
 import { useActiveProfessionals } from '@/features/professionals/hooks/useProfessionals';
 import { useCreateAppointment } from '@/features/appointments/hooks/useAppointments';
@@ -32,6 +34,14 @@ const fromDisplayDate = (ddmmyy: string): string => {
   const parts = ddmmyy.split('/');
   if (parts.length !== 3) return '';
   return `${parts[2]}-${parts[1]}-${parts[0]}`;
+};
+
+const isValidDisplayDate = (value: string): boolean => {
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(value)) return false;
+  const [day, month, year] = value.split('/').map(Number);
+  if (!year || !month || !day) return false;
+  const utc = new Date(Date.UTC(year, month - 1, day));
+  return utc.getUTCFullYear() === year && utc.getUTCMonth() === month - 1 && utc.getUTCDate() === day;
 };
 
 const applyDateMask = (raw: string): string => {
@@ -89,6 +99,23 @@ export function useNovaConsultaPage() {
   const serviceId = activeServices.some((sv) => sv.id === chosenServiceId) ? chosenServiceId : '';
   const selectedService = activeServices.find((sv) => sv.id === serviceId) ?? null;
   const scheduledEnd = selectedService && scheduledStart ? addMinutes(scheduledStart, selectedService.durationMinutes) : '';
+
+  const isoDate = isValidDisplayDate(scheduledDate) ? fromDisplayDate(scheduledDate) : '';
+  const slotsEnabled = Boolean(professionalId && serviceId && isoDate);
+  const slotsQuery = useQuery({
+    queryKey: ['consultations', 'availability', serviceId, professionalId, isoDate],
+    queryFn: () =>
+      availabilityService.getAvailability({
+        serviceId,
+        professionalId,
+        from: isoDate,
+        to: isoDate,
+      }),
+    enabled: slotsEnabled,
+  });
+  const slots =
+    slotsQuery.data?.days.find((day) => day.date === isoDate)?.slots.map((slot) => slot.start) ?? [];
+  const isLoadingSlots = slotsEnabled && slotsQuery.isLoading;
 
   // React Query: create mutation
   const createMutation = useCreateAppointment();
@@ -190,6 +217,7 @@ export function useNovaConsultaPage() {
     activeServices, isLoadingServices, serviceId, setServiceId, selectedService,
     source, setSource,
     scheduledDate, scheduledStart, scheduledEnd, notes,
+    slots, isLoadingSlots, slotsEnabled,
     isSaving, error,
     query, setQuery, showResults, setShowResults, wrapperRef,
     selectPatient, clearPatient,

@@ -4,6 +4,7 @@ import Button from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useNovaConsultaPage, SOURCE_OPTIONS } from '../hooks/useNovaConsultaPage';
 import { PatientAutocomplete } from '../components/PatientAutocomplete';
+import { SlotPicker } from '../components/SlotPicker';
 
 const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -97,6 +98,15 @@ const NovaConsultaPage: React.FC = () => {
               </p>
             </div>
           </div>
+
+          {h.slotsEnabled && (
+            <SlotPicker
+              slots={h.slots}
+              selected={h.scheduledStart}
+              isLoading={h.isLoadingSlots}
+              onSelect={h.setScheduledStart}
+            />
+          )}
 
           <div>
             <label htmlFor="source-select" className="block text-sm font-medium text-gray-700 mb-1">Como a cliente marcou?</label>
