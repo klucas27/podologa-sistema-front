@@ -40,6 +40,7 @@ const ProfissionaisPage = React.lazy(() => import("@/features/professionals/page
 const TransacoesPage = React.lazy(() => import("@/features/billing/pages/TransacoesPage"));
 const ConfiguracoesPage = React.lazy(() => import("@/features/settings/pages/ConfiguracoesPage"));
 const ServicosPage = React.lazy(() => import("@/features/services/pages/ServicosPage"));
+const UsuariosPage = React.lazy(() => import("@/features/users/pages/UsuariosPage"));
 const PedidosPage = React.lazy(() => import("@/features/booking-requests/pages/PedidosPage"));
 const PublicBookingPage = React.lazy(() => import("@/features/public-booking/pages/PublicBookingPage"));
 
@@ -57,6 +58,7 @@ export const routeImportMap: Record<string, () => Promise<unknown>> = {
   "/patologias": () => import("@/features/pathologies/pages/PatologiasPage"),
   "/configuracoes": () => import("@/features/settings/pages/ConfiguracoesPage"),
   "/servicos": () => import("@/features/services/pages/ServicosPage"),
+  "/usuarios": () => import("@/features/users/pages/UsuariosPage"),
   "/pedidos": () => import("@/features/booking-requests/pages/PedidosPage"),
 };
 
@@ -91,6 +93,7 @@ export const router = createBrowserRouter([
             children: [
               { path: "/dashboard", element: lazy(DashboardPage) },
               { path: "/profissionais", element: lazy(ProfissionaisPage) },
+              { path: "/usuarios", element: lazy(UsuariosPage) },
             ],
           },
           {

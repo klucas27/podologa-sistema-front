@@ -18,4 +18,5 @@ export const ROUTES = {
   PATHOLOGIES: "/patologias",
   SETTINGS: "/configuracoes",
   SERVICES: "/servicos",
+  USERS: "/usuarios",
 } as const;

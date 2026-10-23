@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   Inbox,
+  KeyRound,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { routeImportMap } from '@/app/router';
@@ -37,6 +38,7 @@ const allNavItems: Array<{
   { to: '/pedidos', label: 'Pedidos', icon: Inbox, roles: ['admin', 'recepcao'] },
   { to: '/profissionais', label: 'Profissionais', icon: UserCog, adminOnly: true },
   { to: '/servicos', label: 'Serviços', icon: Sparkles, adminOnly: true },
+  { to: '/usuarios', label: 'Usuários', icon: KeyRound, adminOnly: true },
   { to: '/transacoes', label: 'Transações', icon: DollarSign, adminOnly: false },
   { to: '/patologias', label: 'Patologias', icon: Bug, adminOnly: false },
   { to: '/configuracoes', label: 'Configurações', icon: Settings, adminOnly: false },
