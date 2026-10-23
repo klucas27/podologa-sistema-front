@@ -1,6 +1,6 @@
-# 🦶 PodoSistema — Front-end
+# PodoSistema · Nálu Nails — Front-end
 
-Sistema de gestão para consultórios de **Podologia** construído com **React 19 + Vite + TypeScript + Tailwind CSS**.
+Sistema de gestão da **Nálu Nails** (manicure e podologia — Guaratinguetá/SP) construído com **React 19 + Vite + TypeScript + Tailwind CSS**.
 Configurado como **PWA** (Progressive Web App) — instalável e com suporte offline.
 
 ---

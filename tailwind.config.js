@@ -4,17 +4,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Paleta Nálu Nails (mesma da landing page)
         primary: {
-          50: "#e0f7f6",
-          100: "#b3ece9",
-          200: "#80e0db",
-          300: "#4dd4cd",
-          400: "#26cbc2",
-          500: "#0ABAB5", // Tiffany Blue — cor principal
-          600: "#08a8a3",
-          700: "#069490",
-          800: "#04807c",
-          900: "#025e5b",
+          50: "#faf1ee", // porcelana
+          100: "#f3dcd6",
+          200: "#e6c3b9", // nude
+          300: "#d9a197",
+          400: "#c9867e", // rose
+          500: "#9e1b22", // cereja — cor principal (contraste AA com branco)
+          600: "#861419",
+          700: "#5e0b0b", // bordô da logo
+          800: "#4a0808",
+          900: "#2e0606",
         },
         gray: {
           50: "#f9fafb",
@@ -48,7 +49,8 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["Hanken Grotesk", "system-ui", "-apple-system", "sans-serif"],
+        display: ["Gloock", "Times New Roman", "serif"],
       },
       fontSize: {
         "2xs": ["0.625rem", { lineHeight: "0.875rem" }],

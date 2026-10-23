@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { homePathFor } from '@/config/permissions';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Footprints, User, Lock, Loader2 } from 'lucide-react';
+import { User, Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { ApiError } from '@/lib/api';
 import { loginSchema, type LoginFormData } from '../schemas/auth.schema';
@@ -71,10 +71,8 @@ const LoginPage: React.FC = () => {
       <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg">
         {/* Brand */}
         <div className="flex flex-col items-center mb-8">
-          <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary-500 text-white mb-4">
-            <Footprints size={28} />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800">PodoSistema</h1>
+          <img src="/pwa-192x192.png" alt="" className="w-14 h-14 rounded-2xl mb-4" />
+          <h1 className="text-3xl font-display text-primary-700">Nálu Nails</h1>
           <p className="text-sm text-gray-400 mt-1">Acesse sua conta para continuar</p>
         </div>
 

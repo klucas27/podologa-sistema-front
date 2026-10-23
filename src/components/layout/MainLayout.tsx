@@ -15,7 +15,6 @@ import {
   ChevronRight,
   Menu,
   X,
-  Footprints,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { routeImportMap } from '@/app/router';
@@ -89,12 +88,10 @@ const MainLayout: React.FC = () => {
         {/* Brand */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary-500 text-white flex-shrink-0">
-              <Footprints size={22} />
-            </div>
+            <img src="/pwa-192x192.png" alt="" className="w-10 h-10 rounded-xl flex-shrink-0" />
             {!collapsed && (
-              <span className="text-lg font-bold text-gray-800 whitespace-nowrap tracking-tight">
-                PodoSistema
+              <span className="text-lg font-display text-primary-700 whitespace-nowrap">
+                Nálu Nails
               </span>
             )}
           </div>
@@ -190,10 +187,8 @@ const MainLayout: React.FC = () => {
               <Menu size={22} />
             </button>
             <div className="flex items-center gap-2 lg:hidden">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-500 text-white">
-                <Footprints size={16} />
-              </div>
-              <span className="text-base font-bold text-gray-800">PodoSistema</span>
+              <img src="/pwa-192x192.png" alt="" className="w-8 h-8 rounded-lg" />
+              <span className="text-base font-display text-primary-700">Nálu Nails</span>
             </div>
           </div>
 

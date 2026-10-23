@@ -27,15 +27,15 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'robots.txt'],
+      includeAssets: ['favicon.ico', 'favicon.png', 'apple-touch-icon.png'],
       manifest: {
-        name: 'PodoSistema — Gestão de Podologia',
-        short_name: 'PodoSistema',
-        description: 'Sistema completo de gestão para consultórios de Podologia',
-        theme_color: '#0ABAB5',
-        background_color: '#f9fafb',
+        name: 'Nálu Nails — Gestão do salão',
+        short_name: 'Nálu Nails',
+        description: 'Agenda, clientes, estoque e caixa da Nálu Nails',
+        theme_color: '#5e0b0b',
+        background_color: '#faf1ee',
         display: 'standalone',
-        orientation: 'portrait',
+        orientation: 'any',
         start_url: '/',
         icons: [
           { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
