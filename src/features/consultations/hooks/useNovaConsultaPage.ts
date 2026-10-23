@@ -5,8 +5,22 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePatients } from '@/features/patients/hooks/usePatients';
 import { useActiveProfessionals } from '@/features/professionals/hooks/useProfessionals';
 import { useCreateAppointment } from '@/features/appointments/hooks/useAppointments';
+import { useProfessionalServices } from '@/features/services/hooks/useServices';
 import { spDateTimeToISO } from '@/lib/dateUtils';
-import type { Patient } from '@/types';
+import type { AppointmentSource, Patient } from '@/types';
+
+export const SOURCE_OPTIONS: { value: AppointmentSource; label: string }[] = [
+  { value: 'balcao', label: 'Balcão / telefone' },
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'indicacao', label: 'Indicação' },
+];
+
+const addMinutes = (hhmm: string, minutes: number): string => {
+  const [h, m] = hhmm.split(':').map(Number);
+  const total = (h ?? 0) * 60 + (m ?? 0) + minutes;
+  return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+};
 
 const toDisplayDate = (iso: string): string => {
   if (!iso) return '';
@@ -43,7 +57,7 @@ export function useNovaConsultaPage() {
   const preselectedPatientId = searchParams.get('patientId') ?? '';
   const preselectedDate = searchParams.get('date') ?? '';
   const preselectedStart = searchParams.get('startTime') ?? '';
-  const preselectedEnd = searchParams.get('endTime') ?? '';
+  const preselectedProfessional = searchParams.get('professionalId') ?? '';
 
   // Debounced search for patient autocomplete
   const [query, setQuery] = useState('');
@@ -51,13 +65,15 @@ export function useNovaConsultaPage() {
   const [showResults, setShowResults] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
-  const [professionalId, setProfessionalId] = useState('');
+  const [chosenProfessionalId, setProfessionalId] = useState(preselectedProfessional);
+  const professionalId = user?.professionalId && isProfessionalRole(user.role) ? user.professionalId : chosenProfessionalId;
+  const [chosenServiceId, setServiceId] = useState('');
+  const [source, setSource] = useState<AppointmentSource>('balcao');
   const [patientId, setPatientId] = useState(preselectedPatientId);
   const [selectedPatientName, setSelectedPatientName] = useState('');
 
   const [scheduledDate, setScheduledDate] = useState(() => toDisplayDate(preselectedDate));
   const [scheduledStart, setScheduledStart] = useState(preselectedStart);
-  const [scheduledEnd, setScheduledEnd] = useState(preselectedEnd);
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
 
@@ -66,6 +82,13 @@ export function useNovaConsultaPage() {
 
   // React Query: active professionals
   const { data: professionals = [], isLoading: isLoadingProfessionals } = useActiveProfessionals();
+
+  // Serviços que a profissional escolhida realiza (duração e preço vêm daqui)
+  const { data: services = [], isLoading: isLoadingServices } = useProfessionalServices(professionalId || null);
+  const activeServices = services.filter((sv) => sv.isActive);
+  const serviceId = activeServices.some((sv) => sv.id === chosenServiceId) ? chosenServiceId : '';
+  const selectedService = activeServices.find((sv) => sv.id === serviceId) ?? null;
+  const scheduledEnd = selectedService && scheduledStart ? addMinutes(scheduledStart, selectedService.durationMinutes) : '';
 
   // React Query: create mutation
   const createMutation = useCreateAppointment();
@@ -76,13 +99,6 @@ export function useNovaConsultaPage() {
     const t = setTimeout(() => setDebouncedQuery(query), 300);
     return () => clearTimeout(t);
   }, [query]);
-
-  // Auto-select professional if logged-in user is a professional
-  useEffect(() => {
-    if (user?.professionalId && !professionalId) {
-      setProfessionalId(user.professionalId);
-    }
-  }, [user?.professionalId, professionalId]);
 
   // Pre-select patient name from URL param
   useEffect(() => {
@@ -130,11 +146,10 @@ export function useNovaConsultaPage() {
     e.preventDefault();
     setError('');
 
-    if (!patientId) { setError('Selecione um paciente.'); return; }
-    if (!professionalId) { setError('Selecione um profissional responsável.'); return; }
-    if (!scheduledDate || !scheduledStart || !scheduledEnd) {
-      setError('Preencha a data, horário de início e término.'); return;
-    }
+    if (!patientId) { setError('Selecione a cliente.'); return; }
+    if (!professionalId) { setError('Selecione a profissional.'); return; }
+    if (!selectedService) { setError('Selecione o serviço.'); return; }
+    if (!scheduledDate || !scheduledStart) { setError('Preencha a data e o horário de início.'); return; }
 
     const isoDate = fromDisplayDate(scheduledDate);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) {
@@ -142,25 +157,17 @@ export function useNovaConsultaPage() {
     }
 
     const start = buildDateTime(scheduledDate, scheduledStart);
-    const end = buildDateTime(scheduledDate, scheduledEnd);
-
     if (new Date(start) < new Date()) {
-      setError('Não é possível agendar consultas no passado.'); return;
-    }
-    if (start >= end) {
-      setError('O horário de término deve ser posterior ao de início.'); return;
-    }
-    if (!user) {
-      setError('Profissional não identificado. Faça login novamente.'); return;
+      setError('Não é possível agendar no passado.'); return;
     }
 
     createMutation.mutate(
       {
         patientId,
         professionalId,
-        scheduledDate: isoDate,
+        serviceId: selectedService.id,
         scheduledStart: start,
-        scheduledEnd: end,
+        source,
         notes: notes.trim() || undefined,
       },
       {
@@ -180,11 +187,13 @@ export function useNovaConsultaPage() {
     professionals, isLoadingProfessionals, professionalId, setProfessionalId,
     isProfessionalUser,
     patientId, selectedPatientName,
+    activeServices, isLoadingServices, serviceId, setServiceId, selectedService,
+    source, setSource,
     scheduledDate, scheduledStart, scheduledEnd, notes,
     isSaving, error,
     query, setQuery, showResults, setShowResults, wrapperRef,
     selectPatient, clearPatient,
-    handleDateChange, setScheduledStart, setScheduledEnd, setNotes,
+    handleDateChange, setScheduledStart, setNotes,
     handleSubmit,
     goBack: () => navigate(-1),
   };

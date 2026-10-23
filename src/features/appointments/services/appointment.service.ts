@@ -1,16 +1,17 @@
 import { api } from "@/lib/api";
-import type { Appointment, AppointmentStatus } from "@/types";
+import type { Appointment, AppointmentSource, AppointmentStatus } from "@/types";
 
 interface ApiResponse<T> {
   data: T;
 }
 
+/** Fim, data e preço são calculados no servidor a partir do serviço. */
 export interface CreateAppointmentData {
   patientId: string;
-  professionalId?: string;
-  scheduledDate: string;
+  professionalId: string;
+  serviceId: string;
   scheduledStart: string;
-  scheduledEnd: string;
+  source?: AppointmentSource;
   notes?: string;
 }
 

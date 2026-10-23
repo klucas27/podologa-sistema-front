@@ -2,10 +2,12 @@ import React from 'react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { useNovaConsultaPage } from '../hooks/useNovaConsultaPage';
+import { useNovaConsultaPage, SOURCE_OPTIONS } from '../hooks/useNovaConsultaPage';
 import { PatientAutocomplete } from '../components/PatientAutocomplete';
 
-const INPUT_CLASS = 'w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition';
+const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+const INPUT_CLASS = 'w-full px-3 py-2.5 rounded-lg border border-gray-300 text-base focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition';
 
 const NovaConsultaPage: React.FC = () => {
   const h = useNovaConsultaPage();
@@ -26,8 +28,8 @@ const NovaConsultaPage: React.FC = () => {
           <ArrowLeft size={20} />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Novo Agendamento</h1>
-          <p className="text-sm text-gray-500">Agende uma nova consulta para o paciente.</p>
+          <h1 className="text-2xl font-bold text-gray-800">Novo agendamento</h1>
+          <p className="text-sm text-gray-500">Duração e preço vêm do serviço escolhido.</p>
         </div>
       </div>
 
@@ -45,7 +47,7 @@ const NovaConsultaPage: React.FC = () => {
           {/* Professional select */}
           <div>
             <label htmlFor="professional-select" className="block text-sm font-medium text-gray-700 mb-1">
-              Profissional Responsável <span className="text-danger-500">*</span>
+              Profissional <span className="text-danger-500">*</span>
             </label>
             {h.isLoadingProfessionals ? (
               <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-500">
@@ -53,11 +55,28 @@ const NovaConsultaPage: React.FC = () => {
               </div>
             ) : (
               <select id="professional-select" value={h.professionalId} onChange={(e) => h.setProfessionalId(e.target.value)} disabled={h.isProfessionalUser} className={`${INPUT_CLASS} bg-white ${h.isProfessionalUser ? 'opacity-60 cursor-not-allowed' : ''}`}>
-                <option value="">Selecione um profissional...</option>
+                <option value="">Selecione a profissional...</option>
                 {h.professionals.map((prof) => (
-                  <option key={prof.id} value={prof.id}>{prof.fullName}{prof.specialty ? ` — ${prof.specialty}` : ''}</option>
+                  <option key={prof.id} value={prof.id}>{prof.fullName} — {prof.type === 'podologa' ? 'Podóloga' : 'Manicure'}</option>
                 ))}
               </select>
+            )}
+          </div>
+
+          {/* Service select */}
+          <div>
+            <label htmlFor="service-select" className="block text-sm font-medium text-gray-700 mb-1">
+              Serviço <span className="text-danger-500">*</span>
+            </label>
+            <select id="service-select" value={h.serviceId} onChange={(e) => h.setServiceId(e.target.value)}
+              disabled={!h.professionalId || h.isLoadingServices} className={`${INPUT_CLASS} bg-white disabled:bg-gray-50`}>
+              <option value="">{h.professionalId ? 'Selecione o serviço...' : 'Escolha a profissional primeiro'}</option>
+              {h.activeServices.map((sv) => (
+                <option key={sv.id} value={sv.id}>{sv.name} — {sv.durationMinutes} min · {brl(sv.price)}</option>
+              ))}
+            </select>
+            {h.professionalId && !h.isLoadingServices && h.activeServices.length === 0 && (
+              <p className="text-xs text-warning-700 mt-1">Esta profissional ainda não tem serviços vinculados (Profissionais → editar).</p>
             )}
           </div>
 
@@ -72,9 +91,18 @@ const NovaConsultaPage: React.FC = () => {
               <input id="scheduled-start" type="time" value={h.scheduledStart} onChange={(e) => h.setScheduledStart(e.target.value)} className={INPUT_CLASS} />
             </div>
             <div>
-              <label htmlFor="scheduled-end" className="block text-sm font-medium text-gray-700 mb-1">Término <span className="text-danger-500">*</span></label>
-              <input id="scheduled-end" type="time" value={h.scheduledEnd} onChange={(e) => h.setScheduledEnd(e.target.value)} className={INPUT_CLASS} />
+              <span className="block text-sm font-medium text-gray-700 mb-1">Término</span>
+              <p className="px-3 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-base text-gray-600" aria-live="polite">
+                {h.scheduledEnd || '—'}
+              </p>
             </div>
+          </div>
+
+          <div>
+            <label htmlFor="source-select" className="block text-sm font-medium text-gray-700 mb-1">Como a cliente marcou?</label>
+            <select id="source-select" value={h.source} onChange={(e) => h.setSource(e.target.value as typeof h.source)} className={`${INPUT_CLASS} bg-white`}>
+              {SOURCE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
           </div>
 
           {/* Notes */}
@@ -86,7 +114,7 @@ const NovaConsultaPage: React.FC = () => {
 
         <div className="flex justify-end gap-3">
           <Button variant="secondary" type="button" onClick={h.goBack}>Cancelar</Button>
-          <Button type="submit" isLoading={h.isSaving}>Agendar Consulta</Button>
+          <Button type="submit" isLoading={h.isSaving}>Agendar</Button>
         </div>
       </form>
     </div>
