@@ -41,6 +41,7 @@ const ProfissionaisPage = React.lazy(() => import("@/features/professionals/page
 const TransacoesPage = React.lazy(() => import("@/features/billing/pages/TransacoesPage"));
 const ConfiguracoesPage = React.lazy(() => import("@/features/settings/pages/ConfiguracoesPage"));
 const ServicosPage = React.lazy(() => import("@/features/services/pages/ServicosPage"));
+const PublicBookingPage = React.lazy(() => import("@/features/public-booking/pages/PublicBookingPage"));
 
 // ─── Route → import map para prefetch no hover ───────────────────
 // Exportado para que o NavLink no MainLayout possa chamar
@@ -65,6 +66,10 @@ const lazy = (Component: React.LazyExoticComponent<React.ComponentType>) => (
 );
 
 export const router = createBrowserRouter([
+  {
+    path: "/agendar/:slug",
+    element: lazy(PublicBookingPage),
+  },
   {
     path: "/login",
     element: <LoginPage />,

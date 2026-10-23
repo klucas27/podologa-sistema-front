@@ -13,11 +13,8 @@ import ToastContainer from "@/components/ui/ToastContainer";
  * Sem Context Provider: o estado vive no Zustand store.
  * O useSessionQuery dispara o fetch do /auth/me e atualiza o store.
  */
+/** Interceptors do painel, sem buscar /auth/me. Usado no link público. */
 const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Restaura sessão — substitui o useEffect com api.get("/auth/me")
-  useSessionQuery();
-
-  // Registra callbacks para interceptors do api.ts
   useEffect(() => {
     const cleanup = setupAuthInterceptors();
     return cleanup;
@@ -26,17 +23,24 @@ const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) 
   return <>{children}</>;
 };
 
+/** Restaura a sessão do painel. Não montar em rotas que começam com /agendar. */
+const SessionAuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  useSessionQuery();
+  return <AuthInitializer>{children}</AuthInitializer>;
+};
+
 interface ProvidersProps {
   children: React.ReactNode;
 }
 
 export const Providers: React.FC<ProvidersProps> = ({ children }) => {
+  const Shell = window.location.pathname.startsWith('/agendar') ? AuthInitializer : SessionAuthInitializer;
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthInitializer>
+      <Shell>
         <ToastContainer />
         {children}
-      </AuthInitializer>
+      </Shell>
     </QueryClientProvider>
   );
 };
