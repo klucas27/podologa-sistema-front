@@ -88,18 +88,18 @@ describe('useAuthStore', () => {
     // Arrange
     const professionalUser: User = {
       ...mockUser,
-      role: 'professional',
+      role: 'manicure',
       professionalId: 'prof-1',
     };
 
     // Act
     act(() => {
-      useAuthStore.getState().setAuth(professionalUser, 'professional');
+      useAuthStore.getState().setAuth(professionalUser, 'manicure');
     });
 
     // Assert
     const state = useAuthStore.getState();
-    expect(state.role).toBe('professional');
+    expect(state.role).toBe('manicure');
     expect(state.user?.professionalId).toBe('prof-1');
   });
 });

@@ -5,6 +5,8 @@ export const DEFAULT_DURATION_MIN = 60;
 export const WEEK_DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 export const STATUS_COLORS: Record<AppointmentStatus, string> = {
+  pending: "bg-amber-50 border-amber-400 border-dashed text-amber-800",
+  no_show: "bg-red-50 border-red-300 text-red-700",
   scheduled: "bg-blue-100 border-blue-300 text-blue-800",
   confirmed: "bg-cyan-100 border-cyan-300 text-cyan-800",
   in_progress: "bg-yellow-100 border-yellow-300 text-yellow-800",
@@ -13,6 +15,8 @@ export const STATUS_COLORS: Record<AppointmentStatus, string> = {
 };
 
 export const STATUS_LABELS: Record<AppointmentStatus, string> = {
+  pending: "Pedido pelo link",
+  no_show: "Faltou",
   scheduled: "Agendada",
   confirmed: "Confirmada",
   in_progress: "Em atendimento",

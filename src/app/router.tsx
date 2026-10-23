@@ -5,6 +5,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { useAuthStore } from "@/stores/auth.store";
+import { homePathFor } from "@/config/permissions";
 
 // Auth — carregamento síncrono: são as primeiras páginas vistas (LCP crítico)
 import LoginPage from "@/features/auth/pages/LoginPage";
@@ -13,7 +14,7 @@ import AcessoNegadoPage from "@/features/auth/pages/AcessoNegadoPage";
 
 function RoleRedirect() {
   const role = useAuthStore((s) => s.role);
-  return <Navigate to={role === "admin" ? "/dashboard" : "/pacientes"} replace />;
+  return <Navigate to={homePathFor(role)} replace />;
 }
 
 // ─── Lazy-loaded pages ────────────────────────────────────────────

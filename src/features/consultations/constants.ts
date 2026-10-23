@@ -18,6 +18,8 @@ export const STATUS_LABELS: Record<
   AppointmentStatus,
   { label: string; className: string }
 > = {
+  pending: { label: "Pedido pelo link", className: "bg-amber-50 text-amber-700" },
+  no_show: { label: "Faltou", className: "bg-red-50 text-red-700" },
   scheduled: { label: "Agendada", className: "bg-blue-50 text-blue-700" },
   confirmed: { label: "Confirmada", className: "bg-cyan-50 text-cyan-700" },
   in_progress: {

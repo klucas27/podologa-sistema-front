@@ -26,7 +26,7 @@ export function useEditarPacientePage() {
       dateOfBirth: patient.dateOfBirth ? toDateInTz(patient.dateOfBirth) : '',
       maritalStatus: patient.maritalStatus,
       occupation: patient.occupation ?? '',
-      cpf: patient.cpf,
+      cpf: patient.cpf ?? '',
       phoneNumber: patient.phoneNumber ?? '',
       email: patient.email ?? '',
       zipCode: patient.zipCode ?? '',

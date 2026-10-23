@@ -62,9 +62,11 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient }) => {
           <h2 className="text-xl font-bold text-gray-800 truncate">
             {patient.fullName}
           </h2>
-          <p className="text-sm text-gray-400 mt-0.5">
-            CPF: {formatCpf(patient.cpf)}
-          </p>
+          {patient.cpf && (
+            <p className="text-sm text-gray-400 mt-0.5">
+              CPF: {formatCpf(patient.cpf)}
+            </p>
+          )}
         </div>
       </div>
 

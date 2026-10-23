@@ -1,3 +1,4 @@
+import { isProfessionalRole } from '@/config/permissions';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -172,7 +173,7 @@ export function useNovaConsultaPage() {
     );
   };
 
-  const isProfessionalUser = user?.role === 'professional' && !!user?.professionalId;
+  const isProfessionalUser = isProfessionalRole(user?.role) && !!user?.professionalId;
 
   return {
     patients, isLoadingPatients,

@@ -20,8 +20,8 @@ const mockAdmin: User = {
 const mockProfessional: User = {
   id: '2',
   username: 'profissional',
-  professionalName: 'Dr. Ana',
-  role: 'professional',
+  professionalName: 'Ana',
+  role: 'manicure',
   professionalId: 'prof-1',
   workdayStart: '08:00',
   workdayEnd: '18:00',
@@ -29,7 +29,7 @@ const mockProfessional: User = {
 
 function renderWithRouter(
   initialRoute: string,
-  allowedRoles?: ('admin' | 'professional')[],
+  allowedRoles?: User['role'][],
 ) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -104,7 +104,7 @@ describe('ProtectedRoute', () => {
 
   it('redireciona para /acesso-negado quando role não é permitida', () => {
     // Arrange
-    useAuthStore.getState().setAuth(mockProfessional, 'professional');
+    useAuthStore.getState().setAuth(mockProfessional, 'manicure');
 
     // Act
     renderWithRouter('/admin', ['admin']);
@@ -116,7 +116,7 @@ describe('ProtectedRoute', () => {
 
   it('permite acesso quando allowedRoles não é definido', () => {
     // Arrange
-    useAuthStore.getState().setAuth(mockProfessional, 'professional');
+    useAuthStore.getState().setAuth(mockProfessional, 'manicure');
 
     // Act
     renderWithRouter('/dashboard');

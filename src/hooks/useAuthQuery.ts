@@ -29,6 +29,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { isUserRole } from '@/config/permissions';
 import { api, setCsrfToken, setOnAuthFailure, setOnForbidden, setOnRateLimited } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth.store';
 import { notifyError, notifyWarning } from '@/lib/notifications';
@@ -51,10 +52,11 @@ export const authKeys = {
 
 // ── Helpers ─────────────────────────────────────────────────
 
+// Papel desconhecido nunca vira admin: a sessão é tratada como inválida
 function extractRole(user: Partial<User>): UserRole {
   const raw = (user as Record<string, unknown>).role;
-  if (raw === 'admin' || raw === 'professional') return raw;
-  return 'admin';
+  if (isUserRole(raw)) return raw;
+  throw new Error('Perfil de usuário inválido');
 }
 
 // ── Setup interceptors (chamado uma vez no provider) ───────

@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { ROLE_LABELS } from '@/config/permissions';
 import {
   LayoutDashboard,
   Users,
@@ -119,7 +120,7 @@ const MainLayout: React.FC = () => {
             <div className="overflow-hidden">
               <p className="text-sm font-semibold text-gray-800 truncate">{displayName}</p>
               <p className="text-xs text-gray-400 truncate">
-                {role === 'admin' ? 'Administrador' : 'Profissional'}
+                {role ? ROLE_LABELS[role] : ''}
               </p>
             </div>
           )}

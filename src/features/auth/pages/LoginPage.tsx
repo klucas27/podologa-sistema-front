@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { homePathFor } from '@/config/permissions';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Footprints, User, Lock, Loader2 } from 'lucide-react';
@@ -54,7 +55,7 @@ const LoginPage: React.FC = () => {
 
     try {
       const user = await signIn(data.username, data.password);
-      navigate(user.role === 'admin' ? '/dashboard' : '/pacientes');
+      navigate(homePathFor(user.role));
     } catch (err) {
       if (err instanceof ApiError && err.status === 429) {
         setServerError('Muitas tentativas de login. Aguarde antes de tentar novamente.');

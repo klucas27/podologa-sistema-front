@@ -77,7 +77,7 @@ const PatientListItem: React.FC<Props> = React.memo(({ patient, deletingId, onDe
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-gray-800 truncate">{patient.fullName}</p>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-0.5">
-          <span className="text-xs text-gray-400">CPF: {formatCpf(patient.cpf)}</span>
+          {patient.cpf && <span className="text-xs text-gray-400">CPF: {formatCpf(patient.cpf)}</span>}
           {patient.phoneNumber && (
             <span className="flex items-center gap-1 text-xs text-gray-400"><Phone size={12} />{formatPhone(patient.phoneNumber)}</span>
           )}

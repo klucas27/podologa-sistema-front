@@ -1,4 +1,8 @@
 export type MaritalStatus = 'single' | 'married' | 'divorced' | 'widowed' | 'other';
+export type AcquisitionSource = 'instagram' | 'indicacao' | 'google' | 'passagem' | 'link' | 'outro';
+export type ProfessionalType = 'manicure' | 'podologa';
+export type ServiceCategory = 'estetica' | 'podologia';
+export type AppointmentSource = 'link' | 'whatsapp' | 'instagram' | 'indicacao' | 'balcao';
 
 export interface PatientProfessionalLink {
   patientId: string;
@@ -12,8 +16,15 @@ export interface Patient {
   dateOfBirth: string | null;
   maritalStatus: MaritalStatus;
   occupation: string | null;
-  cpf: string;
+  cpf: string | null;
   phoneNumber: string | null;
+  phoneNormalized: string | null;
+  instagram: string | null;
+  acquisitionSource: AcquisitionSource | null;
+  referredByPatientId: string | null;
+  lgpdConsentAt: string | null;
+  imageConsentAt: string | null;
+  consentVersion: string | null;
   email: string | null;
   zipCode: string | null;
   street: string | null;
@@ -59,11 +70,21 @@ export interface Anamnesis {
   updatedAt: string;
 }
 
-export type AppointmentStatus = 'scheduled' | 'confirmed' | 'in_progress' | 'cancelled' | 'completed';
+export type AppointmentStatus =
+  | 'pending'
+  | 'scheduled'
+  | 'confirmed'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled'
+  | 'no_show';
 
 export interface Professional {
   id: string;
   fullName: string;
+  type: ProfessionalType;
+  commissionRate: number | null;
+  acceptsOnlineBooking: boolean;
   specialty: string | null;
   phoneNumber: string | null;
   email: string | null;
@@ -77,7 +98,13 @@ export interface Appointment {
   id: string;
   patientId: string;
   userId: string;
-  professionalId: string | null;
+  professionalId: string;
+  serviceId: string | null;
+  priceCharged: number | null;
+  source: AppointmentSource;
+  confirmedAt: string | null;
+  cancelledAt: string | null;
+  rescheduledFromId: string | null;
   scheduledStart: string;
   scheduledEnd: string;
   scheduledDate: string;
@@ -138,4 +165,48 @@ export interface Billing {
   createdAt: string;
   updatedAt: string;
   appointment?: Appointment;
+}
+
+export interface Service {
+  id: string;
+  name: string;
+  category: ServiceCategory;
+  durationMinutes: number;
+  price: number;
+  commissionRate: number | null;
+  requiresAnamnesis: boolean;
+  isPublic: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WorkingHours {
+  weekday: number;
+  startTime: string;
+  endTime: string;
+}
+
+export interface BusinessSettings {
+  businessName: string;
+  slug: string;
+  address: string | null;
+  phoneDisplay: string | null;
+  onlineBookingEnabled: boolean;
+  autoConfirmOnlineBooking: boolean;
+  minAdvanceMinutes: number;
+  maxAdvanceDays: number;
+  slotStepMinutes: number;
+  minCancelHours: number;
+  maxPendingPerPhone: number;
+  consentText: string;
+  consentVersion: string;
+}
+
+export interface ScheduleBlock {
+  id: string;
+  professionalId: string | null;
+  startAt: string;
+  endAt: string;
+  reason: string | null;
 }
