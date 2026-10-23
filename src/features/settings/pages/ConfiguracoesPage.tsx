@@ -3,6 +3,7 @@ import { Lock, Clock } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import SecurityTab from '../components/SecurityTab';
 import WorkingHoursTab from '../components/WorkingHoursTab';
+import { useAuth } from '@/hooks/useAuth';
 
 type TabKey = 'security' | 'workingHours';
 
@@ -10,14 +11,17 @@ interface TabDef {
   key: TabKey;
   label: string;
   icon: React.ReactNode;
+  adminOnly?: boolean;
 }
 
-const TABS: TabDef[] = [
+const ALL_TABS: TabDef[] = [
   { key: 'security', label: 'Segurança', icon: <Lock size={16} /> },
-  { key: 'workingHours', label: 'Horário de Trabalho', icon: <Clock size={16} /> },
+  { key: 'workingHours', label: 'Expediente', icon: <Clock size={16} />, adminOnly: true },
 ];
 
 const ConfiguracoesPage: React.FC = () => {
+  const { role } = useAuth();
+  const TABS = ALL_TABS.filter((t) => !t.adminOnly || role === 'admin');
   const [activeTab, setActiveTab] = useState<TabKey>('security');
 
   return (
