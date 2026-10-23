@@ -37,6 +37,36 @@ export interface RegisterInput {
   website: string;
 }
 
+export interface AvailabilityQuery {
+  serviceId: string;
+  professionalId?: string;
+  from: string;
+  to: string;
+}
+
+export interface AvailabilityDay {
+  date: string;
+  slots: string[];
+}
+
+export interface BookInput {
+  serviceId: string;
+  professionalId: string | null;
+  start: string;
+  website: '';
+}
+
+export interface BookedAppointment {
+  bookingId: string;
+  status: string;
+  serviceName: string;
+  professionalFirstName: string;
+  start: string;
+  end: string;
+  address: string | null;
+  manageToken: string;
+}
+
 const base = (slug: string) => `/api/public/${encodeURIComponent(slug)}`;
 
 export const publicBookingService = {
@@ -45,4 +75,11 @@ export const publicBookingService = {
     publicApi.post<IdentifyResponse>(`${base(slug)}/identify`, { phone, website: '' }),
   register: (slug: string, input: RegisterInput) =>
     publicApi.post<{ firstName: string }>(`${base(slug)}/register`, input),
+  availability: (slug: string, query: AvailabilityQuery) => {
+    const params = new URLSearchParams({ serviceId: query.serviceId, from: query.from, to: query.to });
+    if (query.professionalId) params.set('professionalId', query.professionalId);
+    return publicApi.get<{ days: AvailabilityDay[] }>(`${base(slug)}/availability?${params.toString()}`);
+  },
+  book: (slug: string, input: BookInput) =>
+    publicApi.post<BookedAppointment>(`${base(slug)}/bookings`, input),
 };

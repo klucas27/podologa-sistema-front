@@ -88,6 +88,29 @@ describe('bookingReducer', () => {
     expect(bookingReducer(initialBookingState, { type: 'CONFIRMED', confirmation })).toBe(initialBookingState);
   });
 
+  it('trocar o serviço limpa profissional, dia e horário', () => {
+    const professional = go(
+      initialBookingState,
+      { type: 'IDENTIFIED', registered: true, firstName: 'Maria' },
+      { type: 'CONTINUE' },
+      { type: 'SELECT_SERVICE', serviceId: 'srv' },
+      { type: 'SELECT_PROFESSIONAL', professionalId: 'ana' },
+      { type: 'SELECT_DATE', date: '2026-11-02' },
+      { type: 'BACK' },
+      { type: 'BACK' },
+    );
+    expect(professional.step).toBe('professional');
+    const changed = bookingReducer(professional, { type: 'SELECT_SERVICE', serviceId: 'outro' });
+    expect(changed).toMatchObject({
+      step: 'professional',
+      serviceId: 'outro',
+      professionalId: null,
+      professionalChosen: false,
+      date: null,
+      time: null,
+    });
+  });
+
   it('voltar desfaz um passo e limpa o aviso', () => {
     const register = bookingReducer(
       { ...initialBookingState, step: 'register', notice: 'algo' },

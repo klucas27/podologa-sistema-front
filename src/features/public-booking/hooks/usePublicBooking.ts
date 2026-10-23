@@ -1,4 +1,5 @@
 import { useReducer, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { PublicApiError } from '@/lib/publicApi';
 import { publicBookingService, type RegisterInput } from '../services/publicBooking.service';
 
@@ -160,6 +161,7 @@ function fail(err: unknown, dispatch: (action: BookingAction) => void): void {
 export function usePublicBooking(slug: string) {
   const [state, dispatch] = useReducer(bookingReducer, initialBookingState);
   const [pending, setPending] = useState(false);
+  const queryClient = useQueryClient();
 
   const identify = async (phone: string) => {
     setPending(true);
@@ -189,5 +191,22 @@ export function usePublicBooking(slug: string) {
     }
   };
 
-  return { state, pending, dispatch, identify, register };
+  const book = async (input: { serviceId: string; professionalId: string | null; start: string }) => {
+    setPending(true);
+    try {
+      const confirmation = await publicBookingService.book(slug, { ...input, website: '' });
+      dispatch({ type: 'CONFIRMED', confirmation });
+    } catch (err) {
+      if (err instanceof PublicApiError && err.status === 409) {
+        dispatch({ type: 'CONFLICT', message: err.message });
+        await queryClient.invalidateQueries({ queryKey: ['public-booking', slug, 'availability'] });
+        return;
+      }
+      fail(err, dispatch);
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return { state, pending, dispatch, identify, register, book };
 }

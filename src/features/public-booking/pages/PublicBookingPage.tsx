@@ -1,12 +1,18 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useMemo, useState } from 'react';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { PublicApiError } from '@/lib/publicApi';
+import { ConfirmationCard } from '../components/ConfirmationCard';
+import { DateStrip } from '../components/DateStrip';
 import { GreetingHeader } from '../components/GreetingHeader';
 import { PhoneStep } from '../components/PhoneStep';
+import { ProfessionalStep } from '../components/ProfessionalStep';
 import { PublicLayout, PublicPrimaryButton } from '../components/PublicLayout';
 import { QuickRegisterStep } from '../components/QuickRegisterStep';
+import { ServiceStep } from '../components/ServiceStep';
+import { TimeSlotGrid } from '../components/TimeSlotGrid';
 import { usePublicBooking } from '../hooks/usePublicBooking';
+import { PUBLIC_MAX_ADVANCE_DAYS, PUBLIC_WINDOW_DAYS, addIsoDays, todaySP } from '../lib/dates';
 import { publicBookingService } from '../services/publicBooking.service';
 
 const PHONE_FORM = 'public-phone-form';
@@ -14,6 +20,8 @@ const REGISTER_FORM = 'public-register-form';
 
 const PublicBookingPage: React.FC = () => {
   const { slug = '' } = useParams();
+  const [windows, setWindows] = useState(1);
+  const today = useMemo(() => todaySP(), []);
   const info = useQuery({
     queryKey: ['public-booking', slug, 'info'],
     queryFn: () => publicBookingService.info(slug),
@@ -21,6 +29,25 @@ const PublicBookingPage: React.FC = () => {
     retry: false,
   });
   const booking = usePublicBooking(slug);
+  const { step, notice, firstName, serviceId, professionalId, professionalChosen, date, confirmation } = booking.state;
+  const wantsSlots = step === 'date' || step === 'time';
+
+  const slotQueries = useQueries({
+    queries: Array.from({ length: windows }, (_, index) => {
+      const from = addIsoDays(today, index * PUBLIC_WINDOW_DAYS);
+      const to = addIsoDays(from, PUBLIC_WINDOW_DAYS - 1);
+      return {
+        queryKey: ['public-booking', slug, 'availability', serviceId, professionalId ?? '', from, to],
+        queryFn: () => publicBookingService.availability(slug, {
+          serviceId: serviceId ?? '',
+          ...(professionalId ? { professionalId } : {}),
+          from,
+          to,
+        }),
+        enabled: wantsSlots && Boolean(serviceId) && professionalChosen,
+      };
+    }),
+  });
 
   if (info.isLoading) {
     return (
@@ -47,8 +74,12 @@ const PublicBookingPage: React.FC = () => {
     );
   }
 
-  const { step, notice, firstName } = booking.state;
   const salon = info.data;
+  const openDays = [...new Set(slotQueries.flatMap((query) => query.data?.days.map((day) => day.date) ?? []))].sort();
+  const slots = slotQueries.flatMap((query) => query.data?.days ?? []).find((day) => day.date === date)?.slots ?? [];
+  const professionals = salon.professionals.filter((professional) =>
+    serviceId ? professional.serviceIds.includes(serviceId) : false,
+  );
 
   const footer = step === 'phone' ? (
     <PublicPrimaryButton form={PHONE_FORM} disabled={booking.pending}>
@@ -66,6 +97,15 @@ const PublicBookingPage: React.FC = () => {
 
   return (
     <PublicLayout businessName={salon.businessName} address={salon.address} footer={footer}>
+      {step !== 'phone' && step !== 'confirmation' ? (
+        <button
+          type="button"
+          onClick={() => booking.dispatch({ type: 'BACK' })}
+          className="mb-3 min-h-11 text-base font-medium text-primary-700"
+        >
+          Voltar
+        </button>
+      ) : null}
       {notice ? (
         <p role="alert" className="mb-4 rounded-lg border border-primary-200 bg-white px-3 py-2 text-sm text-primary-800">
           {notice}
@@ -87,9 +127,42 @@ const PublicBookingPage: React.FC = () => {
 
       {step === 'greeting' && firstName ? <GreetingHeader firstName={firstName} /> : null}
 
-      {step === 'service' || step === 'professional' || step === 'date' || step === 'time' || step === 'confirmation' ? (
-        <p className="text-sm text-gray-600">A escolha do serviço e do horário continua nesta página.</p>
+      {step === 'service' ? (
+        <ServiceStep
+          services={salon.services}
+          onSelect={(id) => booking.dispatch({ type: 'SELECT_SERVICE', serviceId: id })}
+        />
       ) : null}
+
+      {step === 'professional' ? (
+        <ProfessionalStep
+          professionals={professionals}
+          onSelect={(id) => booking.dispatch({ type: 'SELECT_PROFESSIONAL', professionalId: id })}
+        />
+      ) : null}
+
+      {step === 'date' ? (
+        <DateStrip
+          days={openDays}
+          loading={slotQueries.some((query) => query.isLoading)}
+          canMore={windows * PUBLIC_WINDOW_DAYS < PUBLIC_MAX_ADVANCE_DAYS}
+          onSelect={(day) => booking.dispatch({ type: 'SELECT_DATE', date: day })}
+          onMore={() => setWindows((count) => count + 1)}
+        />
+      ) : null}
+
+      {step === 'time' ? (
+        <TimeSlotGrid
+          slots={slots}
+          disabled={booking.pending}
+          onSelect={(time) => {
+            if (!serviceId || !date) return;
+            void booking.book({ serviceId, professionalId, start: `${date}T${time}` });
+          }}
+        />
+      ) : null}
+
+      {step === 'confirmation' && confirmation ? <ConfirmationCard booking={confirmation} /> : null}
     </PublicLayout>
   );
 };

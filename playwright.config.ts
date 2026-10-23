@@ -17,6 +17,15 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    {
+      // WebKit não está instalado neste ambiente; o perfil do aparelho roda no Chromium.
+      name: 'ipad',
+      use: { ...devices['iPad (gen 7)'], browserName: 'chromium' },
+    },
+    {
+      name: 'iphone',
+      use: { ...devices['iPhone 13'], browserName: 'chromium' },
+    },
   ],
   webServer: {
     command: 'npm run dev',
