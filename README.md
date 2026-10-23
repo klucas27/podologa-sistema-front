@@ -53,6 +53,18 @@ O sistema abrirá em **http://localhost:3000**.
 | `npm run dev`     | Inicia o dev server (Vite) com HMR         |
 | `npm run build`   | Type-check (tsc) + build de produção       |
 | `npm run preview` | Serve o build de produção localmente       |
+| `npm test`        | Testes (vitest)                            |
+| `npx playwright test` | E2E (inclui o link público em perfis de iPad e iPhone) |
+
+> Variáveis de ambiente obrigatórias: crie `.env.development.local` com `VITE_API_URL=` e `VITE_ENV=development` (o `./testar.sh` na pasta acima cria automaticamente).
+
+## Telas principais
+
+- **Agenda** por profissional (Dia) ou semana, com pedidos do link destacados.
+- **Pedidos**: fila dos agendamentos feitos pelo link (confirmar/recusar).
+- **Link público** `/agendar/:slug`: a cliente agenda pelo celular, sem login.
+- **Serviços**, **Profissionais**, **Usuários** e **Configurações** (expediente, link com QR code, bloqueios de agenda).
+- Menu e prontuário por perfil: manicure não vê dados de saúde nem financeiro.
 
 ---
 
@@ -115,9 +127,9 @@ src/
 
 | Token          | Hex       | Uso                         |
 |----------------|-----------|-----------------------------|
-| `primary-500`  | `#0ABAB5` | Tiffany Blue — cor principal |
-| `primary-50`   | `#e0f7f6` | Backgrounds suaves          |
-| `primary-700`  | `#069490` | Texto em destaque           |
+| `primary-500`  | `#9e1b22` | Cereja — cor principal (Nálu Nails) |
+| `primary-50`   | `#faf1ee` | Porcelana — backgrounds suaves |
+| `primary-700`  | `#5e0b0b` | Bordô da logo — títulos e destaque |
 | `gray-50`      | `#f9fafb` | Background da aplicação     |
 | `gray-800`     | `#1f2937` | Texto principal             |
 | `success-500`  | `#10b981` | Confirmações / positivo     |
@@ -126,7 +138,7 @@ src/
 
 ### Tipografia
 
-- **Fonte**: `Inter` (Google Fonts), fallback `system-ui`
+- **Fontes**: `Hanken Grotesk` (texto) e `Gloock` (títulos/marca), Google Fonts, fallback `system-ui`
 - Tamanhos padrão do Tailwind + custom `2xs` (10px)
 
 ### Componentes CSS utilitários
