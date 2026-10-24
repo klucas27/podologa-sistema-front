@@ -65,6 +65,11 @@ O sistema abrirá em **http://localhost:3000**.
 - **Link público** `/agendar/:slug`: a cliente agenda pelo celular, sem login.
 - **Serviços**, **Profissionais**, **Usuários** e **Configurações** (expediente, link com QR code, bloqueios de agenda).
 - Menu e prontuário por perfil: manicure não vê dados de saúde nem financeiro.
+- **Dashboard / Meus indicadores** (todos os perfis): faturamento, ticket médio, clientes, % pelo link, faltas, ocupação, pontualidade, encaminhamentos, retorno e comissões, com filtro por período e profissional; alertas de estoque e de pedidos. O painel antigo continua só para a administradora.
+- **Atendimento**: estética mostra os produtos que serão baixados e "Encaminhar à podóloga"; podologia segue as etapas orçamento → anamnese → evolução → finalizar. Só recepção/administradora cobram; as profissionais veem "aguardando pagamento na recepção".
+- **Encaminhamentos**: pendentes, agendados, concluídos e recusados; a recepção agenda com a podóloga direto do cartão.
+- **Estoque**: saldo, validade dos lotes (vencido em vermelho, até 30 dias em âmbar), entrada, saída e descarte por perfil.
+- **Serviços**: ficha técnica (produtos usados) e tipo de comissão (percentual, valor fixo ou ambos).
 
 ---
 
