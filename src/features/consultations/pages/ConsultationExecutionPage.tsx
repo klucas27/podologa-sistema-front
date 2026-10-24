@@ -7,6 +7,9 @@ import AppointmentInfoCard from "../components/AppointmentInfoCard";
 import ClinicalEvolutionSection from "../components/ClinicalEvolutionSection";
 import PathologySection from "../components/PathologySection";
 import BillingSection from "../components/BillingSection";
+import ProductUsagePreview from "../components/ProductUsagePreview";
+import ReferralButton from "../components/ReferralButton";
+import AwaitingPaymentBanner from "../components/AwaitingPaymentBanner";
 
 const ConsultationExecutionPageInner: React.FC = () => {
   const state = useConsultationExecutionPage();
@@ -20,6 +23,9 @@ const ConsultationExecutionPageInner: React.FC = () => {
   }
 
   if (!state.appointment) return null;
+  const isAesthetic = state.category === "estetica";
+  const status = state.appointment.status;
+  const canReferNow = state.canRefer && (status === "in_progress" || status === "completed");
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -37,7 +43,9 @@ const ConsultationExecutionPageInner: React.FC = () => {
             Execução da Consulta
           </h1>
           <p className="text-sm text-gray-500">
-            Registre a evolução clínica e patologias identificadas.
+            {isAesthetic
+              ? `${state.service?.name ?? "Atendimento"} — finalize e, se notar algo nos pés, encaminhe à podóloga.`
+              : "Registre a evolução clínica e patologias identificadas."}
           </p>
         </div>
       </div>
@@ -69,7 +77,11 @@ const ConsultationExecutionPageInner: React.FC = () => {
         onNavigate={state.navigate}
       />
 
+      {!state.canBill && status === "completed" && <AwaitingPaymentBanner />}
+
       <form onSubmit={state.handleSaveEvolution} className="space-y-6">
+        {isAesthetic && <ProductUsagePreview serviceId={state.appointment.serviceId} />}
+        {!isAesthetic && (<>
         <ClinicalEvolutionSection
           existingEvolution={state.existingEvolution}
           isClinicalEditable={state.isClinicalEditable}
@@ -91,8 +103,9 @@ const ConsultationExecutionPageInner: React.FC = () => {
           onUpdate={state.updatePathologyRow}
           onRemove={state.removePathologyRow}
         />
+        </>)}
 
-        <BillingSection
+        {state.canBill && <BillingSection
           isClinicalEditable={state.isClinicalEditable}
           existingBilling={state.existingBilling}
           billingAmount={state.billingAmount}
@@ -103,7 +116,7 @@ const ConsultationExecutionPageInner: React.FC = () => {
           onBillingPaidNowChange={state.setBillingPaidNow}
           isSavingBilling={state.isSavingBilling}
           onSaveBilling={state.handleSaveBilling}
-        />
+        />}
 
         <div className="flex flex-col sm:flex-row justify-end gap-3">
           <div className="w-full sm:w-auto">
@@ -116,7 +129,8 @@ const ConsultationExecutionPageInner: React.FC = () => {
               Voltar
             </Button>
           </div>
-          {state.isClinicalEditable && (
+          {canReferNow && <ReferralButton appointmentId={state.appointment.id} />}
+          {state.isClinicalEditable && !isAesthetic && (
             <div className="w-full sm:w-auto">
               <Button
                 type="submit"

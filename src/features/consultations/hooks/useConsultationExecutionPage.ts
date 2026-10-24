@@ -11,6 +11,8 @@ import {
   useSaveBilling,
 } from "./useConsultations";
 import { consultationService } from "../services/consultation.service";
+import { useAuth } from "@/hooks/useAuth";
+import { useServices } from "@/features/services/hooks/useServices";
 import { getHoursInTz, nowSPISO, toDateInTz, spDateTimeToISO } from "@/lib/dateUtils";
 import type {
   AppointmentStatus,
@@ -28,6 +30,10 @@ export interface PathologyRow {
 export function useConsultationExecutionPage() {
   const { appointmentId } = useParams<{ appointmentId: string }>();
   const navigate = useNavigate();
+  const { role } = useAuth();
+  // Quem cobra é a recepção (ou a dona); manicure/admin encaminham para a podóloga
+  const canBill = role === "admin" || role === "recepcao";
+  const canRefer = role === "admin" || role === "manicure";
 
   // React Query data
   const {
@@ -39,7 +45,9 @@ export function useConsultationExecutionPage() {
   );
   const { data: billings = [] } = useConsultationBillings(
     appointmentId ?? "",
+    canBill,
   );
+  const { data: services = [] } = useServices();
   const { data: pathologies = [] } = usePathologiesList();
 
   const existingEvolution = evolutions.length > 0 ? evolutions[0]! : null;
@@ -362,9 +370,17 @@ export function useConsultationExecutionPage() {
   const isEditable = status !== "completed" && status !== "cancelled";
   const isClinicalEditable = status === "in_progress";
 
+  // Sem serviço (histórico antigo) conta como podologia, o fluxo original do sistema
+  const service = services.find((s) => s.id === appointment?.serviceId) ?? null;
+  const category = service?.category ?? "podologia";
+
   return {
     // Data
     appointment,
+    service,
+    category,
+    canBill,
+    canRefer,
     pathologies,
     existingEvolution,
     existingBilling,

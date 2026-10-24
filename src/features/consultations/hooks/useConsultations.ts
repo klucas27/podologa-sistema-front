@@ -30,11 +30,12 @@ export function useConsultationEvolutions(appointmentId: string) {
   });
 }
 
-export function useConsultationBillings(appointmentId: string) {
+/** Cobranças só são lidas por quem cobra (admin/recepção); `enabled` evita 403 para profissionais. */
+export function useConsultationBillings(appointmentId: string, enabled = true) {
   return useQuery({
     queryKey: consultationKeys.billings(appointmentId),
     queryFn: () => consultationService.getBillings(appointmentId),
-    enabled: !!appointmentId,
+    enabled: !!appointmentId && enabled,
   });
 }
 
