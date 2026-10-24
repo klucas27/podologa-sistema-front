@@ -10,6 +10,8 @@ import BillingSection from "../components/BillingSection";
 import ProductUsagePreview from "../components/ProductUsagePreview";
 import ReferralButton from "../components/ReferralButton";
 import AwaitingPaymentBanner from "../components/AwaitingPaymentBanner";
+import QuoteSection from "../components/QuoteSection";
+import PodiatrySteps from "../components/PodiatrySteps";
 
 const ConsultationExecutionPageInner: React.FC = () => {
   const state = useConsultationExecutionPage();
@@ -79,8 +81,16 @@ const ConsultationExecutionPageInner: React.FC = () => {
 
       {!state.canBill && status === "completed" && <AwaitingPaymentBanner />}
 
+      {!isAesthetic && (
+        <>
+          <PodiatrySteps patientId={state.appointment.patientId} quoteDone={!!state.quote}
+            anamnesisDone={state.anamnesisDone} evolutionDone={!!state.existingEvolution} finished={status === "completed"} />
+          {state.canReadQuote && <QuoteSection appointmentId={state.appointment.id} canEdit={state.canEditQuote} />}
+        </>
+      )}
+
       <form onSubmit={state.handleSaveEvolution} className="space-y-6">
-        {isAesthetic && <ProductUsagePreview serviceId={state.appointment.serviceId} />}
+        {(isAesthetic || state.appointment.serviceId) && <ProductUsagePreview serviceId={state.appointment.serviceId} />}
         {!isAesthetic && (<>
         <ClinicalEvolutionSection
           existingEvolution={state.existingEvolution}

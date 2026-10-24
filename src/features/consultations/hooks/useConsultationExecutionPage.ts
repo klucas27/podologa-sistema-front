@@ -13,6 +13,9 @@ import {
 import { consultationService } from "../services/consultation.service";
 import { useAuth } from "@/hooks/useAuth";
 import { useServices } from "@/features/services/hooks/useServices";
+import { useAnamnesesByPatient } from "@/features/anamneses/hooks/useAnamneses";
+import { canSeeHealth } from "@/config/permissions";
+import { useQuote } from "./useQuote";
 import { getHoursInTz, nowSPISO, toDateInTz, spDateTimeToISO } from "@/lib/dateUtils";
 import type {
   AppointmentStatus,
@@ -374,11 +377,23 @@ export function useConsultationExecutionPage() {
   const service = services.find((s) => s.id === appointment?.serviceId) ?? null;
   const category = service?.category ?? "podologia";
 
+  // Etapas da avaliação podológica (orçamento e anamnese)
+  const isPodiatry = category === "podologia";
+  const canEditQuote = role === "admin" || role === "podologa";
+  const canReadQuote = canEditQuote || role === "recepcao";
+  const healthAccess = canSeeHealth(role);
+  const { data: quote = null } = useQuote(appointmentId ?? "", isPodiatry && canReadQuote);
+  const { data: anamneses = [] } = useAnamnesesByPatient(appointment?.patientId ?? "", isPodiatry && healthAccess && !!appointment);
+
   return {
     // Data
     appointment,
     service,
     category,
+    quote,
+    canEditQuote,
+    canReadQuote,
+    anamnesisDone: healthAccess ? anamneses.length > 0 : null,
     canBill,
     canRefer,
     pathologies,
