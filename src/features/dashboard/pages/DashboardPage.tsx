@@ -1,145 +1,67 @@
-import React from "react";
+import React, { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
-import MetricCard from "../components/MetricCard";
-import UpcomingAppointments from "../components/UpcomingAppointments";
-import AppointmentsAreaChart from "../components/AppointmentsAreaChart";
-import PatientsBarChart from "../components/PatientsBarChart";
-import RevenueWaterfallChart from "../components/RevenueWaterfallChart";
-import AlertsHeatmapChart from "../components/AlertsHeatmapChart";
-import PeriodFilter from "../components/PeriodFilter";
-import ReturnAlertsList from "../components/ReturnAlertsList";
-import { useDashboardPage } from "../hooks/useDashboardPage";
+import { useAuth } from "@/hooks/useAuth";
+import { isProfessionalRole } from "@/config/permissions";
 import { formatLongDate } from "@/lib/dateUtils";
-
-const DashboardChart: React.FC<{
-  activeKpi: string;
-  data: NonNullable<ReturnType<typeof useDashboardPage>["data"]>;
-}> = ({ activeKpi, data }) => {
-  switch (activeKpi) {
-    case "appointments":
-      return (
-        <AppointmentsAreaChart
-          data={data.chartData}
-          movingAverage={data.movingAverage}
-        />
-      );
-    case "patients":
-      return (
-        <PatientsBarChart
-          current={data.chartData}
-          previous={data.previousPeriodData}
-        />
-      );
-    case "revenue":
-      return <RevenueWaterfallChart data={data.waterfallData} />;
-    case "alerts":
-      return <AlertsHeatmapChart data={data.heatmapData} />;
-    default:
-      return null;
-  }
-};
+import { useActiveProfessionals } from "@/features/professionals/hooks/useProfessionals";
+import { useBookingRequests } from "@/features/booking-requests/hooks/useBookingRequests";
+import { useKpis } from "../hooks/useKpis";
+import KpiFilters, { presetRange } from "../components/KpiFilters";
+import type { KpiFilterState } from "../components/KpiFilters";
+import KpiGrid from "../components/KpiGrid";
+import ProfessionalBarChart from "../components/ProfessionalBarChart";
+import AcquisitionChart from "../components/AcquisitionChart";
+import AlertsPanel from "../components/AlertsPanel";
+import LegacyDashboard from "../components/LegacyDashboard";
 
 const DashboardPage: React.FC = () => {
-  const {
-    data,
-    isLoading,
-    error,
-    activeKpi,
-    period,
-    metricCards,
-    appointments,
-    showReturnAlerts,
-    handleKpiClick,
-    handlePeriodChange,
-  } = useDashboardPage();
+  const { role } = useAuth();
+  const isAdmin = role === "admin";
+  const own = isProfessionalRole(role);
+  const canManage = role === "admin" || role === "recepcao";
+  const [filters, setFilters] = useState<KpiFilterState>(() => ({ preset: "month", ...presetRange("month"), professionalId: "" }));
 
-  if (isLoading && !data) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <Skeleton className="h-7 w-40" />
-            <Skeleton className="h-4 w-64" />
-          </div>
-          <Skeleton className="h-10 w-32 rounded-lg" />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5">
-          {Array.from({ length: 4 }, (_, i) => (
-            <SkeletonCard key={i} />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-5">
-          <Skeleton className="lg:col-span-3 h-64 rounded-xl" />
-          <Skeleton className="lg:col-span-2 h-64 rounded-xl" />
-        </div>
-      </div>
-    );
-  }
-
-  if (error && !data) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-sm text-danger-500">{error}</p>
-      </div>
-    );
-  }
-
-  if (!data) return null;
+  const { data: kpis, isLoading, error } = useKpis({
+    from: filters.from, to: filters.to, professionalId: own ? undefined : filters.professionalId || undefined,
+  });
+  const { data: professionals = [] } = useActiveProfessionals();
+  const pending = useBookingRequests(canManage);
 
   return (
     <ErrorBoundary featureName="Dashboard">
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex flex-col gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Visão geral do seu consultório —{" "}
-              {formatLongDate(new Date())}
-            </p>
+            <h1 className="text-2xl font-bold text-gray-800">{own ? "Meus indicadores" : "Indicadores"}</h1>
+            <p className="text-sm text-gray-500 mt-1">{formatLongDate(new Date())}</p>
           </div>
-          <PeriodFilter selected={period} onChange={handlePeriodChange} />
+          <KpiFilters value={filters} onChange={setFilters} professionals={canManage ? professionals : null} />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5">
-          {metricCards.map((m) => (
-            <MetricCard
-              key={m.kpi}
-              label={m.label}
-              value={m.value}
-              icon={m.icon}
-              colorClass={m.colorClass}
-              trend={m.trend}
-              active={activeKpi === m.kpi}
-              onClick={() => handleKpiClick(m.kpi)}
-            />
-          ))}
-        </div>
+        <AlertsPanel stock={kpis?.stock} pendingRequests={canManage ? pending.data?.length ?? 0 : null} />
 
-        {isLoading && (
-          <div className="flex justify-center py-2">
-            <Skeleton className="h-5 w-5 rounded-full" />
-          </div>
-        )}
+        {error && !kpis && <p className="text-sm text-danger-600">{(error as Error).message || "Erro ao carregar indicadores."}</p>}
+        {isLoading && !kpis && <div className="flex justify-center p-12"><Loader2 size={24} className="animate-spin text-primary-500" /></div>}
 
-        {error && data && (
-          <div className="bg-danger-50 border border-danger-200 text-danger-700 px-4 py-3 rounded-lg text-sm">
-            Erro ao atualizar dados: {error}
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-5">
-          <div className="lg:col-span-3">
-            <DashboardChart activeKpi={activeKpi} data={data} />
-          </div>
-          <div className="lg:col-span-2">
-            {showReturnAlerts ? (
-              <ReturnAlertsList alerts={data.returnAlerts} />
-            ) : (
-              <UpcomingAppointments appointments={appointments} />
+        {kpis && (
+          <>
+            {kpis.warnings.includes("occupancy_period_too_long") && (
+              <p role="note" className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-2 rounded-lg text-sm">
+                Ocupação da agenda só é calculada para períodos de até 92 dias.
+              </p>
             )}
-          </div>
-        </div>
+            <KpiGrid kpis={kpis} />
+            <div className="grid gap-4 lg:grid-cols-2">
+              {!own && <ProfessionalBarChart title="Faturamento por profissional" data={kpis.revenue.byProfessional} />}
+              <ProfessionalBarChart title="Faturamento por serviço" data={kpis.revenue.byService} />
+              {kpis.commissions && !own && <ProfessionalBarChart title="Comissões por profissional" data={kpis.commissions.byProfessional} />}
+              <AcquisitionChart data={kpis.acquisition} />
+            </div>
+          </>
+        )}
+
+        {isAdmin && <LegacyDashboard />}
       </div>
     </ErrorBoundary>
   );

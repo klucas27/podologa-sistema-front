@@ -95,7 +95,6 @@ export const router = createBrowserRouter([
           {
             element: <ProtectedRoute allowedRoles={["admin"]} />,
             children: [
-              { path: "/dashboard", element: lazy(DashboardPage) },
               { path: "/profissionais", element: lazy(ProfissionaisPage) },
               { path: "/usuarios", element: lazy(UsuariosPage) },
             ],
@@ -104,11 +103,12 @@ export const router = createBrowserRouter([
             element: <ProtectedRoute allowedRoles={["admin", "recepcao"]} />,
             children: [
               { path: "/servicos", element: lazy(ServicosPage) },
-              { path: "/estoque", element: lazy(EstoquePage) },
-              { path: "/encaminhamentos", element: lazy(EncaminhamentosPage) },
               { path: "/pedidos", element: lazy(PedidosPage) },
             ],
           },
+          { path: "/dashboard", element: lazy(DashboardPage) },
+          { path: "/estoque", element: lazy(EstoquePage) },
+          { path: "/encaminhamentos", element: lazy(EncaminhamentosPage) },
           { path: "/pacientes", element: lazy(PacientesPage) },
           { path: "/pacientes/novo", element: lazy(CadastroPacientePage) },
           { path: "/pacientes/:id", element: lazy(ProntuarioPage) },

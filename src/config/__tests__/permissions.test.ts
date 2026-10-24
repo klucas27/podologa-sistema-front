@@ -9,16 +9,16 @@ describe('menu por perfil', () => {
     expect(visible('admin')).toEqual(Object.keys(NAV_ROLES));
   });
 
-  it('recepção: sem dashboard, profissionais, usuários e patologias', () => {
-    expect(visible('recepcao')).toEqual(['/pacientes', '/consultas', '/agendamentos', '/pedidos', '/servicos', '/encaminhamentos', '/estoque', '/transacoes', '/configuracoes']);
+  it('recepção: sem profissionais, usuários e patologias', () => {
+    expect(visible('recepcao')).toEqual(['/dashboard', '/pacientes', '/consultas', '/agendamentos', '/pedidos', '/servicos', '/encaminhamentos', '/estoque', '/transacoes', '/configuracoes']);
   });
 
   it('manicure: clientes, atendimentos, agenda, encaminhamentos, estoque e configurações', () => {
-    expect(visible('manicure')).toEqual(['/pacientes', '/consultas', '/agendamentos', '/encaminhamentos', '/estoque', '/configuracoes']);
+    expect(visible('manicure')).toEqual(['/dashboard', '/pacientes', '/consultas', '/agendamentos', '/encaminhamentos', '/estoque', '/configuracoes']);
   });
 
   it('podóloga também vê patologias', () => {
-    expect(visible('podologa')).toEqual(['/pacientes', '/consultas', '/agendamentos', '/encaminhamentos', '/estoque', '/patologias', '/configuracoes']);
+    expect(visible('podologa')).toEqual(['/dashboard', '/pacientes', '/consultas', '/agendamentos', '/encaminhamentos', '/estoque', '/patologias', '/configuracoes']);
   });
 
   it('sem perfil não vê nada', () => {

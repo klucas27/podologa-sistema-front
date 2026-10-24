@@ -34,7 +34,7 @@ const ALL: readonly UserRole[] = ROLES;
 
 /** Quem vê cada item do menu (espelha a matriz de perfis do back). */
 export const NAV_ROLES: Record<string, readonly UserRole[]> = {
-  '/dashboard': ['admin'],
+  '/dashboard': ALL,
   '/pacientes': ALL,
   '/consultas': ALL,
   '/agendamentos': ALL,
