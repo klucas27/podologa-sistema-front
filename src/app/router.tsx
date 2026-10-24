@@ -40,6 +40,7 @@ const ProfissionaisPage = React.lazy(() => import("@/features/professionals/page
 const TransacoesPage = React.lazy(() => import("@/features/billing/pages/TransacoesPage"));
 const ConfiguracoesPage = React.lazy(() => import("@/features/settings/pages/ConfiguracoesPage"));
 const ServicosPage = React.lazy(() => import("@/features/services/pages/ServicosPage"));
+const EstoquePage = React.lazy(() => import("@/features/stock/pages/EstoquePage"));
 const UsuariosPage = React.lazy(() => import("@/features/users/pages/UsuariosPage"));
 const PedidosPage = React.lazy(() => import("@/features/booking-requests/pages/PedidosPage"));
 const PublicBookingPage = React.lazy(() => import("@/features/public-booking/pages/PublicBookingPage"));
@@ -58,6 +59,7 @@ export const routeImportMap: Record<string, () => Promise<unknown>> = {
   "/patologias": () => import("@/features/pathologies/pages/PatologiasPage"),
   "/configuracoes": () => import("@/features/settings/pages/ConfiguracoesPage"),
   "/servicos": () => import("@/features/services/pages/ServicosPage"),
+  "/estoque": () => import("@/features/stock/pages/EstoquePage"),
   "/usuarios": () => import("@/features/users/pages/UsuariosPage"),
   "/pedidos": () => import("@/features/booking-requests/pages/PedidosPage"),
 };
@@ -100,6 +102,7 @@ export const router = createBrowserRouter([
             element: <ProtectedRoute allowedRoles={["admin", "recepcao"]} />,
             children: [
               { path: "/servicos", element: lazy(ServicosPage) },
+              { path: "/estoque", element: lazy(EstoquePage) },
               { path: "/pedidos", element: lazy(PedidosPage) },
             ],
           },

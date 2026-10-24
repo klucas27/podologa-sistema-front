@@ -18,6 +18,7 @@ import {
   X,
   Inbox,
   KeyRound,
+  Package,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { routeImportMap } from '@/app/router';
@@ -35,6 +36,7 @@ const allNavItems: Array<{
   { to: '/pedidos', label: 'Pedidos', icon: Inbox },
   { to: '/profissionais', label: 'Profissionais', icon: UserCog },
   { to: '/servicos', label: 'Serviços', icon: Sparkles },
+  { to: '/estoque', label: 'Estoque', icon: Package },
   { to: '/usuarios', label: 'Usuários', icon: KeyRound },
   { to: '/transacoes', label: 'Transações', icon: DollarSign },
   { to: '/patologias', label: 'Patologias', icon: Bug },
