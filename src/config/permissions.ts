@@ -41,6 +41,7 @@ export const NAV_ROLES: Record<string, readonly UserRole[]> = {
   '/pedidos': ['admin', 'recepcao'],
   '/profissionais': ['admin'],
   '/servicos': ['admin', 'recepcao'],
+  '/encaminhamentos': ALL,
   '/estoque': ALL,
   '/usuarios': ['admin'],
   '/transacoes': ['admin', 'recepcao'],

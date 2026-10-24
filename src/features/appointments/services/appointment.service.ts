@@ -13,6 +13,8 @@ export interface CreateAppointmentData {
   scheduledStart: string;
   source?: AppointmentSource;
   notes?: string;
+  /** Encaminhamento manicure → podóloga que este agendamento atende. */
+  referralId?: string;
 }
 
 export const appointmentService = {

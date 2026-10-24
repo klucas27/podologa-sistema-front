@@ -54,6 +54,7 @@ export function useCreateAppointment() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: appointmentKeys.all });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["referrals"] });
       notifySuccess("Agendamento criado com sucesso.");
     },
   });

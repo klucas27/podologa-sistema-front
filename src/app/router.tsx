@@ -41,6 +41,7 @@ const TransacoesPage = React.lazy(() => import("@/features/billing/pages/Transac
 const ConfiguracoesPage = React.lazy(() => import("@/features/settings/pages/ConfiguracoesPage"));
 const ServicosPage = React.lazy(() => import("@/features/services/pages/ServicosPage"));
 const EstoquePage = React.lazy(() => import("@/features/stock/pages/EstoquePage"));
+const EncaminhamentosPage = React.lazy(() => import("@/features/referrals/pages/EncaminhamentosPage"));
 const UsuariosPage = React.lazy(() => import("@/features/users/pages/UsuariosPage"));
 const PedidosPage = React.lazy(() => import("@/features/booking-requests/pages/PedidosPage"));
 const PublicBookingPage = React.lazy(() => import("@/features/public-booking/pages/PublicBookingPage"));
@@ -60,6 +61,7 @@ export const routeImportMap: Record<string, () => Promise<unknown>> = {
   "/configuracoes": () => import("@/features/settings/pages/ConfiguracoesPage"),
   "/servicos": () => import("@/features/services/pages/ServicosPage"),
   "/estoque": () => import("@/features/stock/pages/EstoquePage"),
+  "/encaminhamentos": () => import("@/features/referrals/pages/EncaminhamentosPage"),
   "/usuarios": () => import("@/features/users/pages/UsuariosPage"),
   "/pedidos": () => import("@/features/booking-requests/pages/PedidosPage"),
 };
@@ -103,6 +105,7 @@ export const router = createBrowserRouter([
             children: [
               { path: "/servicos", element: lazy(ServicosPage) },
               { path: "/estoque", element: lazy(EstoquePage) },
+              { path: "/encaminhamentos", element: lazy(EncaminhamentosPage) },
               { path: "/pedidos", element: lazy(PedidosPage) },
             ],
           },

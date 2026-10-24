@@ -35,6 +35,11 @@ const NovaConsultaPage: React.FC = () => {
       </div>
 
       <form onSubmit={h.handleSubmit} className="space-y-6">
+        {h.isReferral && (
+          <div role="status" className="bg-primary-50 border border-primary-200 text-primary-800 px-4 py-3 rounded-lg text-sm">
+            Agendamento de encaminhamento: só podólogas aparecem e o encaminhamento passa a "Agendado".
+          </div>
+        )}
         {h.error && <div className="bg-danger-50 border border-danger-200 text-danger-700 px-4 py-3 rounded-lg text-sm">{h.error}</div>}
 
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">

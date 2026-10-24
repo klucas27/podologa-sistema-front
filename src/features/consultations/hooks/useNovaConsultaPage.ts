@@ -68,6 +68,8 @@ export function useNovaConsultaPage() {
   const preselectedDate = searchParams.get('date') ?? '';
   const preselectedStart = searchParams.get('startTime') ?? '';
   const preselectedProfessional = searchParams.get('professionalId') ?? '';
+  // Vindo de um encaminhamento: só podólogas e envio do referralId
+  const referralId = searchParams.get('referralId') ?? '';
 
   // Debounced search for patient autocomplete
   const [query, setQuery] = useState('');
@@ -76,7 +78,12 @@ export function useNovaConsultaPage() {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const [chosenProfessionalId, setProfessionalId] = useState(preselectedProfessional);
-  const professionalId = user?.professionalId && isProfessionalRole(user.role) ? user.professionalId : chosenProfessionalId;
+  const { data: allProfessionals = [], isLoading: isLoadingProfessionals } = useActiveProfessionals();
+  const professionals = referralId ? allProfessionals.filter((p) => p.type === 'podologa') : allProfessionals;
+  const defaultProfessional = referralId ? professionals[0]?.id ?? '' : '';
+  const professionalId = user?.professionalId && isProfessionalRole(user.role)
+    ? user.professionalId
+    : chosenProfessionalId || defaultProfessional;
   const [chosenServiceId, setServiceId] = useState('');
   const [source, setSource] = useState<AppointmentSource>('balcao');
   const [patientId, setPatientId] = useState(preselectedPatientId);
@@ -90,13 +97,12 @@ export function useNovaConsultaPage() {
   // React Query: patients (debounced autocomplete search)
   const { data: patients = [], isLoading: isLoadingPatients } = usePatients(debouncedQuery || undefined);
 
-  // React Query: active professionals
-  const { data: professionals = [], isLoading: isLoadingProfessionals } = useActiveProfessionals();
-
   // Serviços que a profissional escolhida realiza (duração e preço vêm daqui)
   const { data: services = [], isLoading: isLoadingServices } = useProfessionalServices(professionalId || null);
   const activeServices = services.filter((sv) => sv.isActive);
-  const serviceId = activeServices.some((sv) => sv.id === chosenServiceId) ? chosenServiceId : '';
+  // Encaminhamento: sugere a avaliação podológica, se existir
+  const suggestedServiceId = referralId ? activeServices.find((sv) => /avalia/i.test(sv.name))?.id ?? '' : '';
+  const serviceId = activeServices.some((sv) => sv.id === chosenServiceId) ? chosenServiceId : suggestedServiceId;
   const selectedService = activeServices.find((sv) => sv.id === serviceId) ?? null;
   const scheduledEnd = selectedService && scheduledStart ? addMinutes(scheduledStart, selectedService.durationMinutes) : '';
 
@@ -196,9 +202,10 @@ export function useNovaConsultaPage() {
         scheduledStart: start,
         source,
         notes: notes.trim() || undefined,
+        ...(referralId ? { referralId } : {}),
       },
       {
-        onSuccess: () => navigate('/agendamentos'),
+        onSuccess: () => navigate(referralId ? '/encaminhamentos' : '/agendamentos'),
         onError: (err) => {
           const message = (err as { message?: string })?.message || 'Erro ao criar agendamento.';
           setError(message);
@@ -212,7 +219,7 @@ export function useNovaConsultaPage() {
   return {
     patients, isLoadingPatients,
     professionals, isLoadingProfessionals, professionalId, setProfessionalId,
-    isProfessionalUser,
+    isProfessionalUser, isReferral: !!referralId,
     patientId, selectedPatientName,
     activeServices, isLoadingServices, serviceId, setServiceId, selectedService,
     source, setSource,
