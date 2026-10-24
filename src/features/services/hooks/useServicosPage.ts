@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { useServices, useCreateService, useUpdateService, useDeleteService } from './useServices';
+import { serviceService } from '../services/service.service';
 import { useAuth } from '@/hooks/useAuth';
-import type { Service, ServiceCategory } from '@/types';
+import type { CommissionMode, Service, ServiceCategory } from '@/types';
+
+export interface ProductLine {
+  productId: string;
+  quantity: string;
+}
 
 export interface ServiceForm {
   name: string;
@@ -9,17 +15,53 @@ export interface ServiceForm {
   durationMinutes: string;
   price: string;
   commissionRate: string;
+  commissionMode: CommissionMode;
+  commissionFixed: string;
   requiresAnamnesis: boolean;
   isPublic: boolean;
   isActive: boolean;
+  products: ProductLine[];
 }
 
 const EMPTY_FORM: ServiceForm = {
   name: '', category: 'estetica', durationMinutes: '45', price: '', commissionRate: '',
-  requiresAnamnesis: false, isPublic: true, isActive: true,
+  commissionMode: 'percent', commissionFixed: '', requiresAnamnesis: false, isPublic: true, isActive: true, products: [],
 };
 
-const toNumber = (v: string): number => Number(v.replace(',', '.'));
+const toNumber = (v: string): number => Number(v.trim().replace(',', '.'));
+const toText = (v: number | null) => (v === null ? '' : String(v).replace('.', ','));
+
+export const usesFixed = (mode: CommissionMode) => mode !== 'percent';
+
+/** Valida o formulário e devolve o corpo da API, ou a mensagem de erro. */
+export function buildServiceBody(form: ServiceForm) {
+  const duration = toNumber(form.durationMinutes);
+  const price = toNumber(form.price);
+  const commission = form.commissionRate.trim() === '' ? null : toNumber(form.commissionRate);
+  const fixed = usesFixed(form.commissionMode) && form.commissionFixed.trim() !== '' ? toNumber(form.commissionFixed) : null;
+
+  if (!form.name.trim()) return { error: 'Informe o nome do serviço.' };
+  if (!Number.isInteger(duration) || duration < 5 || duration > 480) return { error: 'Duração deve ser de 5 a 480 minutos.' };
+  if (Number.isNaN(price) || price < 0) return { error: 'Preço inválido.' };
+  if (commission !== null && (Number.isNaN(commission) || commission < 0 || commission > 100)) {
+    return { error: 'Comissão deve ser de 0 a 100%.' };
+  }
+  if (usesFixed(form.commissionMode) && (fixed === null || Number.isNaN(fixed) || fixed < 0)) {
+    return { error: 'Informe o valor fixo da comissão.' };
+  }
+  const items = form.products.filter((l) => l.productId).map((l) => ({ productId: l.productId, quantity: toNumber(l.quantity) }));
+  if (items.some((i) => !(i.quantity > 0))) return { error: 'Quantidade do produto deve ser maior que zero.' };
+  if (new Set(items.map((i) => i.productId)).size !== items.length) return { error: 'Produto repetido na lista.' };
+
+  return {
+    body: {
+      name: form.name.trim(), category: form.category, durationMinutes: duration, price,
+      commissionRate: commission, commissionMode: form.commissionMode, commissionFixed: fixed,
+      requiresAnamnesis: form.requiresAnamnesis, isPublic: form.isPublic,
+    },
+    items,
+  };
+}
 
 export function useServicosPage() {
   const { role } = useAuth();
@@ -28,12 +70,13 @@ export function useServicosPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ServiceForm>(EMPTY_FORM);
   const [formError, setFormError] = useState('');
+  const [savingProducts, setSavingProducts] = useState(false);
 
   const { data: services = [], isLoading } = useServices();
   const createMutation = useCreateService();
   const updateMutation = useUpdateService();
   const deleteMutation = useDeleteService();
-  const isSaving = createMutation.isPending || updateMutation.isPending;
+  const isSaving = createMutation.isPending || updateMutation.isPending || savingProducts;
 
   const openCreate = () => {
     setEditingId(null);
@@ -49,40 +92,40 @@ export function useServicosPage() {
       category: s.category,
       durationMinutes: String(s.durationMinutes),
       price: String(s.price),
-      commissionRate: s.commissionRate === null ? '' : String(s.commissionRate),
+      commissionRate: toText(s.commissionRate),
+      commissionMode: s.commissionMode ?? 'percent',
+      commissionFixed: toText(s.commissionFixed ?? null),
       requiresAnamnesis: s.requiresAnamnesis,
       isPublic: s.isPublic,
       isActive: s.isActive,
+      products: [],
     });
     setFormError('');
     setModalOpen(true);
+    // Ficha técnica chega depois; só preenche se o usuário ainda não mexeu na lista
+    serviceService.listProducts(s.id).then(
+      (items) => setForm((f) => (f.products.length ? f : { ...f, products: items.map((i) => ({ productId: i.productId, quantity: toText(i.quantity) })) })),
+      () => setFormError('Não foi possível carregar os produtos usados.'),
+    );
   };
 
   const closeModal = () => setModalOpen(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    const duration = toNumber(form.durationMinutes);
-    const price = toNumber(form.price);
-    const commission = form.commissionRate.trim() === '' ? null : toNumber(form.commissionRate);
-
-    if (!form.name.trim()) return setFormError('Informe o nome do serviço.');
-    if (!Number.isInteger(duration) || duration < 5 || duration > 480) return setFormError('Duração deve ser de 5 a 480 minutos.');
-    if (Number.isNaN(price) || price < 0) return setFormError('Preço inválido.');
-    if (commission !== null && (Number.isNaN(commission) || commission < 0 || commission > 100)) {
-      return setFormError('Comissão deve ser de 0 a 100%.');
-    }
-
-    const body = {
-      name: form.name.trim(), category: form.category, durationMinutes: duration, price,
-      commissionRate: commission, requiresAnamnesis: form.requiresAnamnesis, isPublic: form.isPublic,
-    };
-    const onError = (err: unknown) => setFormError((err as { message?: string })?.message || 'Erro ao salvar serviço.');
-
-    if (editingId) {
-      updateMutation.mutate({ id: editingId, data: { ...body, isActive: form.isActive } }, { onSuccess: closeModal, onError });
-    } else {
-      createMutation.mutate(body, { onSuccess: closeModal, onError });
+    const result = buildServiceBody(form);
+    if ('error' in result) return setFormError(result.error ?? '');
+    try {
+      const saved = editingId
+        ? await updateMutation.mutateAsync({ id: editingId, data: { ...result.body, isActive: form.isActive } })
+        : await createMutation.mutateAsync(result.body);
+      setSavingProducts(true);
+      await serviceService.setProducts(saved.id, result.items);
+      closeModal();
+    } catch (err) {
+      setFormError((err as { message?: string })?.message || 'Erro ao salvar serviço.');
+    } finally {
+      setSavingProducts(false);
     }
   };
 

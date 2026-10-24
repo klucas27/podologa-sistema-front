@@ -167,6 +167,9 @@ export interface Billing {
   appointment?: Appointment;
 }
 
+/** Como a comissão do serviço é calculada: taxa, valor fixo ou ambos. */
+export type CommissionMode = 'percent' | 'fixed' | 'percent_plus_fixed';
+
 export interface Service {
   id: string;
   name: string;
@@ -174,6 +177,8 @@ export interface Service {
   durationMinutes: number;
   price: number;
   commissionRate: number | null;
+  commissionMode: CommissionMode;
+  commissionFixed: number | null;
   requiresAnamnesis: boolean;
   isPublic: boolean;
   isActive: boolean;

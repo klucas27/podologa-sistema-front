@@ -4,8 +4,18 @@ import Button from '@/components/ui/Button';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useServicosPage } from '../hooks/useServicosPage';
 import { ServiceModal } from '../components/ServiceModal';
+import type { Service } from '@/types';
 
 const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+/** "40%", "R$ 15,00" ou "40% + R$ 5,00"; null quando não há regra própria. */
+function commissionLabel(s: Pick<Service, 'commissionMode' | 'commissionRate' | 'commissionFixed'>): string | null {
+  const rate = s.commissionRate !== null ? `${s.commissionRate}%` : null;
+  const fixed = s.commissionFixed !== null ? brl(s.commissionFixed) : null;
+  if (s.commissionMode === 'fixed') return fixed;
+  if (s.commissionMode === 'percent_plus_fixed') return [rate ?? 'taxa da profissional', fixed].filter(Boolean).join(' + ');
+  return rate;
+}
 
 const ServicosPage: React.FC = () => {
   const h = useServicosPage();
@@ -40,7 +50,7 @@ const ServicosPage: React.FC = () => {
                       <span>{s.category === 'podologia' ? 'Podologia' : 'Estética'}</span>
                       <span className="flex items-center gap-1"><Clock size={12} />{s.durationMinutes} min</span>
                       <span className="font-medium text-gray-700">{brl(s.price)}</span>
-                      {s.commissionRate !== null && <span>Comissão {s.commissionRate}%</span>}
+                      {commissionLabel(s) && <span>Comissão: {commissionLabel(s)}</span>}
                       {s.isPublic && <span className="flex items-center gap-1 text-primary-600"><Link2 size={12} />no link</span>}
                     </div>
                   </div>

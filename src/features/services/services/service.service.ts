@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import type { Service, ServiceCategory } from "@/types";
+import type { CommissionMode, Service, ServiceCategory } from "@/types";
 
 interface ApiResponse<T> {
   data: T;
@@ -11,12 +11,27 @@ export interface ServiceInput {
   durationMinutes: number;
   price: number;
   commissionRate: number | null;
+  commissionMode: CommissionMode;
+  commissionFixed: number | null;
   requiresAnamnesis: boolean;
   isPublic: boolean;
   isActive?: boolean;
 }
 
+/** Item da ficha técnica: produto consumido a cada atendimento do serviço. */
+export interface ServiceProduct {
+  productId: string;
+  name: string;
+  unit: string;
+  quantity: number;
+}
+
 export const serviceService = {
+  listProducts: (id: string) => api.get<ApiResponse<ServiceProduct[]>>(`/api/services/${id}/products`).then((res) => res.data),
+
+  setProducts: (id: string, items: { productId: string; quantity: number }[]) =>
+    api.put<ApiResponse<ServiceProduct[]>>(`/api/services/${id}/products`, { items }).then((res) => res.data),
+
   list: () => api.get<ApiResponse<Service[]>>("/api/services").then((res) => res.data),
 
   listActive: () => api.get<ApiResponse<Service[]>>("/api/services?active=true").then((res) => res.data),

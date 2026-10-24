@@ -16,6 +16,7 @@ export type {
   AcquisitionSource,
   ProfessionalType,
   ServiceCategory,
+  CommissionMode,
   AppointmentSource,
   Service,
   WorkingHours,

@@ -7,8 +7,8 @@ import { serviceService } from '../services/service.service';
 import type { Service } from '@/types';
 
 const services: Service[] = [
-  { id: 's1', name: 'Manicure', category: 'estetica', durationMinutes: 45, price: 35, commissionRate: null, requiresAnamnesis: false, isPublic: true, isActive: true, createdAt: '', updatedAt: '' },
-  { id: 's2', name: 'Avaliação podológica', category: 'podologia', durationMinutes: 60, price: 120, commissionRate: 30, requiresAnamnesis: true, isPublic: false, isActive: true, createdAt: '', updatedAt: '' },
+  { id: 's1', name: 'Manicure', category: 'estetica', durationMinutes: 45, price: 35, commissionRate: null, commissionMode: 'percent', commissionFixed: null, requiresAnamnesis: false, isPublic: true, isActive: true, createdAt: '', updatedAt: '' },
+  { id: 's2', name: 'Avaliação podológica', category: 'podologia', durationMinutes: 60, price: 120, commissionRate: 30, commissionMode: 'percent_plus_fixed', commissionFixed: 5, requiresAnamnesis: true, isPublic: false, isActive: true, createdAt: '', updatedAt: '' },
 ];
 
 const user = { id: 'u', username: 'u', professionalName: null, professionalId: null, workdayStart: '08:00', workdayEnd: '18:00' };
@@ -25,6 +25,7 @@ describe('ServicosPage', () => {
     expect(screen.getByText('45 min')).toBeInTheDocument();
     expect(screen.getByText(/R\$\s?120,00/)).toBeInTheDocument();
     expect(screen.getAllByText('no link')).toHaveLength(1);
+    expect(screen.getByText(/Comissão: 30% \+ R\$\s?5,00/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Novo serviço' })).toBeInTheDocument();
   });
 
