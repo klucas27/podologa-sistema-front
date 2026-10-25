@@ -8,6 +8,8 @@ export interface User {
   professionalId: string | null;
   workdayStart: string;
   workdayEnd: string;
+  /** Senha provisória: só a tela de troca de senha fica liberada. */
+  mustChangePassword?: boolean;
 }
 
 export interface AuthState {

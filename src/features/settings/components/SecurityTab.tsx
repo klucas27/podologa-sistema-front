@@ -3,6 +3,7 @@ import { AlertCircle, CheckCircle } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { ApiError } from '@/lib/api';
 import { settingsService } from '../services/settings.service';
+import { PASSWORD_RULE, passwordRuleError } from '@/features/auth/schemas/auth.schema';
 
 const SecurityTab: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -21,8 +22,9 @@ const SecurityTab: React.FC = () => {
       setError('Preencha todos os campos.');
       return;
     }
-    if (newPassword.length < 6) {
-      setError('A nova senha deve ter pelo menos 6 caracteres.');
+    const ruleError = passwordRuleError(newPassword);
+    if (ruleError) {
+      setError(ruleError);
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -63,7 +65,7 @@ const SecurityTab: React.FC = () => {
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Nova senha <span className="text-danger-500">*</span></label>
-        <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition" placeholder="Mínimo 6 caracteres" />
+        <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition" placeholder={PASSWORD_RULE} />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Confirmar nova senha <span className="text-danger-500">*</span></label>

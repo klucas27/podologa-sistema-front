@@ -36,7 +36,7 @@ const LoginPage: React.FC = () => {
 
     try {
       const user = await signIn(data.username, data.password);
-      navigate(homePathFor(user.role));
+      navigate(user.mustChangePassword ? '/trocar-senha' : homePathFor(user.role));
     } catch (err) {
       if (err instanceof ApiError && err.status === 429) {
         setServerError('Muitas tentativas de login. Aguarde antes de tentar novamente.');

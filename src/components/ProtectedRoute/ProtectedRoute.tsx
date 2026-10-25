@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import type { UserRole } from '@/types';
 
@@ -23,7 +23,8 @@ interface ProtectedRouteProps {
  *                 acesso não autorizado a funcionalidades restritas.
  */
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
-  const { isAuthenticated, isLoading, role } = useAuth();
+  const { isAuthenticated, isLoading, role, user } = useAuth();
+  const { pathname } = useLocation();
 
   if (isLoading) {
     return (
@@ -35,6 +36,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Senha provisória: nenhuma tela além da troca de senha
+  if (user?.mustChangePassword && pathname !== '/trocar-senha') {
+    return <Navigate to="/trocar-senha" replace />;
   }
 
   if (allowedRoles && role && !allowedRoles.includes(role)) {

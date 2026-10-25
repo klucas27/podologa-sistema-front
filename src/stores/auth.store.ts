@@ -35,6 +35,7 @@ interface AuthActions {
   setAuth: (user: User, role: UserRole) => void;
   clearAuth: () => void;
   setLoading: (isLoading: boolean) => void;
+  setMustChangePassword: (value: boolean) => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -56,4 +57,7 @@ export const useAuthStore = create<AuthStore>()((set) => ({
     set({ user: null, role: null, isAuthenticated: false, isLoading: false }),
 
   setLoading: (isLoading) => set({ isLoading }),
+
+  setMustChangePassword: (value) =>
+    set((s) => (s.user ? { user: { ...s.user, mustChangePassword: value } } : {})),
 }));

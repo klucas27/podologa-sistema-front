@@ -55,6 +55,12 @@ export const setOnForbidden = (callback: (() => void) | null): void => {
   onForbidden = callback;
 };
 
+let onPasswordChangeRequired: (() => void) | null = null;
+
+export const setOnPasswordChangeRequired = (callback: (() => void) | null): void => {
+  onPasswordChangeRequired = callback;
+};
+
 let onRateLimited: ((retryAfter: number | null) => void) | null = null;
 
 const MAX_RETRY_AFTER_SECONDS = 15;
@@ -166,8 +172,14 @@ async function request<T>(
   }
 
   if (response.status === 403) {
+    const body = await response.json().catch(() => ({}));
+    const { code } = body as { code?: string };
+    if (code === 'PASSWORD_CHANGE_REQUIRED') {
+      onPasswordChangeRequired?.();
+      throw new ApiError(403, 'Troque a senha provisória para continuar.', { code });
+    }
     onForbidden?.();
-    throw new ApiError(403, 'Acesso negado.');
+    throw new ApiError(403, 'Acesso negado.', code ? { code } : undefined);
   }
 
   if (response.status === 429) {

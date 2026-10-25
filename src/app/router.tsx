@@ -44,6 +44,7 @@ const EstoquePage = React.lazy(() => import("@/features/stock/pages/EstoquePage"
 const EncaminhamentosPage = React.lazy(() => import("@/features/referrals/pages/EncaminhamentosPage"));
 const UsuariosPage = React.lazy(() => import("@/features/users/pages/UsuariosPage"));
 const PedidosPage = React.lazy(() => import("@/features/booking-requests/pages/PedidosPage"));
+const TrocarSenhaPage = React.lazy(() => import("@/features/auth/pages/TrocarSenhaPage"));
 const PublicBookingPage = React.lazy(() => import("@/features/public-booking/pages/PublicBookingPage"));
 
 // ─── Route → import map para prefetch no hover ───────────────────
@@ -88,6 +89,8 @@ export const router = createBrowserRouter([
   {
     element: <ProtectedRoute />,
     children: [
+      // Fora do MainLayout: usuário com senha provisória não vê o menu
+      { path: "/trocar-senha", element: lazy(TrocarSenhaPage) },
       {
         element: <MainLayout />,
         children: [

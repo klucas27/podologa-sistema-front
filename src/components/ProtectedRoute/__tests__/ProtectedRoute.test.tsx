@@ -42,6 +42,7 @@ function renderWithRouter(
           <Route element={<ProtectedRoute allowedRoles={allowedRoles} />}>
             <Route path="/dashboard" element={<div>Dashboard Content</div>} />
             <Route path="/admin" element={<div>Admin Panel</div>} />
+            <Route path="/trocar-senha" element={<div>Trocar Senha</div>} />
           </Route>
           <Route path="/login" element={<div>Login Page</div>} />
           <Route path="/acesso-negado" element={<div>Acesso Negado</div>} />
@@ -135,5 +136,18 @@ describe('ProtectedRoute', () => {
     useAuthStore.getState().setAuth({ ...mockAdmin, role: 'recepcao' }, 'recepcao');
     renderWithRouter('/admin', ['admin']);
     expect(screen.getByText('Acesso Negado')).toBeInTheDocument();
+  });
+
+  it('senha provisória leva qualquer rota protegida para /trocar-senha', () => {
+    useAuthStore.getState().setAuth({ ...mockAdmin, mustChangePassword: true }, 'admin');
+    renderWithRouter('/dashboard');
+    expect(screen.getByText('Trocar Senha')).toBeInTheDocument();
+    expect(screen.queryByText('Dashboard Content')).not.toBeInTheDocument();
+  });
+
+  it('com senha provisória a própria /trocar-senha abre', () => {
+    useAuthStore.getState().setAuth({ ...mockAdmin, mustChangePassword: true }, 'admin');
+    renderWithRouter('/trocar-senha');
+    expect(screen.getByText('Trocar Senha')).toBeInTheDocument();
   });
 });

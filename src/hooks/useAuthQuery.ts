@@ -30,7 +30,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { isUserRole } from '@/config/permissions';
-import { api, setCsrfToken, setOnAuthFailure, setOnForbidden, setOnRateLimited } from '@/lib/api';
+import { api, setCsrfToken, setOnAuthFailure, setOnForbidden, setOnPasswordChangeRequired, setOnRateLimited } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth.store';
 import { notifyError, notifyWarning } from '@/lib/notifications';
 import type { User, UserRole } from '@/types';
@@ -74,6 +74,11 @@ export function setupAuthInterceptors(): () => void {
     notifyError({ status: 403, message: 'Acesso negado', name: 'ApiError' });
   });
 
+  // ProtectedRoute leva para /trocar-senha quando o flag fica verdadeiro
+  setOnPasswordChangeRequired(() => {
+    useAuthStore.getState().setMustChangePassword(true);
+  });
+
   setOnRateLimited((retryAfter) => {
     const seconds = retryAfter ?? 15;
     notifyWarning(`Muitas requisições. Aguarde ${seconds}s antes de tentar novamente.`);
@@ -82,6 +87,7 @@ export function setupAuthInterceptors(): () => void {
   return () => {
     setOnAuthFailure(null);
     setOnForbidden(null);
+    setOnPasswordChangeRequired(null);
     setOnRateLimited(null);
   };
 }

@@ -1,4 +1,4 @@
-import { api } from '@/lib/api';
+import { api, setCsrfToken } from '@/lib/api';
 import type { BusinessSettings, ScheduleBlock, WorkingHours } from '@/types';
 
 export interface ScheduleBlockInput {
@@ -13,8 +13,13 @@ interface ApiResponse<T> {
 }
 
 export const settingsService = {
+  // O servidor reemite os cookies; o token CSRF novo acompanha o novo access token
   changePassword: (data: { currentPassword: string; newPassword: string }) =>
-    api.patch('/api/auth/password', data),
+    api
+      .patch<{ data?: { csrfToken?: string } }>('/api/auth/password', data)
+      .then((res) => {
+        if (res.data?.csrfToken) setCsrfToken(res.data.csrfToken);
+      }),
 
   getWorkingHours: (professionalId: string) =>
     api
