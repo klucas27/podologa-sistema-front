@@ -1,15 +1,18 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useBillings, useUpdateBillingStatus } from './useBillings';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useBillings, useUpdateBillingStatus, billingKeys } from './useBillings';
+import { billingService } from '../services/billing.service';
 import { useDebounce } from '@/hooks/useDebounce';
 import { nowSPISO } from '@/lib/dateUtils';
-import type { Billing, BillingStatus, PaymentMethod } from '@/types';
+import { useActiveProfessionals } from '@/features/professionals/hooks/useProfessionals';
+import type { BillingStatus, PaymentMethod } from '@/types';
 
-const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  pix: 'PIX',
-  credit_card: 'Cartão de Crédito',
-  debit_card: 'Cartão de Débito',
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  pix: 'Pix',
   cash: 'Dinheiro',
+  credit_card: 'Crédito',
+  debit_card: 'Débito',
   transfer: 'Transferência',
   other: 'Outro',
 };
@@ -23,13 +26,44 @@ export const STATUS_LABELS: Record<BillingStatus, { label: string; className: st
   refunded: { label: 'Reembolsado', className: 'bg-gray-100 text-gray-600' },
 };
 
+export const toNumber = (v: string | number | null | undefined) => Number(v ?? 0) || 0;
+
+export interface TransactionFilters {
+  from: string;
+  to: string;
+  professionalId: string;
+  status: BillingStatus | '';
+  paymentMethod: PaymentMethod | '';
+}
+
+/** Hoje em São Paulo (YYYY-MM-DD). */
+export const todaySP = () => nowSPISO().slice(0, 10);
+
 export function useTransacoesPage() {
   const navigate = useNavigate();
+  const today = todaySP();
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<BillingStatus | ''>('');
+  const [filters, setFilters] = useState<TransactionFilters>({
+    from: `${today.slice(0, 8)}01`, to: today, professionalId: '', status: '', paymentMethod: '',
+  });
+  const [summaryDate, setSummaryDate] = useState(today);
   const debouncedSearch = useDebounce(search, 300);
 
-  const { data: billings = [], isLoading } = useBillings();
+  // Filtros vão para o servidor; a busca por texto refina a página carregada
+  const params = useMemo(() => {
+    const p: Record<string, string> = { limit: '200' };
+    for (const [key, value] of Object.entries(filters)) if (value) p[key] = value;
+    return p;
+  }, [filters]);
+
+  const { data: billings = [], isLoading } = useBillings(params);
+  const summary = useQuery({
+    queryKey: [...billingKeys.all, 'daily-summary', summaryDate],
+    queryFn: () => billingService.dailySummary(summaryDate),
+    enabled: /^\d{4}-\d{2}-\d{2}$/.test(summaryDate),
+    placeholderData: keepPreviousData,
+  });
+  const { data: professionals = [] } = useActiveProfessionals();
   const updateStatusMutation = useUpdateBillingStatus();
 
   const updatingId = updateStatusMutation.isPending ? (updateStatusMutation.variables?.id ?? null) : null;
@@ -43,36 +77,25 @@ export function useTransacoesPage() {
   };
 
   const filtered = useMemo(() => billings.filter((b) => {
-    if (statusFilter && b.status !== statusFilter) return false;
     if (!debouncedSearch) return true;
     const q = debouncedSearch.toLowerCase();
-    const appt = b.appointment as Billing['appointment'] & {
-      patient?: { fullName: string };
-      professional?: { fullName: string };
-    };
-    return (
-      (appt?.patient?.fullName ?? '').toLowerCase().includes(q) ||
-      (appt?.professional?.fullName ?? '').toLowerCase().includes(q) ||
-      PAYMENT_METHOD_LABELS[b.paymentMethod].toLowerCase().includes(q)
-    );
-  }), [billings, debouncedSearch, statusFilter]);
+    return [b.patientName, b.serviceName, b.professionalName, PAYMENT_METHOD_LABELS[b.paymentMethod]]
+      .some((v) => (v ?? '').toLowerCase().includes(q));
+  }), [billings, debouncedSearch]);
 
   const { totalAmount, paidAmount, pendingAmount } = useMemo(() => {
-    const total = filtered.reduce(
-      (sum, b) => sum + parseFloat(b.amount?.toString() ?? '0'), 0,
-    );
-    const paid = filtered
-      .filter((b) => b.status === 'paid')
-      .reduce((sum, b) => sum + parseFloat(b.amount?.toString() ?? '0'), 0);
-    const pending = filtered
-      .filter((b) => b.status === 'pending')
-      .reduce((sum, b) => sum + parseFloat(b.amount?.toString() ?? '0'), 0);
-    return { totalAmount: total, paidAmount: paid, pendingAmount: pending };
+    const net = (b: (typeof filtered)[number]) => toNumber(b.amount) - toNumber(b.discount);
+    return {
+      totalAmount: filtered.reduce((sum, b) => sum + net(b), 0),
+      paidAmount: filtered.filter((b) => b.status === 'paid').reduce((sum, b) => sum + net(b), 0),
+      pendingAmount: filtered.filter((b) => b.status === 'pending').reduce((sum, b) => sum + net(b), 0),
+    };
   }, [filtered]);
 
   return {
-    billings, filtered, search, setSearch, statusFilter, setStatusFilter,
-    isLoading, updatingId, updateStatus,
+    billings, filtered, search, setSearch, filters, setFilters,
+    summaryDate, setSummaryDate, summary: summary.data, summaryLoading: summary.isLoading,
+    professionals, isLoading, updatingId, updateStatus,
     totalAmount, paidAmount, pendingAmount,
     navigateToExecution: (id: string) => navigate(`/consultas/${id}/execucao`),
     paymentMethodLabel: (m: PaymentMethod) => PAYMENT_METHOD_LABELS[m],

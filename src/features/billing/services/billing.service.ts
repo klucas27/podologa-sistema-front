@@ -12,6 +12,15 @@ export interface CreateBillingData {
   status?: "pending" | "paid";
 }
 
+export interface DailySummary {
+  date: string;
+  byMethod: { paymentMethod: PaymentMethod; count: number; total: number }[];
+  total: number;
+  discounts: number;
+  count: number;
+  pending: { billingId: string; patientName: string; serviceName: string | null; amount: number }[];
+}
+
 export const billingService = {
   list: (params?: Record<string, string>) =>
     api
@@ -41,6 +50,12 @@ export const billingService = {
   updateStatus: (id: string, status: string, paidAt?: string | null) =>
     api
       .patch<ApiResponse<Billing>>(`/api/billings/${id}`, { status, paidAt: paidAt ?? null })
+      .then((res) => res.data),
+
+  /** Fechamento do dia (admin/recepção). */
+  dailySummary: (date: string) =>
+    api
+      .get<ApiResponse<DailySummary>>("/api/billings/daily-summary", { params: { date } })
       .then((res) => res.data),
 
   delete: (id: string) => api.delete<void>(`/api/billings/${id}`),

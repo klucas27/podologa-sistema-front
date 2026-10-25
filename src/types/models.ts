@@ -165,6 +165,12 @@ export interface Billing {
   createdAt: string;
   updatedAt: string;
   appointment?: Appointment;
+  discount?: string | number;
+  commissionAmount?: string | number | null;
+  /** Preenchidos pela listagem de transações. */
+  patientName?: string | null;
+  serviceName?: string | null;
+  professionalName?: string | null;
 }
 
 /** Como a comissão do serviço é calculada: taxa, valor fixo ou ambos. */
