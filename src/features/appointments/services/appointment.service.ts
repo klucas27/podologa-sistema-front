@@ -43,6 +43,12 @@ export const appointmentService = {
       .patch<ApiResponse<Appointment>>(`/api/appointments/${id}`, { status })
       .then((res) => res.data),
 
+  /** Transição validada pelo back (ex.: falta só por admin/recepção). */
+  transition: (id: string, to: AppointmentStatus) =>
+    api
+      .post<ApiResponse<Appointment>>(`/api/appointments/${id}/transition`, { to })
+      .then((res) => res.data),
+
   delete: (id: string) => api.delete<void>(`/api/appointments/${id}`),
 
   listByPatient: (patientId: string) =>

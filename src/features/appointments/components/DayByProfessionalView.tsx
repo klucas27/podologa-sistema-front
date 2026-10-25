@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Appointment, ServiceCategory } from '@/types';
 import { formatTime, getHoursInTz } from '@/lib/dateUtils';
-import { SLOT_HEIGHT, STATUS_COLORS, STATUS_LABELS, pad2 } from '../constants';
+import { NO_SHOW_BUTTON, SLOT_HEIGHT, STATUS_COLORS, STATUS_LABELS, isNoShowCandidate, pad2 } from '../constants';
 
 export interface ProfessionalColumn {
   id: string;
@@ -20,6 +20,8 @@ interface Props {
   getApptStyle: (appt: Appointment) => React.CSSProperties;
   onSlotClick: (professionalId: string, hour: number) => void;
   onAppointmentClick: (appt: Appointment, e: React.MouseEvent) => void;
+  /** Só admin/recepção recebem: botão "Falta" nos atendimentos já iniciados sem registro. */
+  onMarkNoShow?: (appt: Appointment) => void;
 }
 
 const CATEGORY_BAR: Record<ServiceCategory, string> = {
@@ -30,7 +32,7 @@ const CATEGORY_BAR: Record<ServiceCategory, string> = {
 /** Agenda do dia com uma coluna por profissional (atendimentos simultâneos lado a lado). */
 const DayByProfessionalView: React.FC<Props> = ({
   isToday, columns, appointments, hours, hourStart, hourEnd,
-  categoryOf, serviceNameOf, getApptStyle, onSlotClick, onAppointmentClick,
+  categoryOf, serviceNameOf, getApptStyle, onSlotClick, onAppointmentClick, onMarkNoShow,
 }) => {
   if (columns.length === 0) {
     return <p className="p-8 text-center text-sm text-gray-500">Nenhuma profissional ativa para exibir.</p>;
@@ -83,22 +85,28 @@ const DayByProfessionalView: React.FC<Props> = ({
             {appointments.filter((a) => a.professionalId === c.id).map((appt) => {
               const category = categoryOf(appt.serviceId);
               const serviceName = serviceNameOf(appt.serviceId);
+              const name = appt.patient?.fullName ?? 'Cliente';
               return (
-                <button
-                  key={appt.id}
-                  type="button"
-                  className={`absolute left-1 right-1 z-10 rounded-md border px-2 py-1 text-left overflow-hidden hover:shadow-md ${STATUS_COLORS[appt.status]} ${category ? CATEGORY_BAR[category] : ''}`}
-                  style={getApptStyle(appt)}
-                  onClick={(e) => onAppointmentClick(appt, e)}
-                  title={`${appt.patient?.fullName ?? 'Cliente'} · ${STATUS_LABELS[appt.status]}`}
-                >
-                  <p className="text-xs font-semibold truncate leading-tight">{appt.patient?.fullName ?? 'Cliente'}</p>
-                  {serviceName && <p className="text-[11px] truncate leading-tight opacity-80">{serviceName}</p>}
-                  <p className="text-[11px] opacity-70">
-                    {formatTime(appt.scheduledStart)}–{formatTime(appt.scheduledEnd)}
-                    {appt.status === 'pending' && ' · aguardando confirmação'}
-                  </p>
-                </button>
+                <div key={appt.id} className="absolute left-1 right-1 z-10" style={getApptStyle(appt)}>
+                  <button
+                    type="button"
+                    className={`h-full w-full rounded-md border px-2 py-1 text-left overflow-hidden hover:shadow-md ${STATUS_COLORS[appt.status]} ${category ? CATEGORY_BAR[category] : ''}`}
+                    onClick={(e) => onAppointmentClick(appt, e)}
+                    title={`${appt.patient?.fullName ?? 'Cliente'} · ${STATUS_LABELS[appt.status]}`}
+                  >
+                    <p className="text-xs font-semibold truncate leading-tight">{appt.patient?.fullName ?? 'Cliente'}</p>
+                    {serviceName && <p className="text-[11px] truncate leading-tight opacity-80">{serviceName}</p>}
+                    <p className="text-[11px] opacity-70">
+                      {formatTime(appt.scheduledStart)}–{formatTime(appt.scheduledEnd)}
+                      {appt.status === 'pending' && ' · aguardando confirmação'}
+                    </p>
+                  </button>
+                  {onMarkNoShow && isNoShowCandidate(appt) && (
+                    <button type="button" className={NO_SHOW_BUTTON} aria-label={`Marcar falta de ${name}`} onClick={() => onMarkNoShow(appt)}>
+                      Falta
+                    </button>
+                  )}
+                </div>
               );
             })}
 

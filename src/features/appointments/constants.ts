@@ -1,4 +1,5 @@
-import type { AppointmentStatus } from "@/types";
+import type { Appointment, AppointmentStatus } from "@/types";
+import { nowSPISO } from "@/lib/dateUtils";
 
 export const SLOT_HEIGHT = 60;
 export const DEFAULT_DURATION_MIN = 60;
@@ -60,3 +61,10 @@ export const parseTimeHour = (time: string): number => {
   const [h] = time.split(":").map(Number);
   return h!;
 };
+
+/** Agendado/confirmado com início já passado: a recepção pode marcar falta. */
+export const isNoShowCandidate = (appt: Appointment, now = nowSPISO()): boolean =>
+  (appt.status === "scheduled" || appt.status === "confirmed") && appt.scheduledStart < now;
+
+export const NO_SHOW_BUTTON =
+  "absolute bottom-0.5 right-0.5 z-20 min-h-11 min-w-11 rounded-md border border-danger-200 bg-white/95 px-2 text-xs font-medium text-danger-700 shadow-sm";

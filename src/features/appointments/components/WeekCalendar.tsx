@@ -6,6 +6,8 @@ import {
   WEEK_DAYS,
   STATUS_COLORS,
   STATUS_LABELS,
+  NO_SHOW_BUTTON,
+  isNoShowCandidate,
   formatDayNum,
   isSameDay,
   pad2,
@@ -23,6 +25,8 @@ interface WeekCalendarProps {
   onSlotClick: (dayIndex: number, hour: number) => void;
   onAppointmentClick: (appt: Appointment, e: React.MouseEvent) => void;
   onDragStart: (appt: Appointment, dayCol: number, e: React.MouseEvent) => void;
+  /** Só admin/recepção recebem: botão "Falta" nos atendimentos já iniciados sem registro. */
+  onMarkNoShow?: (appt: Appointment) => void;
 }
 
 const WeekCalendar: React.FC<WeekCalendarProps> = ({
@@ -37,6 +41,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
   onSlotClick,
   onAppointmentClick,
   onDragStart,
+  onMarkNoShow,
 }) => (
   <div className="flex flex-col flex-1 overflow-hidden">
     {/* Day headers */}
@@ -144,6 +149,17 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
                       {formatTime(appt.scheduledStart)} –{" "}
                       {formatTime(appt.scheduledEnd)}
                     </p>
+                    {onMarkNoShow && isNoShowCandidate(appt) && (
+                      <button
+                        type="button"
+                        className={NO_SHOW_BUTTON}
+                        aria-label={`Marcar falta de ${appt.patient?.fullName ?? "Cliente"}`}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => { e.stopPropagation(); onMarkNoShow(appt); }}
+                      >
+                        Falta
+                      </button>
+                    )}
                   </div>
                 );
               })}

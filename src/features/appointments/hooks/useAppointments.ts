@@ -119,3 +119,16 @@ export function useDeleteAppointment() {
     },
   });
 }
+
+export function useMarkNoShow() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => appointmentService.transition(id, "no_show"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      notifySuccess("Falta registrada.");
+    },
+  });
+}

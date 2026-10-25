@@ -9,6 +9,9 @@ import Button from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { useAgendamentosPage } from "../hooks/useAgendamentosPage";
+import { useMarkNoShow } from "../hooks/useAppointments";
+import { useAuth } from "@/hooks/useAuth";
+import type { Appointment } from "@/types";
 import WeekCalendar from "../components/WeekCalendar";
 import DayByProfessionalView from "../components/DayByProfessionalView";
 import { formatMonthYear, STATUS_COLORS, STATUS_LABELS } from "../constants";
@@ -16,6 +19,14 @@ import { formatShortMonthYear, formatLongDate, toISODate } from "@/lib/dateUtils
 
 const AgendamentosPageInner: React.FC = () => {
   const state = useAgendamentosPage();
+  const { role } = useAuth();
+  const markNoShow = useMarkNoShow();
+  // Falta é registrada só por admin/recepção (o back também barra as profissionais)
+  const onMarkNoShow = role === "admin" || role === "recepcao"
+    ? (appt: Appointment) => {
+      if (window.confirm(`Marcar falta de ${appt.patient?.fullName ?? "cliente"}?`)) markNoShow.mutate(appt.id);
+    }
+    : undefined;
 
   const weekEndDate = state.weekDays[6]!;
   const isDay = state.viewMode === "day";
@@ -127,6 +138,7 @@ const AgendamentosPageInner: React.FC = () => {
             getApptStyle={state.getApptStyle}
             onSlotClick={state.handleDaySlotClick}
             onAppointmentClick={state.handleAppointmentClick}
+            onMarkNoShow={onMarkNoShow}
           />
         </>
       ) : (
@@ -142,6 +154,7 @@ const AgendamentosPageInner: React.FC = () => {
           onSlotClick={state.handleSlotClick}
           onAppointmentClick={state.handleAppointmentClick}
           onDragStart={state.handleDragStart}
+          onMarkNoShow={onMarkNoShow}
         />
       )}
     </div>
