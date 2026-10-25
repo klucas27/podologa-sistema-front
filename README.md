@@ -62,7 +62,13 @@ O sistema abrirá em **http://localhost:3000**.
 
 - **Agenda** por profissional (Dia) ou semana, com pedidos do link destacados.
 - **Pedidos**: fila dos agendamentos feitos pelo link (confirmar/recusar).
-- **Link público** `/agendar/:slug`: a cliente agenda pelo celular, sem login.
+- **Link público** `/agendar/:slug`: a cliente agenda pelo celular, sem login, e recebe o link individual com "Copiar link" e "Salvar no WhatsApp".
+- **Meu horário** `/agendamento/:slug/:token`: a cliente vê, cancela ou remarca dentro do prazo do salão; fora do prazo vê o telefone do salão. No atendimento, admin/recepção têm "Gerar link da cliente".
+- **Troca de senha** `/trocar-senha`: obrigatória no primeiro acesso (senha provisória); regra de 10+ caracteres com letra e número.
+- **Comissões** `/comissoes` (admin; manicure/podóloga veem as próprias): cartões por profissional, itens com a regra aplicada e **Baixar CSV**.
+- **Transações**: cliente, serviço, profissional, desconto e forma; filtros por período, profissional, status e forma; **Fechamento do dia** (totais por forma, descontos e pendentes).
+- **Agenda**: admin/recepção marcam **Falta** direto no cartão de atendimentos já iniciados.
+- Terminologia: "Cliente" e "Atendimento" nas telas; "Paciente"/"Consulta" só na parte clínica (teste `src/__tests__/terminology.test.ts`).
 - **Serviços**, **Profissionais**, **Usuários** e **Configurações** (expediente, link com QR code, bloqueios de agenda).
 - Menu e prontuário por perfil: manicure não vê dados de saúde nem financeiro.
 - **Dashboard / Meus indicadores** (todos os perfis): faturamento, ticket médio, clientes, % pelo link, faltas, ocupação, pontualidade, encaminhamentos, retorno e comissões, com filtro por período e profissional; alertas de estoque e de pedidos. O painel antigo continua só para a administradora.
