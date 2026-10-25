@@ -45,9 +45,9 @@ interface Props {
 /**
  * React.memo neste componente: JUSTIFICADO.
  *
- * Evidência: a lista de pacientes re-renderiza em cada keystroke do
+ * Evidência: a lista de clientes re-renderiza em cada keystroke do
  * search (parent re-renderiza → todos os filhos re-renderizam).
- * Com 50+ pacientes, cada keystroke causa ~50 re-renders desnecessários.
+ * Com 50+ clientes, cada keystroke causa ~50 re-renders desnecessários.
  *
  * Custo do memo: comparação shallow das props (4 props → ~4 comparações).
  * Benefício: evita reconciliação do DOM virtual para ~49 itens inalterados.
@@ -100,8 +100,8 @@ const PatientListItem: React.FC<Props> = React.memo(({ patient, deletingId, onDe
       </div>
 
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-        <button onClick={(e) => { e.stopPropagation(); navigate(`/pacientes/${patient.id}/editar`); }} type="button" className="p-2 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-600 transition" title="Editar paciente"><Pencil size={16} /></button>
-        <button onClick={(e) => { e.stopPropagation(); onDelete(patient.id, patient.fullName); }} disabled={deletingId === patient.id} type="button" className="p-2 rounded-lg text-gray-400 hover:bg-danger-50 hover:text-danger-600 transition disabled:opacity-50" title="Excluir paciente">
+        <button onClick={(e) => { e.stopPropagation(); navigate(`/pacientes/${patient.id}/editar`); }} type="button" className="p-2 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-600 transition" title="Editar cliente"><Pencil size={16} /></button>
+        <button onClick={(e) => { e.stopPropagation(); onDelete(patient.id, patient.fullName); }} disabled={deletingId === patient.id} type="button" className="p-2 rounded-lg text-gray-400 hover:bg-danger-50 hover:text-danger-600 transition disabled:opacity-50" title="Excluir cliente">
           {deletingId === patient.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
         </button>
         <button onClick={(e) => { e.stopPropagation(); onForceDelete(patient.id, patient.fullName); }} disabled={deletingId === patient.id} type="button" className="p-2 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition disabled:opacity-50" title="Exclusão definitiva (remove tudo)"><AlertTriangle size={16} /></button>

@@ -89,7 +89,7 @@ const AlertsHeatmapChart: React.FC<AlertsHeatmapChartProps> = ({ data }) => {
                     key={`${day}-${cat}`}
                     className="rounded-md flex items-center justify-center text-xs font-medium h-10 transition-colors"
                     style={{ backgroundColor: getColor(value, maxValue) }}
-                    title={`${day} • ${OVERDUE_LABELS[cat]}: ${value} paciente(s)`}
+                    title={`${day} • ${OVERDUE_LABELS[cat]}: ${value} cliente(s)`}
                   >
                     {value > 0 ? value : ''}
                   </div>

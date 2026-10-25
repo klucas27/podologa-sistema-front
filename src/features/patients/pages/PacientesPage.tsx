@@ -10,7 +10,7 @@ import PatientListItem from '../components/PatientListItem';
 import type { Patient } from '@/types';
 
 const PATIENT_ROW_HEIGHT = 72; // Altura estimada de cada PatientListItem
-const VIRTUALIZE_THRESHOLD = 50; // Virtualiza apenas com 50+ pacientes
+const VIRTUALIZE_THRESHOLD = 50; // Virtualiza apenas com 50+ clientes
 
 const PacientesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -30,14 +30,14 @@ const PacientesPage: React.FC = () => {
   ), [deletingId, handleDelete, handleForceDelete]);
 
   return (
-    <ErrorBoundary featureName="Pacientes">
+    <ErrorBoundary featureName="Clientes">
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Pacientes</h1>
-          <p className="text-sm text-gray-500">{patients.length} paciente{patients.length !== 1 ? 's' : ''} cadastrado{patients.length !== 1 ? 's' : ''}</p>
+          <h1 className="text-2xl font-bold text-gray-800">Clientes</h1>
+          <p className="text-sm text-gray-500">{patients.length} cliente{patients.length !== 1 ? 's' : ''} cadastrada{patients.length !== 1 ? 's' : ''}</p>
         </div>
-        <Button icon={<UserPlus size={16} />} onClick={() => navigate('/pacientes/novo')}>Novo Paciente</Button>
+        <Button icon={<UserPlus size={16} />} onClick={() => navigate('/pacientes/novo')}>Nova Cliente</Button>
       </div>
 
       <div className="relative">
@@ -49,7 +49,7 @@ const PacientesPage: React.FC = () => {
         {isLoading ? (
           <div className="p-4"><SkeletonTable rows={6} cols={3} /></div>
         ) : patients.length === 0 ? (
-          <div className="p-8 text-center"><p className="text-gray-400 text-sm">{search ? 'Nenhum paciente encontrado para a pesquisa.' : 'Nenhum paciente cadastrado.'}</p></div>
+          <div className="p-8 text-center"><p className="text-gray-400 text-sm">{search ? 'Nenhuma cliente encontrada para a pesquisa.' : 'Nenhuma cliente cadastrada.'}</p></div>
         ) : patients.length >= VIRTUALIZE_THRESHOLD ? (
           <VirtualizedList
             items={patients}

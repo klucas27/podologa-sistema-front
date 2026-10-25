@@ -30,7 +30,7 @@ const ConsultasPage: React.FC = () => {
           {appt.patient?.fullName?.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() ?? '??'}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-800 truncate">{appt.patient?.fullName ?? 'Paciente'}</p>
+          <p className="text-sm font-semibold text-gray-800 truncate">{appt.patient?.fullName ?? 'Cliente'}</p>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-0.5">
             <span className="flex items-center gap-1 text-xs text-gray-400"><Clock size={12} />{formatDate(appt.scheduledDate)} · {formatTime(appt.scheduledStart)} - {formatTime(appt.scheduledEnd)}</span>
             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${status.className}`}>{status.label}</span>
@@ -66,19 +66,19 @@ const ConsultasPage: React.FC = () => {
   );
 
   return (
-    <ErrorBoundary featureName="Consultas">
+    <ErrorBoundary featureName="Atendimentos">
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Consultas</h1>
-          <p className="text-sm text-gray-500">{h.appointments.length} consulta{h.appointments.length !== 1 ? 's' : ''} no total</p>
+          <h1 className="text-2xl font-bold text-gray-800">Atendimentos</h1>
+          <p className="text-sm text-gray-500">{h.appointments.length} atendimento{h.appointments.length !== 1 ? 's' : ''} no total</p>
         </div>
-        <Button icon={<Plus size={16} />} onClick={h.navigateToNew}>Nova Consulta</Button>
+        <Button icon={<Plus size={16} />} onClick={h.navigateToNew}>Novo Agendamento</Button>
       </div>
 
       <div className="relative">
         <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input type="text" value={h.search} onChange={(e) => h.setSearch(e.target.value)} placeholder="Pesquisar por nome do paciente ou observações..." className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition bg-white" />
+        <input type="text" value={h.search} onChange={(e) => h.setSearch(e.target.value)} placeholder="Pesquisar por nome da cliente ou observações..." className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition bg-white" />
       </div>
 
       {h.isLoading ? (
@@ -88,8 +88,8 @@ const ConsultasPage: React.FC = () => {
         </div>
       ) : (
         <>
-          {renderSection('Hoje', <Stethoscope size={18} className="text-primary-500" />, h.todayAppts, 'Nenhuma consulta para hoje.')}
-          {renderSection('Futuras', <CalendarClock size={18} className="text-blue-500" />, h.futureAppts, 'Nenhuma consulta futura agendada.')}
+          {renderSection('Hoje', <Stethoscope size={18} className="text-primary-500" />, h.todayAppts, 'Nenhum atendimento para hoje.')}
+          {renderSection('Futuras', <CalendarClock size={18} className="text-blue-500" />, h.futureAppts, 'Nenhum atendimento futuro agendado.')}
           <div className="space-y-2">
             <button type="button" onClick={() => h.setShowCompleted((v) => !v)} className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">
               <CalendarCheck size={18} className="text-green-500" />
@@ -98,7 +98,7 @@ const ConsultasPage: React.FC = () => {
             </button>
             {h.showCompleted && (
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                {h.completedAppts.length === 0 ? <div className="p-6 text-center"><p className="text-gray-400 text-sm">Nenhuma consulta concluída ou cancelada.</p></div> : <ul className="divide-y divide-gray-100">{h.completedAppts.map(renderAppointmentCard)}</ul>}
+                {h.completedAppts.length === 0 ? <div className="p-6 text-center"><p className="text-gray-400 text-sm">Nenhum atendimento concluído ou cancelado.</p></div> : <ul className="divide-y divide-gray-100">{h.completedAppts.map(renderAppointmentCard)}</ul>}
               </div>
             )}
           </div>

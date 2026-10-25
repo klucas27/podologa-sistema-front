@@ -24,13 +24,13 @@ export const PatientAutocomplete: React.FC<Props> = ({
 }) => (
   <div>
     <label htmlFor="patient-search" className="block text-sm font-medium text-gray-700 mb-1">
-      Paciente <span className="text-danger-500">*</span>
+      Cliente <span className="text-danger-500">*</span>
     </label>
 
     {patientId && selectedPatientName ? (
       <div className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-primary-200 bg-primary-50 text-sm">
         <span className="font-medium text-primary-800">{selectedPatientName}</span>
-        <button type="button" onClick={clearPatient} className="p-0.5 rounded text-gray-400 hover:text-gray-600 transition" aria-label="Remover paciente selecionado">
+        <button type="button" onClick={clearPatient} className="p-0.5 rounded text-gray-400 hover:text-gray-600 transition" aria-label="Remover cliente selecionada">
           <X size={16} />
         </button>
       </div>
@@ -43,7 +43,7 @@ export const PatientAutocomplete: React.FC<Props> = ({
           role="combobox"
           aria-expanded={showResults}
           aria-autocomplete="list"
-          aria-label="Buscar paciente por nome ou telefone"
+          aria-label="Buscar cliente por nome ou telefone"
           value={query}
           onChange={(e) => { setQuery(e.target.value); setShowResults(true); }}
           onFocus={() => setShowResults(true)}
@@ -58,7 +58,7 @@ export const PatientAutocomplete: React.FC<Props> = ({
                 <Loader2 size={16} className="animate-spin text-gray-400" />
               </div>
             ) : patients.length === 0 ? (
-              <div className="p-3 text-sm text-gray-500 text-center">Nenhum paciente encontrado.</div>
+              <div className="p-3 text-sm text-gray-500 text-center">Nenhuma cliente encontrada.</div>
             ) : (
               patients.map((p) => (
                 <button

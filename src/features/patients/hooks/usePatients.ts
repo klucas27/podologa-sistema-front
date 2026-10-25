@@ -51,7 +51,7 @@ export function useCreatePatient() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: patientKeys.all });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      notifySuccess("Paciente cadastrado com sucesso.");
+      notifySuccess("Cliente cadastrada com sucesso.");
     },
   });
 }
@@ -104,7 +104,7 @@ export function useUpdatePatient() {
     },
 
     onSuccess: () => {
-      notifySuccess("Paciente atualizado com sucesso.");
+      notifySuccess("Cliente atualizada com sucesso.");
     },
   });
 }
@@ -117,7 +117,7 @@ export function useDeletePatient() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: patientKeys.all });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      notifySuccess("Paciente excluído com sucesso.");
+      notifySuccess("Cliente excluída com sucesso.");
     },
   });
 }
@@ -130,7 +130,7 @@ export function useForceDeletePatient() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: patientKeys.all });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      notifySuccess("Paciente e registros vinculados excluídos.");
+      notifySuccess("Cliente e registros vinculados excluídos.");
     },
   });
 }

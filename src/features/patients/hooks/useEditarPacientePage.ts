@@ -75,7 +75,7 @@ export function useEditarPacientePage() {
       {
         onSuccess: () => navigate(`/pacientes/${id}`),
         onError: (err) => {
-          const message = (err as { message?: string })?.message || 'Erro ao atualizar paciente. Tente novamente.';
+          const message = (err as { message?: string })?.message || 'Erro ao atualizar cliente. Tente novamente.';
           setError(message);
         },
       },

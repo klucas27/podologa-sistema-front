@@ -34,7 +34,7 @@ describe('ProntuarioPage', () => {
     expect(await screen.findByRole('tab', { name: 'Dados' })).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Saúde' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Anamnese/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Editar Paciente/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Editar Cliente/ })).not.toBeInTheDocument();
     expect(anamnesisSpy).not.toHaveBeenCalled();
   });
 

@@ -29,18 +29,18 @@ const AppointmentHistory: React.FC<AppointmentHistoryProps> = ({
       <div className="flex items-center gap-2">
         <Stethoscope size={20} className="text-primary-500" />
         <h2 className="text-lg font-semibold text-gray-800">
-          Histórico de Consultas
+          Histórico de Atendimentos
         </h2>
       </div>
       <span className="text-xs text-gray-400">
-        {appointments.length} consulta{appointments.length !== 1 ? "s" : ""}
+        {appointments.length} atendimento{appointments.length !== 1 ? "s" : ""}
       </span>
     </div>
 
     {appointments.length === 0 ? (
       <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
         <p className="text-gray-400 text-sm">
-          Nenhuma consulta registrada.
+          Nenhum atendimento registrado.
         </p>
       </div>
     ) : (

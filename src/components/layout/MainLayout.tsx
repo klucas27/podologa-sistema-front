@@ -32,8 +32,8 @@ const allNavItems: Array<{
   icon: React.ComponentType<{ size?: number; className?: string }>;
 }> = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/pacientes', label: 'Pacientes', icon: Users },
-  { to: '/consultas', label: 'Consultas', icon: Stethoscope },
+  { to: '/pacientes', label: 'Clientes', icon: Users },
+  { to: '/consultas', label: 'Atendimentos', icon: Stethoscope },
   { to: '/agendamentos', label: 'Agendamentos', icon: CalendarDays },
   { to: '/pedidos', label: 'Pedidos', icon: Inbox },
   { to: '/profissionais', label: 'Profissionais', icon: UserCog },

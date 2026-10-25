@@ -17,11 +17,11 @@ const EditarPacientePage: React.FC = () => {
   }
 
   return (
-    <ErrorBoundary featureName="Editar Paciente">
+    <ErrorBoundary featureName="Editar Cliente">
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" icon={<ArrowLeft size={18} />} onClick={goBack}>Voltar</Button>
-        <h1 className="text-2xl font-bold text-gray-800">Editar Paciente</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Editar Cliente</h1>
       </div>
 
       {error && <div className="p-3 rounded-lg bg-danger-50 text-danger-700 text-sm">{error}</div>}

@@ -21,7 +21,7 @@ export function usePacientesPage() {
   const handleDelete = useCallback(
     async (id: string, name: string) => {
       const confirmed = window.confirm(
-        `Tem certeza que deseja excluir o paciente "${name}"? Esta ação não pode ser desfeita.`,
+        `Tem certeza que deseja excluir a cliente "${name}"? Esta ação não pode ser desfeita.`,
       );
       if (!confirmed) return;
 
@@ -30,7 +30,7 @@ export function usePacientesPage() {
         await deletePatient.mutateAsync(id);
       } catch {
         alert(
-          "Erro ao excluir paciente. Verifique se não há registros vinculados.",
+          "Erro ao excluir cliente. Verifique se não há registros vinculados.",
         );
       } finally {
         setDeletingId(null);
@@ -42,7 +42,7 @@ export function usePacientesPage() {
   const handleForceDelete = useCallback(
     async (id: string, name: string) => {
       const confirmed = window.confirm(
-        `ATENÇÃO: Excluir definitivamente o paciente "${name}" e TODOS os registros vinculados (consultas, anamneses, cobranças, evoluções)?\n\nEsta ação é IRREVERSÍVEL.`,
+        `ATENÇÃO: Excluir definitivamente a cliente "${name}" e TODOS os registros vinculados (atendimentos, anamneses, cobranças, evoluções)?\n\nEsta ação é IRREVERSÍVEL.`,
       );
       if (!confirmed) return;
 
@@ -50,7 +50,7 @@ export function usePacientesPage() {
       try {
         await forceDeletePatient.mutateAsync(id);
       } catch {
-        alert("Erro ao excluir paciente definitivamente.");
+        alert("Erro ao excluir cliente definitivamente.");
       } finally {
         setDeletingId(null);
       }

@@ -2,7 +2,7 @@
  * Error Boundary com fallback por feature.
  *
  * Cada feature é envolvida em um ErrorBoundary com `featureName`
- * para que erros em "Pacientes" não derrubem "Dashboard".
+ * para que erros em "Clientes" não derrubem "Dashboard".
  *
  * ⚠ SEGURANÇA: o error.message renderizado aqui é o da ApiError,
  * que já foi sanitizado pelo api.ts — NUNCA contém stack traces

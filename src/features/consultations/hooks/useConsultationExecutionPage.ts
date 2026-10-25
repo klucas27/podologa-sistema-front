@@ -158,9 +158,9 @@ export function useConsultationExecutionPage() {
         });
         showSuccess(
           newStatus === "in_progress"
-            ? "Consulta iniciada."
+            ? "Atendimento iniciado."
             : newStatus === "completed"
-              ? "Consulta finalizada."
+              ? "Atendimento finalizado."
               : "Status atualizado.",
         );
       } catch (err: unknown) {
@@ -210,7 +210,7 @@ export function useConsultationExecutionPage() {
 
   const handleCancel = useCallback(async () => {
     if (!appointmentId) return;
-    const ok = window.confirm("Tem certeza que deseja cancelar esta consulta?");
+    const ok = window.confirm("Tem certeza que deseja cancelar este atendimento?");
     if (!ok) return;
     await updateStatus("cancelled");
   }, [appointmentId, updateStatus]);
@@ -218,14 +218,14 @@ export function useConsultationExecutionPage() {
   const handleDelete = useCallback(async () => {
     if (!appointmentId) return;
     const ok = window.confirm(
-      "Excluir permanentemente esta consulta? Esta ação não pode ser desfeita.",
+      "Excluir permanentemente este atendimento? Esta ação não pode ser desfeita.",
     );
     if (!ok) return;
     try {
       await consultationService.deleteAppointment(appointmentId);
       navigate("/agendamentos");
     } catch {
-      setError("Erro ao excluir consulta.");
+      setError("Erro ao excluir atendimento.");
     }
   }, [appointmentId, navigate]);
 

@@ -24,7 +24,7 @@ const PatientFlowChart: React.FC<PatientFlowChartProps> = ({ data }) => {
     <div className="card">
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
         <div>
-          <h2 className="text-base font-semibold text-gray-800">Fluxo de Pacientes</h2>
+          <h2 className="text-base font-semibold text-gray-800">Fluxo de Clientes</h2>
           <p className="text-xs text-gray-400 mt-0.5">Últimos 7 dias</p>
         </div>
         <button className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors" title='icon-more'>
@@ -71,7 +71,7 @@ const PatientFlowChart: React.FC<PatientFlowChartProps> = ({ data }) => {
               strokeWidth={2.5}
               fillOpacity={1}
               fill="url(#colorPacientes)"
-              name="Pacientes"
+              name="Clientes"
               dot={{ r: 3, fill: '#0ABAB5', stroke: '#fff', strokeWidth: 2 }}
               activeDot={{ r: 5, fill: '#0ABAB5', stroke: '#fff', strokeWidth: 2 }}
             />

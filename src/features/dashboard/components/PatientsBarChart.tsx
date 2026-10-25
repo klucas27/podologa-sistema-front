@@ -35,7 +35,7 @@ const PatientsBarChart: React.FC<PatientsBarChartProps> = ({
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
         <div>
           <h2 className="text-base font-semibold text-gray-800">
-            Novos Pacientes
+            Novas Clientes
           </h2>
           <p className="text-xs text-gray-400 mt-0.5">
             Período atual vs anterior

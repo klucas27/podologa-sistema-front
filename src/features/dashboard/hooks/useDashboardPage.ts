@@ -147,7 +147,7 @@ export function useDashboardPage() {
       id: apt.id,
       patient: apt.patient,
       time: apt.time,
-      procedure: apt.procedure ?? "Consulta",
+      procedure: apt.procedure ?? "Atendimento",
       status: STATUS_MAP[apt.status] ?? "agendado",
     }));
   }, [data]);

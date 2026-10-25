@@ -129,10 +129,10 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
                     style={style}
                     onClick={(e) => onAppointmentClick(appt, e)}
                     onMouseDown={(e) => onDragStart(appt, dayIdx, e)}
-                    title={`${appt.patient?.fullName ?? "Paciente"} · ${STATUS_LABELS[appt.status]}${(appt.patient?._count?.anamneses ?? 0) > 0 ? " · Anamnese preenchida" : ""}`}
+                    title={`${appt.patient?.fullName ?? "Cliente"} · ${STATUS_LABELS[appt.status]}${(appt.patient?._count?.anamneses ?? 0) > 0 ? " · Anamnese preenchida" : ""}`}
                   >
                     <p className="text-xs font-semibold truncate leading-tight">
-                      {appt.patient?.fullName ?? "Paciente"}
+                      {appt.patient?.fullName ?? "Cliente"}
                       {(appt.patient?._count?.anamneses ?? 0) > 0 && (
                         <span
                           className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 ml-1 align-middle"

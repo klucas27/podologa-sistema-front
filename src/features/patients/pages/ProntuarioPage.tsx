@@ -52,7 +52,7 @@ const ProntuarioPageInner: React.FC = () => {
               icon={<Pencil size={14} />}
               onClick={() => state.navigate(`/pacientes/${state.id}/editar`)}
             >
-              Editar Paciente
+              Editar Cliente
             </Button>
           )}
           {state.showHealth && (

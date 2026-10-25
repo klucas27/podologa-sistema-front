@@ -46,7 +46,7 @@ const AppointmentInfoCard: React.FC<AppointmentInfoCardProps> = ({
       className="bg-white rounded-xl border border-gray-200 p-6"
     >
       <h2 id="appointment-info-heading" className="sr-only">
-        Informações da consulta
+        Informações do atendimento
       </h2>
 
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -65,7 +65,7 @@ const AppointmentInfoCard: React.FC<AppointmentInfoCardProps> = ({
 
             <div className="min-w-0">
               <p className="text-lg font-semibold text-gray-800 truncate">
-                {appointment.patient?.fullName ?? "Paciente sem nome"}
+                {appointment.patient?.fullName ?? "Cliente sem nome"}
               </p>
               <p className="text-sm text-gray-500 mt-1 truncate">
                 {appointment.patient?.phoneNumber ?? "Contato não informado"}

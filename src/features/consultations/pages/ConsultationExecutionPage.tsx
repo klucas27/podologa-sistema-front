@@ -36,13 +36,13 @@ const ConsultationExecutionPageInner: React.FC = () => {
           type="button"
           onClick={() => state.navigate("/consultas")}
           className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition"
-          title="consultas"
+          title="Atendimentos"
         >
           <ArrowLeft size={20} />
         </button>
         <div>
           <h1 className="text-2xl font-bold text-gray-800">
-            Execução da Consulta
+            Atendimento
           </h1>
           <p className="text-sm text-gray-500">
             {isAesthetic
@@ -160,7 +160,7 @@ const ConsultationExecutionPageInner: React.FC = () => {
 };
 
 const ConsultationExecutionPage: React.FC = () => (
-  <ErrorBoundary featureName="Execução de Consulta">
+  <ErrorBoundary featureName="Atendimento">
     <ConsultationExecutionPageInner />
   </ErrorBoundary>
 );

@@ -13,7 +13,7 @@ import { formatCurrency } from '@/lib/dateUtils';
 
 const KPI_CONFIG: Record<KpiType, { title: string; color: string; dataKey: string }> = {
   appointments: { title: 'Atendimentos', color: '#0ABAB5', dataKey: 'value' },
-  patients: { title: 'Novos Pacientes', color: '#22c55e', dataKey: 'value' },
+  patients: { title: 'Novas Clientes', color: '#22c55e', dataKey: 'value' },
   revenue: { title: 'Faturamento (R$)', color: '#f59e0b', dataKey: 'value' },
   alerts: { title: 'Alertas de Retorno', color: '#ef4444', dataKey: 'value' },
 };
