@@ -37,6 +37,7 @@ const NovaConsultaPage = React.lazy(() => import("@/features/consultations/pages
 const ConsultationExecutionPage = React.lazy(() => import("@/features/consultations/pages/ConsultationExecutionPage"));
 const PatologiasPage = React.lazy(() => import("@/features/pathologies/pages/PatologiasPage"));
 const ProfissionaisPage = React.lazy(() => import("@/features/professionals/pages/ProfissionaisPage"));
+const ComissoesPage = React.lazy(() => import("@/features/commissions/pages/ComissoesPage"));
 const TransacoesPage = React.lazy(() => import("@/features/billing/pages/TransacoesPage"));
 const ConfiguracoesPage = React.lazy(() => import("@/features/settings/pages/ConfiguracoesPage"));
 const ServicosPage = React.lazy(() => import("@/features/services/pages/ServicosPage"));
@@ -59,6 +60,7 @@ export const routeImportMap: Record<string, () => Promise<unknown>> = {
   "/agendamentos": () => import("@/features/appointments/pages/AgendamentosPage"),
   "/profissionais": () => import("@/features/professionals/pages/ProfissionaisPage"),
   "/transacoes": () => import("@/features/billing/pages/TransacoesPage"),
+  "/comissoes": () => import("@/features/commissions/pages/ComissoesPage"),
   "/patologias": () => import("@/features/pathologies/pages/PatologiasPage"),
   "/configuracoes": () => import("@/features/settings/pages/ConfiguracoesPage"),
   "/servicos": () => import("@/features/services/pages/ServicosPage"),
@@ -139,6 +141,10 @@ export const router = createBrowserRouter([
           {
             element: <ProtectedRoute allowedRoles={["admin", "recepcao"]} />,
             children: [{ path: "/transacoes", element: lazy(TransacoesPage) }],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={["admin", "manicure", "podologa"]} />,
+            children: [{ path: "/comissoes", element: lazy(ComissoesPage) }],
           },
           { path: "/configuracoes", element: lazy(ConfiguracoesPage) },
         ],

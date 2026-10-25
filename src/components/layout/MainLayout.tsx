@@ -20,6 +20,7 @@ import {
   KeyRound,
   Package,
   ArrowRightLeft,
+  Wallet,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { routeImportMap } from '@/app/router';
@@ -41,6 +42,7 @@ const allNavItems: Array<{
   { to: '/estoque', label: 'Estoque', icon: Package },
   { to: '/usuarios', label: 'Usuários', icon: KeyRound },
   { to: '/transacoes', label: 'Transações', icon: DollarSign },
+  { to: '/comissoes', label: 'Comissões', icon: Wallet },
   { to: '/patologias', label: 'Patologias', icon: Bug },
   { to: '/configuracoes', label: 'Configurações', icon: Settings },
 ];
