@@ -45,6 +45,7 @@ const EncaminhamentosPage = React.lazy(() => import("@/features/referrals/pages/
 const UsuariosPage = React.lazy(() => import("@/features/users/pages/UsuariosPage"));
 const PedidosPage = React.lazy(() => import("@/features/booking-requests/pages/PedidosPage"));
 const TrocarSenhaPage = React.lazy(() => import("@/features/auth/pages/TrocarSenhaPage"));
+const ManageBookingPage = React.lazy(() => import("@/features/public-booking/pages/ManageBookingPage"));
 const PublicBookingPage = React.lazy(() => import("@/features/public-booking/pages/PublicBookingPage"));
 
 // ─── Route → import map para prefetch no hover ───────────────────
@@ -77,6 +78,10 @@ export const router = createBrowserRouter([
   {
     path: "/agendar/:slug",
     element: lazy(PublicBookingPage),
+  },
+  {
+    path: "/agendamento/:slug/:token",
+    element: lazy(ManageBookingPage),
   },
   {
     path: "/login",

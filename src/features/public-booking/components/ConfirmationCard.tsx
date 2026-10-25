@@ -1,12 +1,15 @@
 import React from 'react';
 import { formatLongDate } from '../lib/dates';
 import type { BookingConfirmation } from '../hooks/usePublicBooking';
+import { manageUrl } from '../services/publicBooking.service';
+import { ShareManageLink } from './ShareManageLink';
 
 interface ConfirmationCardProps {
+  slug: string;
   booking: BookingConfirmation;
 }
 
-export const ConfirmationCard: React.FC<ConfirmationCardProps> = ({ booking }) => {
+export const ConfirmationCard: React.FC<ConfirmationCardProps> = ({ slug, booking }) => {
   const [date, time] = booking.start.split('T');
   const endTime = booking.end.split('T')[1] ?? '';
 
@@ -40,9 +43,10 @@ export const ConfirmationCard: React.FC<ConfirmationCardProps> = ({ booking }) =
       {booking.status === 'pending' ? (
         <p className="mt-4 text-sm font-medium text-primary-700">Aguardando confirmação do salão</p>
       ) : null}
-      <p className="mt-3 text-sm text-gray-700">
-        Guarde este código para alterar seu horário: {booking.manageToken}
-      </p>
+      <div className="mt-4 border-t border-primary-100 pt-4">
+        <p className="mb-2 text-sm text-gray-700">Guarde este link para cancelar ou remarcar seu horário:</p>
+        <ShareManageLink url={manageUrl(slug, booking.manageToken)} />
+      </div>
     </div>
   );
 };

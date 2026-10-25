@@ -82,7 +82,7 @@ async function pickFirstDay(page: Page) {
   await day.first().click();
 }
 
-test('cliente cadastrada reserva e vê o código', async ({ page }) => {
+test('cliente cadastrada reserva e recebe o link individual', async ({ page }) => {
   await mockPublic(page, 201);
   await page.goto('/agendar/nalu-nails');
   await page.getByLabel('Celular').fill('12988036103');
@@ -94,7 +94,8 @@ test('cliente cadastrada reserva e vê o código', async ({ page }) => {
   await pickFirstDay(page);
   await page.getByRole('button', { name: '10:00' }).click();
   await expect(page.getByText('Aguardando confirmação do salão')).toBeVisible();
-  await expect(page.getByText('Guarde este código para alterar seu horário: codigo-teste')).toBeVisible();
+  await expect(page.getByRole('link', { name: /\/agendamento\/nalu-nails\/codigo-teste$/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Salvar no WhatsApp' })).toHaveAttribute('href', /^https:\/\/wa\.me\/\?text=/);
 });
 
 test('cliente nova passa pelo cadastro e reserva', async ({ page }) => {
@@ -111,7 +112,7 @@ test('cliente nova passa pelo cadastro e reserva', async ({ page }) => {
   await page.getByRole('button', { name: 'Sem preferência' }).click();
   await pickFirstDay(page);
   await page.getByRole('button', { name: '10:00' }).click();
-  await expect(page.getByText('codigo-teste')).toBeVisible();
+  await expect(page.getByRole('link', { name: /codigo-teste$/ })).toBeVisible();
 });
 
 test('409 volta para os horários com aviso', async ({ page }) => {

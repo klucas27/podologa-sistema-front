@@ -1,6 +1,8 @@
 import React from "react";
 import { Clock, PlayCircle, CheckCircle } from "lucide-react";
 import Button from "@/components/ui/Button";
+import { useAuth } from "@/hooks/useAuth";
+import ClientLinkButton from "./ClientLinkButton";
 import { STATUS_LABELS, formatDate, formatTime } from "../constants";
 import type { Appointment, AppointmentStatus } from "@/types";
 
@@ -203,7 +205,12 @@ const AppointmentActions: React.FC<
   onCancel,
   onDelete,
   onNavigate,
-}) => (
+}) => {
+  const { role } = useAuth();
+  const canShareLink =
+    (role === "admin" || role === "recepcao") &&
+    ["pending", "scheduled", "confirmed"].includes(appointment.status);
+  return (
   <div className="flex-shrink-0 w-full sm:w-auto flex flex-col items-stretch sm:items-end gap-3">
     <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-stretch sm:items-center">
       {(appointment.status === "scheduled" ||
@@ -250,6 +257,8 @@ const AppointmentActions: React.FC<
         </div>
       )}
     </div>
+
+    {canShareLink && <ClientLinkButton appointmentId={appointment.id} />}
 
     <div className="mt-2 w-full bg-gray-50 p-3 rounded-lg">
       {isEditable ? (
@@ -325,6 +334,7 @@ const AppointmentActions: React.FC<
       )}
     </div>
   </div>
-);
+  );
+};
 
 export default AppointmentInfoCard;

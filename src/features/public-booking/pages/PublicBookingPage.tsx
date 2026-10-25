@@ -162,7 +162,7 @@ const PublicBookingPage: React.FC = () => {
         />
       ) : null}
 
-      {step === 'confirmation' && confirmation ? <ConfirmationCard booking={confirmation} /> : null}
+      {step === 'confirmation' && confirmation ? <ConfirmationCard slug={slug} booking={confirmation} /> : null}
     </PublicLayout>
   );
 };
